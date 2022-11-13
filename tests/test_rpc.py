@@ -5,7 +5,7 @@ See https://github.com/eth-infinitism/bundler
 
 import pytest
 import requests
-import jsons
+import json
 
 from .types import UserOperation
 
@@ -27,28 +27,28 @@ def test_eth_supportedEntryPoints(url, entry_point):
     assert response["id"] == 1234
 
 
-# @pytest.mark.skip
 def test_eth_sendUserOperation(url, entry_point):
-    print(url)
     userOp = UserOperation("0x0000000000000000000000000000000000000000",
                            0,
                            '',
                            '',
-                           1e5,
-                           1e5,
-                           1e5,
-                           1e5,
-                           1e5,
+                           100000,
+                           100000,
+                           100000,
+                           100000,
+                           100000,
                            '',
                            '')
     payload = {
         "method": "eth_sendUserOperation",
-        "params": [jsons.dump(userOp), entry_point],
+        "params": [json.dumps(userOp, default=vars), entry_point],
         "jsonrpc": "2.0",
         "id": 1234,
     }
+    print('userOp is', json.dumps(userOp, default=vars))
     response = requests.post(url, json=payload).json()
 
+    print("response is", response)
     assert response["result"] == ""
     assert response["jsonrpc"] == "2.0"
     assert response["id"] == 1234
