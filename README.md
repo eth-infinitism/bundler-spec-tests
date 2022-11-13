@@ -11,5 +11,5 @@ Run `pdm install`
 
 While running your bundler, open another windown and run
 ```sh
-.venv/bin/pytest --url <bundler_url> --chain-id <chain_id> --entry-point <enty_point>
+pdm run pytest --url <bundler_url> --chain-id <chain_id> --entry-point <enty_point>
 ```

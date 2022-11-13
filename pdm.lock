@@ -46,11 +46,6 @@ version = "1.1.1"
 summary = "iniconfig: brain-dead simple config-ini parsing"
 
 [[package]]
-name = "json-rpc"
-version = "1.13.0"
-summary = "JSON-RPC transport implementation"
-
-[[package]]
 name = "packaging"
 version = "21.3"
 requires_python = ">=3.6"
@@ -112,7 +107,7 @@ summary = "HTTP library with thread-safe connection pooling, file post, and more
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:29c313566c80d48378009b93361b6a1e7c0c1f754d0955f3b23eee08038ea96f"
+content_hash = "sha256:a481fb52a1fdb9a1b7b007fe21e20306e57d93fe83322bb081b2f90a65c4689e"
 
 [metadata.files]
 "attrs 22.1.0" = [
@@ -146,10 +141,6 @@ content_hash = "sha256:29c313566c80d48378009b93361b6a1e7c0c1f754d0955f3b23eee080
 "iniconfig 1.1.1" = [
     {url = "https://files.pythonhosted.org/packages/23/a2/97899f6bd0e873fed3a7e67ae8d3a08b21799430fb4da15cfedf10d6e2c2/iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
     {url = "https://files.pythonhosted.org/packages/9b/dd/b3c12c6d707058fa947864b67f0c4e0c39ef8610988d7baea9578f3c48f3/iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
-]
-"json-rpc 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/43/5a/7c2ea59e622682fff34d5aa3b301aa9a10bb0dbf0120f85cd391e4badad8/json-rpc-1.13.0.tar.gz", hash = "sha256:def0dbcf5b7084fc31d677f2f5990d988d06497f2f47f13024274cfb2d5d7589"},
-    {url = "https://files.pythonhosted.org/packages/93/a4/c7da3efc17da87042e077f4587ad018ff20ada0de32f0189d1d7ccf403f8/json_rpc-1.13.0-py2.py3-none-any.whl", hash = "sha256:84b45058e5ba95f49c7b6afcf7e03ab86bee89bf2c01f3ad8dd41fe114fc1f84"},
 ]
 "packaging 21.3" = [
     {url = "https://files.pythonhosted.org/packages/05/8e/8de486cbd03baba4deef4142bd643a3e7bbe954a784dc1bb17142572d127/packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
