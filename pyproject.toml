@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "bundler-spec-tests"
+version = "0.1.0"
+description = ""
+authors = ["shahafn <shahaflol@gmail.com>"]
+readme = "README.md"
+packages = [{include = "bundler_spec_tests"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+
+[tool.pdm]
+[tool.pdm.build]
+includes = ["bundler_spec_tests"]
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "bundler-spec-tests"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "shahafn", email = "shahaflol@gmail.com"},
+    {name = "shahafn",email = "shahaflol@gmail.com"},
+]
+dependencies = [
+    "pytest>=7.2.0",
+    "json-rpc>=1.13.0",
+    "eth-typing>=3.2.0",
+    "jsons>=1.6.3",
+    "requests>=2.28.1",
+]
+requires-python = ">=3.8,<4.0"
+license = {text = "MIT"}
+readme = "README.md"
+
+[project.urls]
