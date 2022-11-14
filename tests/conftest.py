@@ -1,4 +1,12 @@
 import pytest
+from dataclasses import dataclass
+
+
+@dataclass()
+class CommandLineArgs:
+    url: str
+    entry_point: str
+    ethereum_node: str
 
 
 def pytest_addoption(parser):
@@ -14,15 +22,16 @@ def pytest_addoption(parser):
         "--entry-point",
         action="store"
     )
+    parser.addoption(
+        "--ethereum-node",
+        action="store"
+    )
+
 
 @pytest.fixture()
-def url(request):
-    return request.config.getoption("--url")
-
-@pytest.fixture()
-def chain_id(request):
-    return request.config.getoption("--chain-id")
-
-@pytest.fixture()
-def entry_point(request):
-    return request.config.getoption("--entry-point")
+def cmd_args(request):
+    return CommandLineArgs(
+        url=request.config.getoption("--url"),
+        entry_point=request.config.getoption("--entry-point"),
+        ethereum_node=request.config.getoption("--ethereum-node")
+    )
