@@ -9,7 +9,7 @@ class UserOperation:
     sender: HexStr
     nonce: HexStr
     initCode: HexStr
-    calldata: HexStr
+    callData: HexStr
     callGasLimit: HexStr
     verificationGasLimit: HexStr
     preVerificationGas: HexStr
@@ -22,7 +22,7 @@ class UserOperation:
 @dataclass
 class RPCRequest:
     method: str
-    id: int
+    id: int = 1234
     params: list = field(default_factory=list, compare=False)
     jsonrpc: str = "2.0"
 
