@@ -70,14 +70,3 @@ def test_banned_opcode(cmd_args, opban_contract, banned_op):
     response = requests.post(cmd_args.url, json=asdict(payload)).json()
     is_valid_jsonrpc_response(response)
     assertRpcError(response, 'account uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
-
-
-
-# def test_gasleft(cmd_args, opban_contract):
-#     userOp = get_userOp(opban_contract, 'gasleft')
-#     payload = RPCRequest(method="eth_sendUserOperation",
-#                          params=[asdict(userOp), cmd_args.entry_point], id=1234)
-#     response = requests.post(cmd_args.url, json=asdict(payload)).json()
-#     print("response is", response)
-#     is_valid_jsonrpc_response(response)
-#     assertRpcError(response, 'account uses banned opcode: GAS', RPCErrorCode.BANNED_OPCODE)

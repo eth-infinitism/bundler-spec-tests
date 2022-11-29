@@ -11,12 +11,12 @@ from .test_sendUserOperation import sendUserOperation
 def test_eth_getUserOperationReceipt(cmd_args, wallet_contract, userOp, w3):
     payload = RPCRequest(method="eth_getUserOperationReceipt", params=[userOpHash(wallet_contract, userOp)])
     response = requests.post(cmd_args.url, json=asdict(payload)).json()
-    print(response)
+    print('response is', response)
     is_valid_jsonrpc_response(response)
     # TODO test receipt better
     assert response['result']['userOpHash'] == userOpHash(wallet_contract, userOp)
-    receipt = w3.eth.getTransactionReceipt(response['result']['transactionHash'])
-    assert response['result']['blockHash'] == receipt['blockHash'].hex()
+    receipt = w3.eth.getTransactionReceipt(response['result']['receipt']['transactionHash'])
+    assert response['result']['receipt']['blockHash'] == receipt['blockHash'].hex()
 
 
 def test_eth_getUserOperationReceipt_error(cmd_args):

@@ -26,7 +26,6 @@ def test_eth_sendUserOperation(cmd_args, wallet_contract, userOp):
     print("response is", response)
     is_valid_jsonrpc_response(response)
     state_after = wallet_contract.functions.state().call()
-    print('userOpHash is', userOpHash(wallet_contract, userOp))
     assert response["result"] == userOpHash(wallet_contract, userOp)
     assert state_after == 1111111
 

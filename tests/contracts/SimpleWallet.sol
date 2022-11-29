@@ -19,6 +19,10 @@ contract SimpleWallet is IAccount {
         state=_state;
     }
 
+    function fail() external {
+        revert("test fail");
+    }
+
     function validateUserOp(UserOperation calldata userOp, bytes32, address, uint256 missingWalletFunds)
     external override returns (uint256 deadline) {
         if (missingWalletFunds>0) {

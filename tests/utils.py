@@ -39,3 +39,9 @@ def userOpHash(wallet_contract, userOp):
 def assertRpcError(response, message, code):
     assert response['error']['code'] == code
     assert response['error']['message'] == message
+
+
+def assertFieldsTypes(obj, names=[], types=[]):
+    for n, t in zip(names, types):
+        assert isinstance(obj[n], t)
+

@@ -11,7 +11,7 @@ from .test_sendUserOperation import sendUserOperation
 def test_eth_getUserOperationTransactionByHash(cmd_args, wallet_contract, userOp):
     payload = RPCRequest(method="eth_getUserOperationTransactionByHash", params=[userOpHash(wallet_contract, userOp)])
     response = requests.post(cmd_args.url, json=asdict(payload)).json()
-    print(response)
+    # print('response is', response)
     is_valid_jsonrpc_response(response)
     # TODO test receipt better
     assert response['result']['userOpHash'] == userOpHash(wallet_contract, userOp)
