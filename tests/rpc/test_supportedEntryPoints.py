@@ -4,7 +4,6 @@ from tests.types import RPCRequest
 from tests.utils import is_valid_jsonrpc_response
 
 def test_eth_supportedEntryPoints(cmd_args):
-    print(cmd_args)
     payload = RPCRequest(method="eth_supportedEntryPoints", id=1234)
     response = requests.post(cmd_args.url, json=asdict(payload)).json()
 

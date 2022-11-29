@@ -7,9 +7,8 @@ import pytest
 import requests
 from dataclasses import asdict
 
-from tests.types import UserOperation
 from tests.types import RPCRequest
-from tests.utils import is_valid_jsonrpc_response, requestId, assertRpcError
+from tests.utils import is_valid_jsonrpc_response, userOpHash, assertRpcError
 
 
 def test_eth_simulateUserOperation(cmd_args, wallet_contract, userOp):
@@ -23,8 +22,8 @@ def test_eth_simulateUserOperation(cmd_args, wallet_contract, userOp):
     print("response is", response)
     is_valid_jsonrpc_response(response)
     state_after = wallet_contract.functions.state().call()
-    print('requestId is', requestId(wallet_contract, userOp))
-    assert response["result"] == requestId(wallet_contract, userOp)
+    print('userOpHash is', userOpHash(wallet_contract, userOp))
+    assert response["result"] == userOpHash(wallet_contract, userOp)
     assert state_after == 1111111
 
 
@@ -40,4 +39,4 @@ def test_eth_simulateUserOperation_revert(cmd_args, wallet_contract, badSigUserO
     is_valid_jsonrpc_response(response)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 0
-    assertRpcError(response, "ERROR")
+    assertRpcError(response, "ERROR", -32500)

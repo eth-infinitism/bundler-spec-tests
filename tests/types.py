@@ -3,6 +3,7 @@ from eth_typing import (
 )
 
 from dataclasses import dataclass, field
+from enum import IntEnum
 
 @dataclass
 class UserOperation:
@@ -26,3 +27,7 @@ class RPCRequest:
     params: list = field(default_factory=list, compare=False)
     jsonrpc: str = "2.0"
 
+
+class RPCErrorCode(IntEnum):
+    REJECTED_BY_EP = -32500
+    BANNED_OPCODE = -32501

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.12;
 
-import "./IWallet.sol";
-import "./UserOperation.sol";
-import "./IEntryPoint.sol";
+import "@account-abstraction/contracts/interfaces/IAccount.sol";
+//import "./UserOperation.sol";
+import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
-contract SimpleWallet is IWallet {
+contract SimpleWallet is IAccount {
 
     address ep;
     uint256 public state;
@@ -21,16 +21,17 @@ contract SimpleWallet is IWallet {
     }
 
     function validateUserOp(UserOperation calldata userOp, bytes32, address, uint256 missingWalletFunds)
-    external override {
+    external override returns (uint256 deadline) {
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");
         }
         bytes2 dead = bytes2(userOp.signature);
         require(dead != 0xdead, "testWallet: dead signature");
+        return 0;
     }
 
     // todo move
-    function getRequestId(UserOperation calldata userOp) public view returns (bytes32) {
-        return IEntryPoint(ep).getRequestId(userOp);
+    function getUserOpHash(UserOperation calldata userOp) public view returns (bytes32) {
+        return IEntryPoint(ep).getUserOpHash(userOp);
     }
 }
