@@ -2,7 +2,6 @@
 pragma solidity ^0.8.12;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
-//import "./UserOperation.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract SimpleWallet is IAccount {

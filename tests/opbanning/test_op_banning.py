@@ -21,7 +21,7 @@ def get_userOp(opban_contract, rule=''):
         nonce=hex(0),
         initCode='0x',
         callData=opban_contract.encodeABI(fn_name='setState', args=[0]),
-        callGasLimit=hex(60000),
+        callGasLimit=hex(2*10**5),
         verificationGasLimit=hex(1213945),
         preVerificationGas=hex(47124),
         maxFeePerGas=hex(2107373890),
