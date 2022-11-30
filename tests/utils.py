@@ -1,10 +1,6 @@
 import os
+
 from solcx import compile_source
-
-
-def is_valid_jsonrpc_response(response):
-    assert response["jsonrpc"] == "2.0"
-    assert response["id"] == 1234
 
 
 def compile_contract(contract):
@@ -37,8 +33,8 @@ def userOpHash(wallet_contract, userOp):
 
 
 def assertRpcError(response, message, code):
-    assert response['error']['code'] == code
-    assert response['error']['message'] == message
+    assert response.code == code
+    assert response.message == message
 
 
 def assertFieldsTypes(obj, names=[], types=[]):

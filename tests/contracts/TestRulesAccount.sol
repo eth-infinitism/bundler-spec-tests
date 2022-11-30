@@ -46,6 +46,7 @@ contract TestRulesAccount is IAccount, IPaymaster {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
         }
+        setCoin(new TestCoin());
     }
 
     function setState(uint _state) external {
@@ -78,10 +79,12 @@ contract TestRulesAccount is IAccount, IPaymaster {
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
-        else if (eq(rule, "balance-self")) return coin.balanceOf(address(this));
-        else if (eq(rule, "mint-self")) return coin.mint(address(this));
-        else if (eq(rule, "balance-1")) return coin.balanceOf(address(1));
-        else if (eq(rule, "mint-1")) return coin.mint(address(1));
+        else if (eq(rule, "OTHERSLOAD")) return coin.balanceOf(address(1));
+        else if (eq(rule, "OTHERSSTORE")) return coin.mint(address(1));
+        else if (eq(rule, "SELFSSLOAD")) return uint160(address(coin));
+        else if (eq(rule, "SELFSSTORE")) return setCoin(TestCoin(address(0xdead)));
+        else if (eq(rule, "SELFREFSLOAD")) return coin.balanceOf(address(this));
+        else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
 
         else if (eq(rule, "inner-revert")) return coin.reverting();
         else if (eq(rule, "oog")) return coin.wasteGas();

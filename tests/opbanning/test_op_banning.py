@@ -4,12 +4,10 @@ See https://github.com/eth-infinitism/bundler
 """
 
 import pytest
-import requests
-import web3
 from dataclasses import asdict
 
 from tests.types import UserOperation, RPCRequest, RPCErrorCode
-from tests.utils import is_valid_jsonrpc_response, userOpHash, assertRpcError
+from tests.utils import userOpHash, assertRpcError
 
 def stringToPrefixedHex(s):
     return '0x' + s.encode().hex()
@@ -39,34 +37,38 @@ banned_opcodes = [
     'BASEFEE',
     'GASLIMIT',
     'GASPRICE',
-    'BALANCE',
     'SELFBALANCE',
+    'BALANCE',
     'ORIGIN',
     'BLOCKHASH',
     'CREATE',
     'CREATE2',
+    'OTHERSLOAD',
+    'OTHERSSTORE'
+]
+
+allowed_opcodes = [
+    '',
+    'SELFSSLOAD',
+    'SELFSSTORE',
+    'SELFREFSLOAD',
+    'SELFREFSSTORE',
+
 ]
 
 
-def test_no_banned(cmd_args, opban_contract):
-    userOp = get_userOp(opban_contract)
-    print(opban_contract.address)
-    print(userOp)
-    payload = RPCRequest(method="eth_sendUserOperation",
-                         params=[asdict(userOp), cmd_args.entry_point], id=1234)
-    response = requests.post(cmd_args.url, json=asdict(payload)).json()
-    print("response is", response)
-    is_valid_jsonrpc_response(response)
+@pytest.mark.parametrize('allowed_op', allowed_opcodes)
+def test_allowed_opcode(cmd_args, opban_contract, allowed_op):
+    userOp = get_userOp(opban_contract, allowed_op)
+    response = RPCRequest(method="eth_sendUserOperation",
+                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
     # assert response["result"] == userOpHash(wallet_contract, userOp)
-    assert int(response["result"], 16)
+    assert int(response.result, 16)
 
 
 @pytest.mark.parametrize('banned_op', banned_opcodes)
 def test_banned_opcode(cmd_args, opban_contract, banned_op):
-    print(banned_op)
     userOp = get_userOp(opban_contract, banned_op)
-    payload = RPCRequest(method="eth_sendUserOperation",
-                         params=[asdict(userOp), cmd_args.entry_point], id=1234)
-    response = requests.post(cmd_args.url, json=asdict(payload)).json()
-    is_valid_jsonrpc_response(response)
+    response = RPCRequest(method="eth_sendUserOperation",
+                         params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
     assertRpcError(response, 'account uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)

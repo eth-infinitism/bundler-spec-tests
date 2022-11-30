@@ -1,8 +1,8 @@
 import pytest
 from dataclasses import dataclass
-from web3 import Web3, IPCProvider
+from web3 import Web3
 from web3.middleware import geth_poa_middleware
-from solcx import install_solc, get_installable_solc_versions
+from solcx import install_solc
 
 from .utils import compile_contract
 
@@ -59,7 +59,7 @@ def wallet_contract(cmd_args, w3):
     tx_hash = wallet.constructor(cmd_args.entry_point).transact({'gas': 10000000, 'from': account, 'value': hex(2*10**18)})
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
-    print(tx_receipt.contractAddress)
+    # print(tx_receipt.contractAddress)
     return w3.eth.contract(abi=wallet_interface['abi'], address=tx_receipt.contractAddress)
 
 

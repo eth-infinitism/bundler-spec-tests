@@ -1,5 +1,5 @@
 import pytest
-from tests.utils import is_valid_jsonrpc_response, userOpHash, assertRpcError, compile_contract
+from tests.utils import userOpHash, assertRpcError, compile_contract
 
 @pytest.fixture(autouse=True)
 def opban_contract(cmd_args, w3):
