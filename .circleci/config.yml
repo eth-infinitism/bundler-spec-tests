@@ -70,7 +70,8 @@ jobs:
           name: "await bundler"
           working_directory: "./bundler"
           shell: /bin/sh
-          command: wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 10 http://localhost:3000/rpc
+          command: |
+            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 10 http://localhost:3000/rpc
       - run:
           name: "pytest"
           command: "pdm run pytest --tb=no -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc  --ethereum-node http://127.0.0.1:8545/ --entry-point 0x2DF1592238420ecFe7f2431360e224707e77fA0E"
