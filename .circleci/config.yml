@@ -11,7 +11,7 @@ jobs:
     docker:
       - image: cimg/python:3.8.0
       - image: ethereum/client-go
-        command: "docker run -d \
+        command: "\
           --miner.gaslimit 12000000 \
           --http \
           --http.api personal,eth,net,web3,debug \
