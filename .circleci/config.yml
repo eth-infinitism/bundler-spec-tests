@@ -10,6 +10,21 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: cimg/python:3.8.0
+      - image: ethereum/client-go
+        command: "geth \
+          --miner.gaslimit 12000000 \
+          --http \
+          --http.api personal,eth,net,web3,debug \
+          --allow-insecure-unlock \
+          --rpc.allow-unprotected-txs \
+          --http.vhosts '*,localhost,host.docker.internal' \
+          --http.corsdomain '*' \
+          --http.addr '0.0.0.0' \
+          --dev \
+          --nodiscover --maxpeers 0 --mine \
+          --miner.threads 1 \
+          --verbosity 2 \
+          --ignore-legacy-receipts"
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
