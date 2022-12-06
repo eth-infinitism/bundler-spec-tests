@@ -46,12 +46,18 @@ jobs:
       - run:
           name: "curl pdm"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
           name: "pdm install"
           command: "pdm install && git submodule update --init --recursive"
       - run:
           name: "clone bundler"
           command: git clone https://github.com/eth-infinitism/bundler.git
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
       - run:
           name: "yarn install for bundler"
           working_directory: "./bundler"
@@ -75,6 +81,14 @@ jobs:
       - run:
           name: "pytest"
           command: "pdm run pytest --tb=no -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc  --ethereum-node http://127.0.0.1:8545/ --entry-point 0x2DF1592238420ecFe7f2431360e224707e77fA0E"
+      - save_cache:
+          key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
+          paths:
+            - .venv
+      - save_cache:
+          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+          paths:
+            - ./bundler/node_modules
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
