@@ -9,6 +9,7 @@ jobs:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
+      - image: cimg/node:16.6.2
       - image: cimg/python:3.8.0
       - image: ethereum/client-go:v1.10.26
         command: "\
@@ -35,6 +36,23 @@ jobs:
       - run:
           name: "pdm install"
           command: "pdm install && git submodule update --init --recursive"
+      - run:
+          name: "clone bundler"
+          command: git clone https://github.com/eth-infinitism/bundler.git
+      - run:
+          name: "yarn install for bundler"
+          working_directory: "./bundler"
+          command: yarn install && yarn preprocess
+      - run:
+          name: "deploy entry point"
+          working_directory: "./bundler"
+          command: yarn hardhat-deploy --network localhost
+          background: true
+      - run:
+          name: "run bundler"
+          working_directory: "./bundler"
+          command: yarn bundler
+          background: true
       - run:
           name: "pytest"
           command: "pdm run pytest --tb=no -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc  --ethereum-node http://127.0.0.1:8545/ --entry-point 0x2DF1592238420ecFe7f2431360e224707e77fA0E"
