@@ -15,6 +15,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "curl pdm"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - run:
           name: "pdm install"
           command: "pdm install && git submodule update --init --recursive"
       - run:
