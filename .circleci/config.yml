@@ -29,6 +29,20 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
+      # https://support.circleci.com/hc/en-us/articles/360051656632-Swap-Node-Version-on-CircleCI-Convenience-Image
+      - run:
+          name: "Swap node versions"
+          command: |
+            set +e
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm install v16.17.0
+            nvm alias default 16.17.0
+
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
       - run:
           name: "curl pdm"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
