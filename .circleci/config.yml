@@ -10,7 +10,7 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: cimg/python:3.8.0
-      - image: ethereum/client-go
+      - image: ethereum/client-go:v1.10.26
         command: "\
           --miner.gaslimit 12000000 \
           --http \
