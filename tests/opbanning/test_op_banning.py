@@ -10,23 +10,11 @@ from tests.types import UserOperation, RPCRequest, RPCErrorCode
 from tests.utils import userOpHash, assertRpcError
 
 def stringToPrefixedHex(s):
-    return '0x' + s.encode().hex()
+    return '0x' + stringToHex(s)
 
 
-def get_userOp(opban_contract, rule=''):
-    return UserOperation(
-        sender=opban_contract.address,
-        nonce=hex(0),
-        initCode='0x',
-        callData=opban_contract.encodeABI(fn_name='setState', args=[0]),
-        callGasLimit=hex(2*10**5),
-        verificationGasLimit=hex(1213945),
-        preVerificationGas=hex(47124),
-        maxFeePerGas=hex(2107373890),
-        maxPriorityFeePerGas=hex(1500000000),
-        paymasterAndData='0x',
-        signature=stringToPrefixedHex(rule)
-    )
+def stringToHex(s):
+    return s.encode().hex()
 
 banned_opcodes = [
     'GAS',
@@ -56,10 +44,9 @@ allowed_opcodes = [
 
 ]
 
-
 @pytest.mark.parametrize('allowed_op', allowed_opcodes)
 def test_allowed_opcode(cmd_args, opban_contract, allowed_op):
-    userOp = get_userOp(opban_contract, allowed_op)
+    userOp = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(allowed_op))
     response = RPCRequest(method="eth_sendUserOperation",
                           params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
     # assert response["result"] == userOpHash(wallet_contract, userOp)
@@ -67,8 +54,18 @@ def test_allowed_opcode(cmd_args, opban_contract, allowed_op):
 
 
 @pytest.mark.parametrize('banned_op', banned_opcodes)
-def test_banned_opcode(cmd_args, opban_contract, banned_op):
-    userOp = get_userOp(opban_contract, banned_op)
+def test_account_banned_opcode(cmd_args, opban_contract, banned_op):
+    userOp = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(banned_op))
     response = RPCRequest(method="eth_sendUserOperation",
-                         params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
+                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
     assertRpcError(response, 'account uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
+
+
+@pytest.mark.parametrize('banned_op', banned_opcodes)
+def test_paymaster_banned_opcode(cmd_args, opban_contract, banned_op):
+    userOp = UserOperation(sender=opban_contract.address, paymasterAndData=opban_contract.address + stringToHex(banned_op))
+    print('what is paymasterAndData', userOp.paymasterAndData)
+    response = RPCRequest(method="eth_sendUserOperation",
+                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
+    assertRpcError(response, 'paymaster uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
+

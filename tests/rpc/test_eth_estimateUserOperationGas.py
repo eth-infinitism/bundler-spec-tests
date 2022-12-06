@@ -4,6 +4,7 @@ See https://github.com/eth-infinitism/bundler
 """
 
 from dataclasses import asdict
+import pytest
 
 from tests.types import RPCRequest
 from tests.utils import assertRpcError, assertFieldsTypes

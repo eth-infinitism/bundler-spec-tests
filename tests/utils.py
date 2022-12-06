@@ -1,6 +1,7 @@
 import os
 
 from solcx import compile_source
+from .types import UserOperation
 
 
 def compile_contract(contract):
@@ -34,10 +35,27 @@ def userOpHash(wallet_contract, userOp):
 
 def assertRpcError(response, message, code):
     assert response.code == code
-    assert response.message == message
+    assert message in response.message
 
 
 def assertFieldsTypes(obj, names=[], types=[]):
     for n, t in zip(names, types):
         assert isinstance(obj[n], t)
 
+
+# def getUserOp(contract, overrides):
+#     fn_name = overrides['callData'] and overrides['callData'][0]
+#     args = []
+#     if fn_name is None:
+#         fn_name = 'setState'
+#         args = [0]
+#     elif len(overrides['callData']) > 1:
+#         args = overrides['callData'][1]
+#     op = UserOperation(
+#     sender=contract.address,
+#     signature='0xface',
+#     callData=contract.encodeABI(fn_name=fn_name, args=args)
+#     )
+#     for k, v in overrides.items():
+#         k != 'callData' and setattr(op, k, v)
+#     return op

@@ -7,7 +7,8 @@ from .test_eth_sendUserOperation import sendUserOperation
 
 @pytest.mark.usefixtures('sendUserOperation')
 def test_eth_getUserOperationReceipt(cmd_args, wallet_contract, userOp, w3):
-    response = RPCRequest(method="eth_getUserOperationReceipt", params=[userOpHash(wallet_contract, userOp)]).send(cmd_args.url)
+    response = RPCRequest(method="eth_getUserOperationReceipt",
+                          params=[userOpHash(wallet_contract, userOp)]).send(cmd_args.url)
     # TODO test receipt better
     assert response.result['userOpHash'] == userOpHash(wallet_contract, userOp)
     receipt = w3.eth.getTransactionReceipt(response.result['receipt']['transactionHash'])

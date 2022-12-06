@@ -11,16 +11,18 @@ from typing import Dict, Union, Tuple, Any
 @dataclass
 class UserOperation:
     sender: HexStr
-    nonce: HexStr
-    initCode: HexStr
-    callData: HexStr
-    callGasLimit: HexStr
-    verificationGasLimit: HexStr
-    preVerificationGas: HexStr
-    maxFeePerGas: HexStr
-    maxPriorityFeePerGas: HexStr
-    paymasterAndData: HexStr
-    signature: HexStr
+    nonce: HexStr = hex(0)
+    initCode: HexStr = '0x'
+    callData: HexStr = '0x'
+    callGasLimit: HexStr = hex(2*10**5)
+    verificationGasLimit: HexStr = hex(10**6)
+    preVerificationGas: HexStr = hex(10**5)
+    maxFeePerGas: HexStr = hex(2*10**9)
+    maxPriorityFeePerGas: HexStr = hex(1*10**9)
+    paymasterAndData: HexStr = '0x'
+    signature: HexStr = '0x'
+
+
 
 
 @dataclass
