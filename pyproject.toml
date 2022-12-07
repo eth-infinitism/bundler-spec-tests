@@ -19,8 +19,7 @@ requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
-init-deps = {shell = "cd account-abstraction; yarn"}
-deploy = {shell = "cd account-abstraction; yarn deploy --network localhost"}
+init-deps = {shell = "cd @account-abstraction; yarn; cd ../; cd spec; yarn && yarn build"}
 
 [project]
 name = "bundler-spec-tests"
