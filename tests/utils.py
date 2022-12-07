@@ -38,11 +38,6 @@ def assertRpcError(response, message, code):
     assert message in response.message
 
 
-def assertFieldsTypes(obj, names=[], types=[]):
-    for n, t in zip(names, types):
-        assert isinstance(obj[n], t)
-
-
 # def getUserOp(contract, overrides):
 #     fn_name = overrides['callData'] and overrides['callData'][0]
 #     args = []

@@ -4,32 +4,31 @@ See https://github.com/eth-infinitism/bundler
 """
 
 import pytest
-from dataclasses import asdict
-
-from tests.types import RPCRequest
 from tests.utils import userOpHash, assertRpcError
+from jsonschema import validate, Validator
 
 
 @pytest.fixture
-def sendUserOperation(cmd_args, wallet_contract, userOp):
-    test_eth_sendUserOperation(cmd_args, wallet_contract, userOp)
+def sendUserOperation(cmd_args, userOp):
+    userOp.send(cmd_args)
 
 
-def test_eth_sendUserOperation(cmd_args, wallet_contract, userOp):
+@pytest.mark.parametrize('method', ['eth_sendUserOperation'], ids=[''])
+def test_eth_sendUserOperation(cmd_args, wallet_contract, userOp, schema):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
-    response = RPCRequest(method="eth_sendUserOperation",
-                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
+    response = userOp.send(cmd_args)
     state_after = wallet_contract.functions.state().call()
     assert response.result == userOpHash(wallet_contract, userOp)
     assert state_after == 1111111
+    Validator.check_schema(schema)
+    validate(instance=response.result, schema=schema)
 
 
 def test_eth_sendUserOperation_revert(cmd_args, wallet_contract, badSigUserOp):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
-    response = RPCRequest(method="eth_sendUserOperation",
-                          params=[asdict(badSigUserOp), cmd_args.entry_point]).send(cmd_args.url)
+    response = badSigUserOp.send(cmd_args)
     # print("response is", response)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 0

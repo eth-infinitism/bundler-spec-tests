@@ -234,7 +234,7 @@ summary = "Send JSON-RPC requests"
 
 [[package]]
 name = "jsonschema"
-version = "4.17.0"
+version = "4.17.3"
 requires_python = ">=3.7"
 summary = "An implementation of JSON Schema validation for Python"
 dependencies = [
@@ -463,7 +463,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:fe2115da461d30361d7d7887614d50c545cda69381e9430d2cb2f60f4dfabb2a"
+content_hash = "sha256:9a79bbeb7a596b2f72cc79fca596197b099e277e028c588c74ee269e555cfb9a"
 
 [metadata.files]
 "aiohttp 3.8.3" = [
@@ -882,9 +882,9 @@ content_hash = "sha256:fe2115da461d30361d7d7887614d50c545cda69381e9430d2cb2f60f4
 "jsonrpcclient 4.0.2" = [
     {url = "https://files.pythonhosted.org/packages/7f/a1/70ddcb1012a59d63bffcf81d1fc6a42248eca9d4f878daacbb9a906ac332/jsonrpcclient-4.0.2.tar.gz", hash = "sha256:c0d475494b3e1b591ecdee7883739accaf5695edb673f16b7383b8c6bbdb1ca3"},
 ]
-"jsonschema 4.17.0" = [
-    {url = "https://files.pythonhosted.org/packages/3a/3d/0653047b9b2ed03d3e96012bc90cfc96227221193fbedd4dc0cbf5a0e342/jsonschema-4.17.0.tar.gz", hash = "sha256:5bfcf2bca16a087ade17e02b282d34af7ccd749ef76241e7f9bd7c0cb8a9424d"},
-    {url = "https://files.pythonhosted.org/packages/f2/c5/8e4cdbcbf81c5003a88722c34009bbda692d495dbccc2bf23edf9402d83d/jsonschema-4.17.0-py3-none-any.whl", hash = "sha256:f660066c3966db7d6daeaea8a75e0b68237a48e51cf49882087757bb59916248"},
+"jsonschema 4.17.3" = [
+    {url = "https://files.pythonhosted.org/packages/36/3d/ca032d5ac064dff543aa13c984737795ac81abc9fb130cd2fcff17cfabc7/jsonschema-4.17.3.tar.gz", hash = "sha256:0f864437ab8b6076ba6707453ef8f98a6a0d512a80e93f8abdb676f737ecb60d"},
+    {url = "https://files.pythonhosted.org/packages/c1/97/c698bd9350f307daad79dd740806e1a59becd693bd11443a0f531e3229b3/jsonschema-4.17.3-py3-none-any.whl", hash = "sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6"},
 ]
 "lru-dict 1.1.8" = [
     {url = "https://files.pythonhosted.org/packages/04/9b/09fc782ab3392083f0167bb36de0fac88afe17ba8f9d7ed7f5eae30c843e/lru_dict-1.1.8-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:97c24ffc55de6013075979f440acd174e88819f30387074639fb7d7178ca253e"},

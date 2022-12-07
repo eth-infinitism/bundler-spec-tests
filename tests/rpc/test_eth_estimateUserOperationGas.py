@@ -5,15 +5,17 @@ See https://github.com/eth-infinitism/bundler
 
 from dataclasses import asdict
 import pytest
-
+from jsonschema import validate, Validator
 from tests.types import RPCRequest
-from tests.utils import assertRpcError, assertFieldsTypes
+from tests.utils import assertRpcError
 
 
-def test_eth_estimateUserOperationGas(cmd_args, badSigUserOp):
+@pytest.mark.parametrize('method', ['eth_estimateUserOperationGas'], ids=[''])
+def test_eth_estimateUserOperationGas(cmd_args, badSigUserOp, schema):
     response = RPCRequest(method="eth_estimateUserOperationGas",
                           params=[asdict(badSigUserOp), cmd_args.entry_point]).send(cmd_args.url)
-    assertFieldsTypes(response.result, ['callGasLimit', 'preVerificationGas', 'verificationGas'], [int, int, int])
+    Validator.check_schema(schema)
+    validate(instance=response.result, schema=schema)
 
 
 def test_eth_estimateUserOperationGas_revert(cmd_args, wallet_contract, badSigUserOp):

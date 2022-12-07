@@ -61,6 +61,7 @@ def test_account_banned_opcode(cmd_args, opban_contract, banned_op):
     assertRpcError(response, 'account uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize('banned_op', banned_opcodes)
 def test_paymaster_banned_opcode(cmd_args, opban_contract, banned_op):
     userOp = UserOperation(sender=opban_contract.address, paymasterAndData=opban_contract.address + stringToHex(banned_op))

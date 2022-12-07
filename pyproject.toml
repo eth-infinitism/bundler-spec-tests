@@ -38,6 +38,7 @@ dependencies = [
     "eth-tester>=0.6.0b6",
     "web3>=5.31.1",
     "jsonrpcclient>=4.0.2",
+    "jsonschema>=4.17.3",
 ]
 requires-python = ">=3.8,<4.0"
 license = {text = "MIT"}
