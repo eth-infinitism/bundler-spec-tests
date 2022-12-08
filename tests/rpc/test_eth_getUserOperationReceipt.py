@@ -1,13 +1,11 @@
 import pytest
-import json
 from jsonschema import validate, Validator
 
 from tests.types import RPCRequest
 from tests.utils import userOpHash, assertRpcError
-from .test_eth_sendUserOperation import sendUserOperation
 
 
-@pytest.mark.usefixtures('sendUserOperation')
+@pytest.mark.usefixtures('sendUserOperation', 'sendBundleNow')
 @pytest.mark.parametrize('method', ['eth_getUserOperationReceipt'], ids=[''])
 def test_eth_getUserOperationReceipt(cmd_args, wallet_contract, userOp, w3, schema):
     response = RPCRequest(method="eth_getUserOperationReceipt",

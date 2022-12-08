@@ -4,7 +4,8 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from solcx import install_solc
 
-from .utils import compile_contract
+from .utils import compile_contract, deploy_wallet_contract
+from .types import UserOperation, RPCRequest
 
 
 @dataclass()
@@ -13,6 +14,10 @@ class CommandLineArgs:
     entry_point: str
     ethereum_node: str
     startup_script: str
+
+
+def pytest_configure(config):
+    install_solc(version='0.8.15')
 
 
 def pytest_addoption(parser):
@@ -53,15 +58,46 @@ def w3(cmd_args):
 
 @pytest.fixture(autouse=True)
 def wallet_contract(cmd_args, w3):
-    wallet_interface = compile_contract('SimpleWallet')
-    wallet = w3.eth.contract(abi=wallet_interface['abi'], bytecode=wallet_interface['bin'])
-    account = w3.eth.accounts[0]
-    tx_hash = wallet.constructor(cmd_args.entry_point).transact({'gas': 10000000, 'from': account, 'value': hex(2*10**18)})
-    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
-    # print(tx_receipt.contractAddress)
-    return w3.eth.contract(abi=wallet_interface['abi'], address=tx_receipt.contractAddress)
+    return deploy_wallet_contract(cmd_args, w3)
 
 
-def pytest_configure(config):
-    install_solc(version='0.8.15')
+
+@pytest.fixture
+def userOp(wallet_contract):
+    return UserOperation(
+        wallet_contract.address,
+        hex(0),
+        '0x',
+        wallet_contract.encodeABI(fn_name='setState', args=[1111111]),
+        hex(30000),
+        hex(1213945),
+        hex(47124),
+        hex(2107373890),
+        hex(1500000000),
+        '0x',
+        '0xface'
+    )
+
+
+@pytest.fixture
+def sendUserOperation(cmd_args, userOp):
+    return userOp.send(cmd_args)
+
+
+# debug apis
+
+@pytest.fixture
+def sendBundleNow(cmd_args):
+    return RPCRequest(method="aa_sendBundleNow").send(cmd_args.url)
+
+
+@pytest.fixture
+def clearState(cmd_args):
+    print('clearing bundler state')
+    return RPCRequest(method="aa_clearState").send(cmd_args.url)
+
+
+@pytest.fixture
+def setBundleInterval(cmd_args):
+    return RPCRequest(method="aa_setBundleInterval", params=['manual']).send(cmd_args.url)
+

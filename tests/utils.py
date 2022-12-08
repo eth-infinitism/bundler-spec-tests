@@ -1,7 +1,7 @@
 import os
 
 from solcx import compile_source
-from .types import UserOperation
+from .types import RPCRequest, UserOperation
 
 
 def compile_contract(contract):
@@ -14,6 +14,17 @@ def compile_contract(contract):
     test_source = open(contracts_dirname + contract + '.sol', "r").read()
     compiled_sol = compile_source(test_source, base_path=contracts_dirname, allow_paths=aa_relpath, import_remappings=remap, output_values=['abi', 'bin'], solc_version='0.8.15')
     return compiled_sol['<stdin>:' + contract]
+
+
+def deploy_wallet_contract(cmd_args, w3):
+    wallet_interface = compile_contract('SimpleWallet')
+    wallet = w3.eth.contract(abi=wallet_interface['abi'], bytecode=wallet_interface['bin'])
+    account = w3.eth.accounts[0]
+    tx_hash = wallet.constructor(cmd_args.entry_point).transact({'gas': 10000000, 'from': account, 'value': hex(2*10**18)})
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
+    # print(tx_receipt.contractAddress)
+    return w3.eth.contract(abi=wallet_interface['abi'], address=tx_receipt.contractAddress)
 
 
 def userOpHash(wallet_contract, userOp):
@@ -38,19 +49,9 @@ def assertRpcError(response, message, code):
     assert message in response.message
 
 
-# def getUserOp(contract, overrides):
-#     fn_name = overrides['callData'] and overrides['callData'][0]
-#     args = []
-#     if fn_name is None:
-#         fn_name = 'setState'
-#         args = [0]
-#     elif len(overrides['callData']) > 1:
-#         args = overrides['callData'][1]
-#     op = UserOperation(
-#     sender=contract.address,
-#     signature='0xface',
-#     callData=contract.encodeABI(fn_name=fn_name, args=args)
-#     )
-#     for k, v in overrides.items():
-#         k != 'callData' and setattr(op, k, v)
-#     return op
+def dumpMempool(cmd_args):
+    mempool = RPCRequest(method="aa_dumpMempool").send(cmd_args.url).result['mempool']
+    # print('what is mempool', mempool)
+    for i ,entry in enumerate(mempool):
+        mempool[i] = UserOperation(**entry['userOp'])
+    return mempool

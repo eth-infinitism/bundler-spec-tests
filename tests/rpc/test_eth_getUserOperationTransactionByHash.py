@@ -2,7 +2,6 @@ import pytest
 from jsonschema import validate, Validator
 from tests.types import RPCRequest
 from tests.utils import userOpHash, assertRpcError
-from .test_eth_sendUserOperation import sendUserOperation
 
 
 @pytest.mark.skip

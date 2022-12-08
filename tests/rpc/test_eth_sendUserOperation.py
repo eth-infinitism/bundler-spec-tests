@@ -8,10 +8,6 @@ from tests.utils import userOpHash, assertRpcError
 from jsonschema import validate, Validator
 
 
-@pytest.fixture
-def sendUserOperation(cmd_args, userOp):
-    userOp.send(cmd_args)
-
 
 @pytest.mark.parametrize('method', ['eth_sendUserOperation'], ids=[''])
 def test_eth_sendUserOperation(cmd_args, wallet_contract, userOp, schema):
