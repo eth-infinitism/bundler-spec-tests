@@ -45,28 +45,21 @@ allowed_opcodes = [
 ]
 
 @pytest.mark.parametrize('allowed_op', allowed_opcodes)
-def test_allowed_opcode(cmd_args, opban_contract, allowed_op):
-    userOp = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(allowed_op))
-    response = RPCRequest(method="eth_sendUserOperation",
-                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
-    # assert response["result"] == userOpHash(wallet_contract, userOp)
+def test_allowed_opcode(opban_contract, allowed_op):
+    response = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(allowed_op)).send()
+    # assert response.result == userOpHash(opban_contract, userOp)
     assert int(response.result, 16)
 
 
 @pytest.mark.parametrize('banned_op', banned_opcodes)
-def test_account_banned_opcode(cmd_args, opban_contract, banned_op):
-    userOp = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(banned_op))
-    response = RPCRequest(method="eth_sendUserOperation",
-                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
+def test_account_banned_opcode(opban_contract, banned_op):
+    response = UserOperation(sender=opban_contract.address, signature=stringToPrefixedHex(banned_op)).send()
     assertRpcError(response, 'account uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
 
 
 @pytest.mark.skip
 @pytest.mark.parametrize('banned_op', banned_opcodes)
-def test_paymaster_banned_opcode(cmd_args, opban_contract, banned_op):
-    userOp = UserOperation(sender=opban_contract.address, paymasterAndData=opban_contract.address + stringToHex(banned_op))
-    print('what is paymasterAndData', userOp.paymasterAndData)
-    response = RPCRequest(method="eth_sendUserOperation",
-                          params=[asdict(userOp), cmd_args.entry_point]).send(cmd_args.url)
+def test_paymaster_banned_opcode(opban_contract, banned_op):
+    response = UserOperation(sender=opban_contract.address, paymasterAndData=opban_contract.address + stringToHex(banned_op)).send()
     assertRpcError(response, 'paymaster uses banned opcode: '+ banned_op, RPCErrorCode.BANNED_OPCODE)
 

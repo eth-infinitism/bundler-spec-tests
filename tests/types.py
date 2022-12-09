@@ -6,10 +6,12 @@ from eth_typing import (
 from dataclasses import dataclass, field, asdict
 from enum import IntEnum
 import jsonrpcclient
-from typing import Dict, Union, Tuple, Any
+from typing import ClassVar
+
 
 @dataclass
 class UserOperation:
+    entryPoint: ClassVar
     sender: HexStr
     nonce: HexStr = hex(0)
     initCode: HexStr = '0x'
@@ -22,23 +24,35 @@ class UserOperation:
     paymasterAndData: HexStr = '0x'
     signature: HexStr = '0x'
 
-    def send(self, cmd_args):
+    def send(self, entryPoint=None, url=None):
+        if entryPoint is None:
+            entryPoint = UserOperation.entryPoint
         return RPCRequest(method="eth_sendUserOperation",
-                              params=[asdict(self), cmd_args.entry_point]).send(cmd_args.url)
+                              params=[asdict(self), entryPoint]).send(url)
 
 
+    @classmethod
+    def configure(cls, entryPoint):
+        cls.entryPoint = entryPoint
 
 
 @dataclass
 class RPCRequest:
+    url: ClassVar
     method: str
     id: int = 1234
     params: list = field(default_factory=list, compare=False)
     jsonrpc: str = "2.0"
 
-    def send(self, url) -> jsonrpcclient.responses.Response:
+    def send(self, url=None) -> jsonrpcclient.responses.Response:
+        if url is None:
+            url = RPCRequest.url
         # return requests.post(url, json=asdict(self)).json()
         return jsonrpcclient.responses.to_result(requests.post(url, json=asdict(self)).json())
+
+    @classmethod
+    def configure(cls, url):
+        cls.url = url
 
 
 class RPCErrorCode(IntEnum):

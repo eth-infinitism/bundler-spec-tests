@@ -12,12 +12,12 @@ def test_bundle_replace_by_fee(cmd_args, w3):
     higherFeeOp = UserOperation(sender=wallet.address, nonce='0x1', callData=callData, maxPriorityFeePerGas=hex(10**10))
     midFeeOp = UserOperation(sender=wallet.address, nonce='0x1', callData=callData, maxPriorityFeePerGas=hex(5*10**9))
 
-    assert lowerFeeOp.send(cmd_args).result
-    assert dumpMempool(cmd_args) == [lowerFeeOp]
-    assert higherFeeOp.send(cmd_args).result
-    assert dumpMempool(cmd_args) == [higherFeeOp]
-    assertRpcError(midFeeOp.send(cmd_args), '', RPCErrorCode.INVALID_FIELDS)
-    assert dumpMempool(cmd_args) == [higherFeeOp]
+    assert lowerFeeOp.send().result
+    assert dumpMempool() == [lowerFeeOp]
+    assert higherFeeOp.send().result
+    assert dumpMempool() == [higherFeeOp]
+    assertRpcError(midFeeOp.send(), '', RPCErrorCode.INVALID_FIELDS)
+    assert dumpMempool() == [higherFeeOp]
 
 
 @pytest.mark.skip
@@ -30,11 +30,11 @@ def test_bundle(cmd_args, w3):
     wallet1op2 = UserOperation(sender=wallet1.address, nonce='0x2', callData=callData)
     wallet2op1 = UserOperation(sender=wallet2.address, nonce='0x1', callData=callData)
 
-    wallet1op1.send(cmd_args)
+    wallet1op1.send()
     print('what is wallet1op1', wallet1op1)
-    assert dumpMempool(cmd_args) == [wallet1op1]
-    wallet1op2.send(cmd_args)
-    assert dumpMempool(cmd_args) == [wallet1op1]
-    wallet2op1.send(cmd_args)
-    assert dumpMempool(cmd_args) == [wallet1op2, wallet2op1]
+    assert dumpMempool() == [wallet1op1]
+    wallet1op2.send()
+    assert dumpMempool() == [wallet1op1]
+    wallet2op1.send()
+    assert dumpMempool() == [wallet1op2, wallet2op1]
 

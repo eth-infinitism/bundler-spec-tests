@@ -17,6 +17,10 @@ class CommandLineArgs:
 
 
 def pytest_configure(config):
+    url = config.getoption('--url')
+    entryPoint = config.getoption('--entry-point')
+    UserOperation.configure(entryPoint)
+    RPCRequest.configure(url)
     install_solc(version='0.8.15')
 
 
@@ -39,7 +43,7 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def cmd_args(request):
     return CommandLineArgs(
         url=request.config.getoption("--url"),
@@ -64,6 +68,7 @@ def wallet_contract(cmd_args, w3):
 
 @pytest.fixture
 def userOp(wallet_contract):
+    print('what is url, ep', RPCRequest.url, UserOperation.entryPoint)
     return UserOperation(
         wallet_contract.address,
         hex(0),
@@ -80,24 +85,23 @@ def userOp(wallet_contract):
 
 
 @pytest.fixture
-def sendUserOperation(cmd_args, userOp):
-    return userOp.send(cmd_args)
+def sendUserOperation(userOp):
+    return userOp.send()
 
 
 # debug apis
 
 @pytest.fixture
-def sendBundleNow(cmd_args):
-    return RPCRequest(method="aa_sendBundleNow").send(cmd_args.url)
+def sendBundleNow():
+    return RPCRequest(method="aa_sendBundleNow").send()
 
 
 @pytest.fixture
-def clearState(cmd_args):
-    print('clearing bundler state')
-    return RPCRequest(method="aa_clearState").send(cmd_args.url)
+def clearState():
+    return RPCRequest(method="aa_clearState").send()
 
 
 @pytest.fixture
-def setBundleInterval(cmd_args):
-    return RPCRequest(method="aa_setBundleInterval", params=['manual']).send(cmd_args.url)
+def setBundleInterval():
+    return RPCRequest(method="aa_setBundleInterval", params=['manual']).send()
 
