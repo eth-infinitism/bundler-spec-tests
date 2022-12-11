@@ -31,7 +31,6 @@ def test_bundle(cmd_args, w3):
     wallet2op1 = UserOperation(sender=wallet2.address, nonce='0x1', callData=callData)
 
     wallet1op1.send()
-    print('what is wallet1op1', wallet1op1)
     assert dumpMempool() == [wallet1op1]
     wallet1op2.send()
     assert dumpMempool() == [wallet1op1]

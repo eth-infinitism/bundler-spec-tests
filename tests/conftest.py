@@ -26,30 +26,30 @@ def pytest_configure(config):
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--url",
-        action="store"
+        '--url',
+        action='store'
     )
     parser.addoption(
-        "--entry-point",
-        action="store"
+        '--entry-point',
+        action='store'
     )
     parser.addoption(
-        "--ethereum-node",
-        action="store"
+        '--ethereum-node',
+        action='store'
     )
     parser.addoption(
-        "--startup-script",
-        action="store"
+        '--startup-script',
+        action='store'
     )
 
 
 @pytest.fixture(scope='session')
 def cmd_args(request):
     return CommandLineArgs(
-        url=request.config.getoption("--url"),
-        entry_point=request.config.getoption("--entry-point"),
-        ethereum_node=request.config.getoption("--ethereum-node"),
-        startup_script=request.config.getoption("--startup-script")
+        url=request.config.getoption('--url'),
+        entry_point=request.config.getoption('--entry-point'),
+        ethereum_node=request.config.getoption('--ethereum-node'),
+        startup_script=request.config.getoption('--startup-script')
     )
 
 
@@ -93,15 +93,24 @@ def sendUserOperation(userOp):
 
 @pytest.fixture
 def sendBundleNow():
-    return RPCRequest(method="aa_sendBundleNow").send()
+    return RPCRequest(method='aa_sendBundleNow').send()
 
 
 @pytest.fixture
 def clearState():
-    return RPCRequest(method="aa_clearState").send()
+    return RPCRequest(method='aa_clearState').send()
 
 
 @pytest.fixture
 def setBundleInterval():
-    return RPCRequest(method="aa_setBundleInterval", params=['manual']).send()
+    return RPCRequest(method='aa_setBundleInterval', params=['manual']).send()
 
+
+@pytest.fixture
+def setReputation():
+    return RPCRequest(method='aa_setReputation').send()
+
+
+@pytest.fixture
+def dumpReputation():
+    return RPCRequest(method='aa_dumpReputation').send()

@@ -27,7 +27,7 @@ class UserOperation:
     def send(self, entryPoint=None, url=None):
         if entryPoint is None:
             entryPoint = UserOperation.entryPoint
-        return RPCRequest(method="eth_sendUserOperation",
+        return RPCRequest(method='eth_sendUserOperation',
                               params=[asdict(self), entryPoint]).send(url)
 
 
@@ -42,7 +42,7 @@ class RPCRequest:
     method: str
     id: int = 1234
     params: list = field(default_factory=list, compare=False)
-    jsonrpc: str = "2.0"
+    jsonrpc: str = '2.0'
 
     def send(self, url=None) -> jsonrpcclient.responses.Response:
         if url is None:

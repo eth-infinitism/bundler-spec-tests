@@ -8,7 +8,7 @@ from tests.utils import userOpHash, assertRpcError
 @pytest.mark.usefixtures('sendUserOperation', 'sendBundleNow')
 @pytest.mark.parametrize('method', ['eth_getUserOperationReceipt'], ids=[''])
 def test_eth_getUserOperationReceipt(wallet_contract, userOp, w3, schema):
-    response = RPCRequest(method="eth_getUserOperationReceipt",
+    response = RPCRequest(method='eth_getUserOperationReceipt',
                           params=[userOpHash(wallet_contract, userOp)]).send()
     assert response.result['userOpHash'] == userOpHash(wallet_contract, userOp)
     receipt = w3.eth.getTransactionReceipt(response.result['receipt']['transactionHash'])
@@ -18,5 +18,5 @@ def test_eth_getUserOperationReceipt(wallet_contract, userOp, w3, schema):
 
 
 def test_eth_getUserOperationReceipt_error():
-    response = RPCRequest(method="eth_getUserOperationReceipt", params=['']).send()
+    response = RPCRequest(method='eth_getUserOperationReceipt', params=['']).send()
     assertRpcError(response, 'Missing/invalid userOpHash', -32601)

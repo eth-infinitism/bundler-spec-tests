@@ -6,12 +6,12 @@ from .types import RPCRequest, UserOperation
 
 def compile_contract(contract):
     current_dirname = os.path.dirname(__file__)
-    contracts_dirname = current_dirname + "/contracts/"
+    contracts_dirname = current_dirname + '/contracts/'
     aa_path = os.path.realpath(current_dirname + '/../@account-abstraction')
     aa_relpath = os.path.relpath(aa_path, contracts_dirname)
     remap = '@account-abstraction=' + aa_relpath
     # print('what is dirname', contracts_dirname, aa_path, remap, aa_relpath)
-    test_source = open(contracts_dirname + contract + '.sol', "r").read()
+    test_source = open(contracts_dirname + contract + '.sol', 'r').read()
     compiled_sol = compile_source(test_source, base_path=contracts_dirname, allow_paths=aa_relpath, import_remappings=remap, output_values=['abi', 'bin'], solc_version='0.8.15')
     return compiled_sol['<stdin>:' + contract]
 
@@ -50,7 +50,7 @@ def assertRpcError(response, message, code):
 
 
 def dumpMempool():
-    mempool = RPCRequest(method="aa_dumpMempool").send().result['mempool']
+    mempool = RPCRequest(method='aa_dumpMempool').send().result['mempool']
     # print('what is mempool', mempool)
     for i ,entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry['userOp'])
