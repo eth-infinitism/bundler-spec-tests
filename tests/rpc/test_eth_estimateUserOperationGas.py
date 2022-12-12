@@ -10,16 +10,20 @@ from tests.types import RPCRequest, CommandLineArgs
 from tests.utils import assertRpcError
 
 
-@pytest.mark.parametrize('method', ['eth_estimateUserOperationGas'], ids=[''])
+@pytest.mark.parametrize("method", ["eth_estimateUserOperationGas"], ids=[""])
 def test_eth_estimateUserOperationGas(badSigUserOp, schema):
-    response = RPCRequest(method='eth_estimateUserOperationGas',
-                          params=[asdict(badSigUserOp), CommandLineArgs.entryPoint]).send()
+    response = RPCRequest(
+        method="eth_estimateUserOperationGas",
+        params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
+    ).send()
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
 
 
 def test_eth_estimateUserOperationGas_revert(wallet_contract, badSigUserOp):
-    badSigUserOp.callData = wallet_contract.encodeABI(fn_name='fail')
-    response = RPCRequest(method='eth_estimateUserOperationGas',
-                          params=[asdict(badSigUserOp), CommandLineArgs.entryPoint]).send()
-    assertRpcError(response, 'test fail', -32500)
+    badSigUserOp.callData = wallet_contract.encodeABI(fn_name="fail")
+    response = RPCRequest(
+        method="eth_estimateUserOperationGas",
+        params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
+    ).send()
+    assertRpcError(response, "test fail", -32500)

@@ -8,41 +8,32 @@ import subprocess
 from .utils import deploy_wallet_contract
 from .types import UserOperation, RPCRequest, CommandLineArgs
 
+
 def pytest_configure(config):
-    CommandLineArgs.configure(url=config.getoption('--url'),
-                              entryPoint=config.getoption('--entry-point'),
-                              ethereumNode=config.getoption('--ethereum-node'),
-                              launcherScript=config.getoption('--launcher-script'))
-    install_solc(version='0.8.15')
+    CommandLineArgs.configure(
+        url=config.getoption("--url"),
+        entryPoint=config.getoption("--entry-point"),
+        ethereumNode=config.getoption("--ethereum-node"),
+        launcherScript=config.getoption("--launcher-script"),
+    )
+    install_solc(version="0.8.15")
 
 
 def pytest_sessionstart(session):
     if CommandLineArgs.launcherScript is not None:
-        subprocess.run([CommandLineArgs.launcherScript, 'start'], check=True, text=True)
+        subprocess.run([CommandLineArgs.launcherScript, "start"], check=True, text=True)
 
 
 def pytest_sessionfinish(session):
     if CommandLineArgs.launcherScript is not None:
-        subprocess.run([CommandLineArgs.launcherScript, 'stop'], check=True, text=True)
+        subprocess.run([CommandLineArgs.launcherScript, "stop"], check=True, text=True)
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        '--url',
-        action='store'
-    )
-    parser.addoption(
-        '--entry-point',
-        action='store'
-    )
-    parser.addoption(
-        '--ethereum-node',
-        action='store'
-    )
-    parser.addoption(
-        '--launcher-script',
-        action='store'
-    )
+    parser.addoption("--url", action="store")
+    parser.addoption("--entry-point", action="store")
+    parser.addoption("--ethereum-node", action="store")
+    parser.addoption("--launcher-script", action="store")
 
 
 @pytest.fixture
@@ -57,21 +48,20 @@ def wallet_contract(w3):
     return deploy_wallet_contract(w3)
 
 
-
 @pytest.fixture
 def userOp(wallet_contract):
     return UserOperation(
         wallet_contract.address,
         hex(0),
-        '0x',
-        wallet_contract.encodeABI(fn_name='setState', args=[1111111]),
+        "0x",
+        wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
         hex(30000),
         hex(1213945),
         hex(47124),
         hex(2107373890),
         hex(1500000000),
-        '0x',
-        '0xface'
+        "0x",
+        "0xface",
     )
 
 
@@ -82,26 +72,27 @@ def sendUserOperation(userOp):
 
 # debug apis
 
+
 @pytest.fixture
 def sendBundleNow():
-    return RPCRequest(method='aa_sendBundleNow').send()
+    return RPCRequest(method="aa_sendBundleNow").send()
 
 
 @pytest.fixture
 def clearState():
-    return RPCRequest(method='aa_clearState').send()
+    return RPCRequest(method="aa_clearState").send()
 
 
 @pytest.fixture
 def setBundleInterval():
-    return RPCRequest(method='aa_setBundleInterval', params=['manual']).send()
+    return RPCRequest(method="aa_setBundleInterval", params=["manual"]).send()
 
 
 @pytest.fixture
 def setReputation():
-    return RPCRequest(method='aa_setReputation').send()
+    return RPCRequest(method="aa_setReputation").send()
 
 
 @pytest.fixture
 def dumpReputation():
-    return RPCRequest(method='aa_dumpReputation').send()
+    return RPCRequest(method="aa_dumpReputation").send()
