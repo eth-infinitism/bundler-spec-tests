@@ -12,20 +12,18 @@ def pytest_configure(config):
     CommandLineArgs.configure(url=config.getoption('--url'),
                               entryPoint=config.getoption('--entry-point'),
                               ethereumNode=config.getoption('--ethereum-node'),
-                              startupScript=config.getoption('--startup-script'))
+                              launcherScript=config.getoption('--launcher-script'))
     install_solc(version='0.8.15')
 
 
 def pytest_sessionstart(session):
-    startupscript = session.config.getoption('--startup-script')
-    if startupscript is not None:
-        subprocess.run([startupscript, 'start'], check=True, text=True)
+    if CommandLineArgs.launcherScript is not None:
+        subprocess.run([CommandLineArgs.launcherScript, 'start'], check=True, text=True)
 
 
 def pytest_sessionfinish(session):
-    startupscript = session.config.getoption('--startup-script')
-    if startupscript is not None:
-        subprocess.run([startupscript, 'stop'], check=True, text=True)
+    if CommandLineArgs.launcherScript is not None:
+        subprocess.run([CommandLineArgs.launcherScript, 'stop'], check=True, text=True)
 
 
 def pytest_addoption(parser):
@@ -42,7 +40,7 @@ def pytest_addoption(parser):
         action='store'
     )
     parser.addoption(
-        '--startup-script',
+        '--launcher-script',
         action='store'
     )
 

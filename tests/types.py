@@ -14,14 +14,14 @@ class CommandLineArgs:
     url: ClassVar[str]
     entryPoint: ClassVar[str]
     ethereumNode: ClassVar[str]
-    startupScript: ClassVar[str]
+    launcherScript: ClassVar[str]
 
     @classmethod
-    def configure(cls, url, entryPoint, ethereumNode, startupScript):
+    def configure(cls, url, entryPoint, ethereumNode, launcherScript):
         cls.url = url
         cls.entryPoint = entryPoint
         cls.ethereumNode = ethereumNode
-        cls.startupScript = startupScript
+        cls.launcherScript = launcherScript
 
 
 @dataclass
