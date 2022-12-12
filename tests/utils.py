@@ -15,17 +15,18 @@ def compile_contract(contract):
     compiled_sol = compile_source(test_source, base_path=contracts_dirname, allow_paths=aa_relpath, import_remappings=remap, output_values=['abi', 'bin'], solc_version='0.8.15')
     return compiled_sol['<stdin>:' + contract]
 
-
-def deploy_wallet_contract(w3):
-    wallet_interface = compile_contract('SimpleWallet')
-    wallet = w3.eth.contract(abi=wallet_interface['abi'], bytecode=wallet_interface['bin'])
+def deploy_contract(w3, contract, params=[], valueEth=0, gas=10000000):
+    compiled = compile_contract(contract)
+    wallet = w3.eth.contract(abi=compiled['abi'], bytecode=compiled['bin'])
     account = w3.eth.accounts[0]
-    tx_hash = wallet.constructor(CommandLineArgs.entryPoint).transact({'gas': 10000000, 'from': account, 'value': hex(2*10**18)})
+    tx_hash = wallet.constructor(*params).transact({'gas': gas, 'from': account, 'value': int(2*10**18)})
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
-    return w3.eth.contract(abi=wallet_interface['abi'], address=tx_receipt.contractAddress)
+    return w3.eth.contract(abi=compiled['abi'], address=tx_receipt.contractAddress)
 
+def deploy_wallet_contract(w3):
+    return deploy_contract(w3, 'SimpleWallet', [CommandLineArgs.entryPoint], valueEth=0.1)
 
 def userOpHash(wallet_contract, userOp):
     payload = (
@@ -51,6 +52,13 @@ def assertRpcError(response, message, code):
 
 def dumpMempool():
     mempool = RPCRequest(method='aa_dumpMempool').send().result['mempool']
+    # print('what is mempool', mempool)
+    for i ,entry in enumerate(mempool):
+        mempool[i] = UserOperation(**entry['userOp'])
+    return mempool
+
+def clearMempool():
+    mempool = RPCRequest(method='aa_clearMempool').send().result['mempool']
     # print('what is mempool', mempool)
     for i ,entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry['userOp'])

@@ -112,13 +112,3 @@ contract TestRulesAccount is IAccount, IPaymaster {
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
 }
-
-contract TestRulesAccountDeployer {
-    function create(string memory rule, TestCoin coin) public returns (TestRulesAccount) {
-        TestRulesAccount a = new TestRulesAccount{salt : bytes32(uint(0))}(address(0));
-        a.setCoin(coin);
-        a.runRule(rule);
-        return a;
-    }
-
-}
