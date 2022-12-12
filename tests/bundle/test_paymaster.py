@@ -53,17 +53,17 @@ def depositTo(addr, value):
 class BaseTestPaymaster:
     @classmethod
     def setup_class(self):
+
         assert w3 is not None
-        paymaster = deploy_contract(w3, 'TestRulePaymaster', [entryPoint.address, 0, 0], valueEth=1)
-        print('pm call=', paymaster.functions.asdasd().call())
+        paymaster = deploy_contract(w3, 'TestRulePaymaster') #, [entryPoint.address, 0, 0])
+
         self.paymasterAddr = paymaster.address
         account = w3.eth.accounts[0]
-        entryPoint.functions.depositTo(self.paymasterAddr).transact({'from':account, 'value': Web3.toWei(1, 'ether')})
+        entryPoint.functions.depositTo(self.paymasterAddr).transact({'from': account, 'value': Web3.toWei(1, 'ether')})
         # no need for deposit... paymaster pays for them.
         a = deploy_contract(w3, 'TestRulesAccount', [entryPoint.address])
         self.a = a.address
         self.b = deploy_contract(w3, 'TestRulesAccount', [entryPoint.address]).address
-
 
     # helper: send userOp with given rule for paymaster
     # sender is filled from
@@ -75,7 +75,8 @@ class BaseTestPaymaster:
             sender = entryPoint.functions.getSenderAddress(kw['initCode']).call()
         else:
             sender = kw.get('sender') or self.a
-        op = UserOperation(sender=sender, paymasterAndData=self.paymaster(paymasterRule), **kw)
+        kw['sender'] = sender
+        op = UserOperation(paymasterAndData=self.paymaster(paymasterRule), **kw)
         ret = op.send()
         if isinstance(ret, jsonrpcclient.Ok):
             return ret.result
@@ -92,7 +93,7 @@ class BaseTestPaymaster:
 class TestUnstakedPaymaster(BaseTestPaymaster):
 
     def test_nostorage(self, addToPool):
-        self.send('', signature=tohex('GAS'))
+        self.send('')
 
     def test_acct_ref_storage_no_initCode(self, addToPool):
         self.send('acct-ref')
@@ -119,15 +120,15 @@ class TestUnstakedPaymaster(BaseTestPaymaster):
     def test_many_throttle_to_1(self, addToPool):
         op = self.send('')
         with pytest.raises(Exception, match='unstaked paymaster.*too many'):
-            send('', sender=self.b)
+            self.send('', sender=self.b)
         assert dumpMempool() == [op]
 
 
-class noTestStakedPaymaster(BaseTestPaymaster):
+class TestStakedPaymaster(BaseTestPaymaster):
 
     @classmethod
     def setup_class(self):
-        self.paymasterAddr = deploy_contract(w3, 'TestRulePaymaster', [entryPoint.address, Web3.toWei(0.5, 'ether'), 1],
+        self.paymasterAddr = deploy_contract(w3, 'TestRulePaymaster', #[entryPoint.address, Web3.toWei(0.5, 'ether'), 1],
                                              valueEth=1).address
 
     def test_selfstorage(self, addToPool):

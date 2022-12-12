@@ -19,9 +19,9 @@ def deploy_contract(w3, contract, params=[], valueEth=0, gas=10000000):
     compiled = compile_contract(contract)
     wallet = w3.eth.contract(abi=compiled['abi'], bytecode=compiled['bin'])
     account = w3.eth.accounts[0]
-    tx_hash = wallet.constructor(*params).transact({'gas': gas, 'from': account, 'value': int(2*10**18)})
+    tx_hash = wallet.constructor(*params).transact({'gas': gas, 'from': account, 'value': int(valueEth*10**18)})
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
+    # print('Deployed', contract, 'contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
     return w3.eth.contract(abi=compiled['abi'], address=tx_receipt.contractAddress)
 

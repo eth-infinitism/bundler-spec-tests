@@ -6,29 +6,30 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract TestRulePaymaster is IPaymaster {
 
+    event Deployed();
     //TODO: better do it externally, but need to pass value to methods in pythonn..
-    constructor(IEntryPoint ep, uint stake, uint32 stakeTime) payable {
-        if (address(ep) != address(0)) {
-            require(stake==0, "expected no stake");
-            uint deposit = msg.value - stake;
-            ep.depositTo{value : deposit}(address(this));
-            ep.addStake{value : stake}(stakeTime);
-        }
+    constructor() {// }IEntryPoint ep, uint stake, uint32 stakeTime) payable {
+        emit Deployed();
+        //        if (address(ep) != address(0)) {
+        //            require(stake==0, "expected no stake");
+        //            uint deposit = msg.value - stake;
+        //            ep.depositTo{value : deposit}(address(this));
+        //            ep.addStake{value : stake}(stakeTime);
+        //        }
     }
 
     function eq(string memory a, string memory b) internal returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
-    function asdasd() public {
-        revert("asdasd");
+    function asdasd() public view returns (address) {
+        return address(this);
     }
 
     function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
-        revert("always");
         //first byte after paymaster address.
-        //        runRule(string(userOp.paymasterAndData[20:]));
+//        runRule(string(userOp.paymasterAndData[20 :]));
         return ("", 0);
     }
 
