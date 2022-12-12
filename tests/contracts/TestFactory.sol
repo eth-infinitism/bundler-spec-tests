@@ -13,12 +13,12 @@ contract TestFactory {
         entryPoint = _entryPoint;
     }
 
-    function eq(string memory a, string memory b) internal returns (bool) {
+    function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     function create(string memory rule) public returns (IAccount) {
-        if (eq(rule, 'TestOpcodeAccount')) return new TestRulesAccount{salt : bytes(0)}(entryPoint);
+        if (eq(rule, 'TestOpcodeAccount')) return new TestRulesAccount{salt : bytes32(0)}(entryPoint);
         revert(string.concat("unknown rule: ", rule));
     }
 }

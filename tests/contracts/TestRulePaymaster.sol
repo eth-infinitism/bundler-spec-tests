@@ -3,13 +3,14 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "./OpcodeRules.sol";
 
 contract TestRulePaymaster is IPaymaster {
 
-    event Deployed();
+    TestCoin immutable coin = new TestCoin();
+
     //TODO: better do it externally, but need to pass value to methods in pythonn..
     constructor() {// }IEntryPoint ep, uint stake, uint32 stakeTime) payable {
-        emit Deployed();
         //        if (address(ep) != address(0)) {
         //            require(stake==0, "expected no stake");
         //            uint deposit = msg.value - stake;
@@ -18,7 +19,11 @@ contract TestRulePaymaster is IPaymaster {
         //        }
     }
 
-    function eq(string memory a, string memory b) internal returns (bool) {
+    function addStake(IEntryPoint ep, uint32 delay) public payable {
+        ep.addStake{value: msg.value}(delay);
+    }
+
+    function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
@@ -28,8 +33,13 @@ contract TestRulePaymaster is IPaymaster {
 
     function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
+
         //first byte after paymaster address.
-//        runRule(string(userOp.paymasterAndData[20 :]));
+        string memory rule = string(userOp.paymasterAndData[20 :]);
+        if (OpcodeRules.eq(rule, "expiredd")) {
+            return ("", 1);
+        }
+        require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         return ("", 0);
     }
 

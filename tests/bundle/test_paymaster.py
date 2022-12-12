@@ -53,11 +53,13 @@ def depositTo(addr, value):
 class BaseTestPaymaster:
     @classmethod
     def setup_class(self):
+        self.init()
 
+    @classmethod
+    def init(self):
         assert w3 is not None
-        paymaster = deploy_contract(w3, 'TestRulePaymaster') #, [entryPoint.address, 0, 0])
-
-        self.paymasterAddr = paymaster.address
+        self.paymaster = deploy_contract(w3, 'TestRulePaymaster') #, [entryPoint.address, 0, 0])
+        self.paymasterAddr = self.paymaster.address
         account = w3.eth.accounts[0]
         entryPoint.functions.depositTo(self.paymasterAddr).transact({'from': account, 'value': Web3.toWei(1, 'ether')})
         # no need for deposit... paymaster pays for them.
@@ -76,17 +78,18 @@ class BaseTestPaymaster:
         else:
             sender = kw.get('sender') or self.a
         kw['sender'] = sender
-        op = UserOperation(paymasterAndData=self.paymaster(paymasterRule), **kw)
+        op = UserOperation(paymasterAndData=self.createPaymasterAndData(paymasterRule), **kw)
         ret = op.send()
         if isinstance(ret, jsonrpcclient.Ok):
             return ret.result
         else:
+            print("sender=", op.sender, "paymasdter=", op.paymasterAndData[:42])
             ex = Exception(ret.message)
             ex.data = ret.data
             ex.code = ret.code
             raise ex
 
-    def paymaster(self, rule):
+    def createPaymasterAndData(self, rule):
         return self.paymasterAddr + tohex(rule, prefix=False)
 
 
@@ -96,7 +99,7 @@ class TestUnstakedPaymaster(BaseTestPaymaster):
         self.send('')
 
     def test_acct_ref_storage_no_initCode(self, addToPool):
-        self.send('acct-ref')
+        self.send('acct-balance')
 
     # def createInitCode(self):
     #     factory = deploy_contract(w3, 'TestFactory')
@@ -128,8 +131,9 @@ class TestStakedPaymaster(BaseTestPaymaster):
 
     @classmethod
     def setup_class(self):
-        self.paymasterAddr = deploy_contract(w3, 'TestRulePaymaster', #[entryPoint.address, Web3.toWei(0.5, 'ether'), 1],
-                                             valueEth=1).address
+        self.init()
+        account = w3.eth.accounts[0]
+        self.paymaster.functions.addStake(entryPoint.address, 1).transact({'from': account, 'value': Web3.toWei(1, 'ether')})
 
     def test_selfstorage(self, addToPool):
         self.send('self-storage')

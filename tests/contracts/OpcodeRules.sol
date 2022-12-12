@@ -2,20 +2,31 @@
 pragma solidity ^0.8.15;
 
 contract Dummy {
-    uint public value = 1;
+}
 
+
+contract TestCoin {
+    mapping(address => uint) balances;
+
+    function balanceOf(address addr) public returns (uint) {
+        return balances[addr];
+    }
+
+    function mint(address addr) public returns (uint) {
+        return balances[addr] += 100;
+    }
 }
 
 library OpcodeRules {
 
-    function eq(string memory a, string memory b) internal returns (bool) {
+    function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     //return by runRule if string is unknown.
     uint constant public UNKNOWN = type(uint).max;
 
-    function runRule(string memory rule) public returns (uint) {
+    function runRule(string memory rule, TestCoin coin) internal returns (uint) {
         if (eq(rule, "")) return 0;
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;
@@ -29,17 +40,26 @@ library OpcodeRules {
         else if (eq(rule, "BALANCE")) return uint160(address(msg.sender).balance);
         else if (eq(rule, "ORIGIN")) return uint160(address(tx.origin));
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
-        else if (eq(rule, "CREATE")) return new Dummy().value();
-        else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
-//        else if (eq(rule, "OTHERSLOAD")) return coin.balanceOf(address(1));
-//        else if (eq(rule, "OTHERSSTORE")) return coin.mint(address(1));
-        else if (eq(rule, "SELFSSLOAD")) return uint160(address(coin));
-//        else if (eq(rule, "SELFSSTORE")) return setCoin(TestCoin(address(0xdead)));
-//        else if (eq(rule, "SELFREFSLOAD")) return coin.balanceOf(address(this));
-//        else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
-
+        else if (eq(rule, "CREATE")) return uint160(address(new Dummy()));
+        else if (eq(rule, "CREATE2")) return uint160(address(new Dummy{salt : bytes32(uint(0x1))}()));
+        else if (eq(rule, "OTHERSLOAD")) return coin.balanceOf(address(1));
+        else if (eq(rule, "OTHERSSTORE")) return coin.mint(address(1));
+        else if (eq(rule, "SELFSSLOAD")) {
+            assembly {
+                pop(sload(1000))
+            }
+            return 0;
+        }
+        else if (eq(rule, "SELFSSTORE")) {
+            assembly {
+                sstore(100000,1)
+            }
+            return 0;
+        }
+        else if (eq(rule, "acct-balance")) return coin.balanceOf(address(this));
+        else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
         else if (eq(rule, "inner-revert")) {
-            revert "inner revert";
+            revert("inner revert");
             return 0;
         }
         else if (eq(rule, "oog")) {

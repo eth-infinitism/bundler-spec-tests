@@ -59,7 +59,7 @@ contract TestRulesAccount is IAccount, IPaymaster {
         return 0;
     }
 
-    function eq(string memory a, string memory b) internal returns (bool) {
+    function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
