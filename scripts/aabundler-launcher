@@ -1,0 +1,103 @@
+#!/bin/bash  -e
+# launch bundler: also start geth, and deploy entrypoint.
+cd `dirname $0`/../../bundler
+
+GETH=geth
+GETHPORT=8545
+BUNDLERPORT=3000
+PIDLIST=/tmp/aabundler.pidlist
+VERSION="aabundler-js-0.1"
+
+BUNDLERLOG=/tmp/aabundler.log
+
+BUNDLERURL=http://localhost:$BUNDLERPORT/rpc
+NODEURL=http://localhost:$GETHPORT
+
+function fatal {
+  echo "$@" 1>&2
+  exit 1
+}
+
+function isPortFree {
+  port=$1
+  curl http://localhost:$port 2>&1 | grep -q Connection.refused
+}
+
+
+function waitForPort {
+  port=$1
+  while isPortFree $port; do true; done
+}
+
+function startGeth {
+  isPortFree $GETHPORT || fatal port $GETHPORT not free
+  echo == starting geth 1>&2
+  $GETH version | grep ^Version: 1>&2
+
+  $GETH --miner.gaslimit 12000000 \
+  --http \
+  --http.api personal,eth,net,web3,debug \
+  --allow-insecure-unlock \
+  --rpc.allow-unprotected-txs \
+  --http.vhosts '*,localhost,host.docker.internal' \
+  --http.corsdomain '*' \
+  --http.addr "0.0.0.0" \
+  --dev \
+  --nodiscover --maxpeers 0 --mine \
+  --miner.threads 1 \
+  --verbosity 1 \
+  --ignore-legacy-receipts &
+
+  waitForPort $GETHPORT
+}
+
+function deployEntryPoint {
+  cd packages/bundler
+  echo == Deploying entrypoint 1>&2
+  export TS_NODE_TRANSPILE_ONLY=1
+  npx hardhat deploy --network localhost
+}
+
+function startBundler {
+  isPortFree $BUNDLERPORT || fatal port $BUNDLERPORT not free
+  echo == Starting bundler 1>&2
+  yarn ts-node -T ./src/exec.ts --config ./localconfig/bundler.config.json --port $BUNDLERPORT --network http://localhost:$GETHPORT &
+  waitForPort $BUNDLERPORT
+  echo Listening on $BUNDLERURL
+}
+
+function start {
+  startGeth
+  deployEntryPoint
+  startBundler > $BUNDLERLOG
+  pstree -p $$ | grep -oE [0-9]* > $PIDLIST
+  echo == Bundler, Geth started. log to $BUNDLERLOG
+}
+
+function stop {
+  echo == stopping bundler
+  test -r $PIDLIST && kill -9 `cat $PIDLIST` 2>/dev/null
+  rm $PIDLIST
+  echo == bundler, geth stopped
+}
+
+case $1 in
+
+ start)
+	start
+	;;
+ stop)
+ 	stop
+	;;
+
+  restart)
+	echo == restarting bundler
+	stop
+	start
+	;;
+
+ *) echo "usage: $0 {start|stop|restart}"
+    exit 1 ;;
+
+
+esac

@@ -9,7 +9,6 @@ from tests.utils import userOpHash, assertRpcError
 @pytest.mark.parametrize('method', ['eth_getUserOperationTransactionByHash'], ids=[''])
 def test_eth_getUserOperationTransactionByHash(wallet_contract, userOp, schema):
     response = RPCRequest(method='eth_getUserOperationTransactionByHash', params=[userOpHash(wallet_contract, userOp)]).send()
-    # print('response is', response)
     # TODO test receipt better
     assert response.result['userOpHash'] == userOpHash(wallet_contract, userOp)
     Validator.check_schema(schema)

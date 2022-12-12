@@ -3,25 +3,29 @@ from dataclasses import dataclass
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from solcx import install_solc
+import subprocess
 
-from .utils import compile_contract, deploy_wallet_contract
-from .types import UserOperation, RPCRequest
-
-
-@dataclass()
-class CommandLineArgs:
-    url: str
-    entry_point: str
-    ethereum_node: str
-    startup_script: str
-
+from .utils import deploy_wallet_contract
+from .types import UserOperation, RPCRequest, CommandLineArgs
 
 def pytest_configure(config):
-    url = config.getoption('--url')
-    entryPoint = config.getoption('--entry-point')
-    UserOperation.configure(entryPoint)
-    RPCRequest.configure(url)
+    CommandLineArgs.configure(url=config.getoption('--url'),
+                              entryPoint=config.getoption('--entry-point'),
+                              ethereumNode=config.getoption('--ethereum-node'),
+                              startupScript=config.getoption('--startup-script'))
     install_solc(version='0.8.15')
+
+
+def pytest_sessionstart(session):
+    startupscript = session.config.getoption('--startup-script')
+    if startupscript is not None:
+        subprocess.run([startupscript, 'start'], check=True, text=True)
+
+
+def pytest_sessionfinish(session):
+    startupscript = session.config.getoption('--startup-script')
+    if startupscript is not None:
+        subprocess.run([startupscript, 'stop'], check=True, text=True)
 
 
 def pytest_addoption(parser):
@@ -43,32 +47,21 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture(scope='session')
-def cmd_args(request):
-    return CommandLineArgs(
-        url=request.config.getoption('--url'),
-        entry_point=request.config.getoption('--entry-point'),
-        ethereum_node=request.config.getoption('--ethereum-node'),
-        startup_script=request.config.getoption('--startup-script')
-    )
-
-
 @pytest.fixture
-def w3(cmd_args):
-    w3 = Web3(Web3.HTTPProvider(cmd_args.ethereum_node))
+def w3():
+    w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereumNode))
     w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     return w3
 
 
 @pytest.fixture(autouse=True)
-def wallet_contract(cmd_args, w3):
-    return deploy_wallet_contract(cmd_args, w3)
+def wallet_contract(w3):
+    return deploy_wallet_contract(w3)
 
 
 
 @pytest.fixture
 def userOp(wallet_contract):
-    print('what is url, ep', RPCRequest.url, UserOperation.entryPoint)
     return UserOperation(
         wallet_contract.address,
         hex(0),
