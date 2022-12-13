@@ -1,6 +1,6 @@
 import pytest
-from tests.types import RPCRequest, CommandLineArgs
 from jsonschema import validate, Validator
+from tests.types import RPCRequest, CommandLineArgs
 
 
 @pytest.mark.parametrize("method", ["eth_supportedEntryPoints"], ids=[""])

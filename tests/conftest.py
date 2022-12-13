@@ -1,12 +1,11 @@
-import pytest
-from dataclasses import dataclass
-from web3 import Web3
-from web3.middleware import geth_poa_middleware
-from solcx import install_solc
 import subprocess
 
-from .utils import deploy_wallet_contract
+import pytest
+from solcx import install_solc
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
+from .utils import deploy_wallet_contract
 
 
 def pytest_configure(config):
@@ -19,12 +18,12 @@ def pytest_configure(config):
     install_solc(version="0.8.15")
 
 
-def pytest_sessionstart(session):
+def pytest_sessionstart():
     if CommandLineArgs.launcherScript is not None:
         subprocess.run([CommandLineArgs.launcherScript, "start"], check=True, text=True)
 
 
-def pytest_sessionfinish(session):
+def pytest_sessionfinish():
     if CommandLineArgs.launcherScript is not None:
         subprocess.run([CommandLineArgs.launcherScript, "stop"], check=True, text=True)
 
@@ -51,17 +50,9 @@ def wallet_contract(w3):
 @pytest.fixture
 def userOp(wallet_contract):
     return UserOperation(
-        wallet_contract.address,
-        hex(0),
-        "0x",
-        wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
-        hex(30000),
-        hex(1213945),
-        hex(47124),
-        hex(2107373890),
-        hex(1500000000),
-        "0x",
-        "0xface",
+        sender=wallet_contract.address,
+        callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
+        signature="0xface"
     )
 
 

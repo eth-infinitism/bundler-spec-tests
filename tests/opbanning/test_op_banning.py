@@ -4,10 +4,9 @@ See https://github.com/eth-infinitism/bundler
 """
 
 import pytest
-from dataclasses import asdict
 
-from tests.types import UserOperation, RPCRequest, RPCErrorCode
-from tests.utils import userOpHash, assertRpcError
+from tests.types import UserOperation, RPCErrorCode
+from tests.utils import assertRpcError
 
 
 def stringToPrefixedHex(s):

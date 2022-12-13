@@ -10,17 +10,17 @@ def compile_contract(contract):
     aa_path = os.path.realpath(current_dirname + "/../@account-abstraction")
     aa_relpath = os.path.relpath(aa_path, contracts_dirname)
     remap = "@account-abstraction=" + aa_relpath
-    # print('what is dirname', contracts_dirname, aa_path, remap, aa_relpath)
-    test_source = open(contracts_dirname + contract + ".sol", "r").read()
-    compiled_sol = compile_source(
-        test_source,
-        base_path=contracts_dirname,
-        allow_paths=aa_relpath,
-        import_remappings=remap,
-        output_values=["abi", "bin"],
-        solc_version="0.8.15",
-    )
-    return compiled_sol["<stdin>:" + contract]
+    with open(contracts_dirname + contract + ".sol", "r", encoding="utf-8") as f:
+        test_source = f.read()
+        compiled_sol = compile_source(
+            test_source,
+            base_path=contracts_dirname,
+            allow_paths=aa_relpath,
+            import_remappings=remap,
+            output_values=["abi", "bin"],
+            solc_version="0.8.15",
+        )
+        return compiled_sol["<stdin>:" + contract]
 
 
 def deploy_wallet_contract(w3):

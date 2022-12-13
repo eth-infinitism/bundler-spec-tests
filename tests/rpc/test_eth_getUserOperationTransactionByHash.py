@@ -12,7 +12,6 @@ def test_eth_getUserOperationTransactionByHash(wallet_contract, userOp, schema):
         method="eth_getUserOperationTransactionByHash",
         params=[userOpHash(wallet_contract, userOp)],
     ).send()
-    # TODO test receipt better
     assert response.result["userOpHash"] == userOpHash(wallet_contract, userOp)
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)

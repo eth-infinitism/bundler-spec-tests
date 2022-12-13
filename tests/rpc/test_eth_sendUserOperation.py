@@ -4,9 +4,9 @@ See https://github.com/eth-infinitism/bundler
 """
 
 import pytest
-from tests.utils import userOpHash, assertRpcError
-from tests.types import RPCErrorCode
 from jsonschema import validate, Validator
+from tests.types import RPCErrorCode
+from tests.utils import userOpHash, assertRpcError
 
 
 @pytest.mark.parametrize("method", ["eth_sendUserOperation"], ids=[""])

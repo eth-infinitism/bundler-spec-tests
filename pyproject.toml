@@ -12,6 +12,14 @@ python = "^3.8"
 [tool.black]
 line-length = 88
 
+[tool.pylint]
+disable = ["C0114", "C0115", "C0116", "W0621"] # missing-module-docstring, redefined-outer-name as it conflicts with pytest fixtures
+argument-naming-style = "camelCase"
+attr-naming-style = "camelCase"
+function-naming-style = "camelCase"
+method-naming-style = "camelCase"
+variable-naming-style = "camelCase"
+ignored-classes = ["Error"]
 
 [tool.pdm]
 [tool.pdm.build]
@@ -41,6 +49,7 @@ dependencies = [
     "jsonrpcclient>=4.0.2",
     "jsonschema>=4.17.3",
     "black>=22.12.0",
+    "pylint>=2.15.8",
 ]
 requires-python = ">=3.8,<4.0"
 license = {text = "MIT"}

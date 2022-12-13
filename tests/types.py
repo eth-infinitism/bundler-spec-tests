@@ -1,12 +1,12 @@
+from dataclasses import dataclass, field, asdict
+from enum import IntEnum
+from typing import ClassVar
+
+import jsonrpcclient
 import requests
 from eth_typing import (
     HexStr,
 )
-
-from dataclasses import dataclass, field, asdict
-from enum import IntEnum
-import jsonrpcclient
-from typing import ClassVar
 
 
 @dataclass()
@@ -26,6 +26,7 @@ class CommandLineArgs:
 
 @dataclass
 class UserOperation:
+    # pylint: disable=too-many-instance-attributes
     sender: HexStr
     nonce: HexStr = hex(0)
     initCode: HexStr = "0x"
@@ -58,7 +59,7 @@ class RPCRequest:
             url = CommandLineArgs.url
         # return requests.post(url, json=asdict(self)).json()
         return jsonrpcclient.responses.to_result(
-            requests.post(url, json=asdict(self)).json()
+            requests.post(url, json=asdict(self), timeout=10).json()
         )
 
 
