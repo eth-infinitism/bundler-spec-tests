@@ -1,0 +1,98 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  say-hello:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: cimg/python:3.8.0-node
+      - image: ethereum/client-go:v1.10.26
+        command: "\
+          --miner.gaslimit 12000000 \
+          --http \
+          --http.api personal,eth,net,web3,debug \
+          --allow-insecure-unlock \
+          --rpc.allow-unprotected-txs \
+          --http.vhosts '*,localhost,host.docker.internal' \
+          --http.corsdomain '*' \
+          --http.addr '0.0.0.0' \
+          --dev \
+          --nodiscover --maxpeers 0 --mine \
+          --miner.threads 1 \
+          --verbosity 2 \
+          --ignore-legacy-receipts"
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      # https://support.circleci.com/hc/en-us/articles/360051656632-Swap-Node-Version-on-CircleCI-Convenience-Image
+      - run:
+          name: "Swap node versions"
+          command: |
+            set +e
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm install v16.17.0
+            nvm alias default 16.17.0
+
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run:
+          name: "curl pdm"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - run:
+          name: "pdm install"
+          command: "pdm install && git submodule update --init --recursive"
+      - run:
+          name: "clone bundler"
+          command: git clone https://github.com/eth-infinitism/bundler.git
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+      - run:
+          name: "yarn install for bundler"
+          working_directory: "./bundler"
+          command: yarn install --ignore-engines && yarn preprocess
+      - run:
+          name: "deploy entry point"
+          working_directory: "./bundler"
+          command: yarn hardhat-deploy --network localhost
+          background: true
+      - run:
+          name: "run bundler"
+          working_directory: "./bundler"
+          command: yarn bundler
+          background: true
+      - run:
+          name: "await bundler"
+          working_directory: "./bundler"
+          shell: /bin/sh
+          command: |
+            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 10 http://localhost:3000/rpc
+      - run:
+          name: "pytest"
+          command: "pdm run pytest --tb=no -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc  --ethereum-node http://127.0.0.1:8545/ --entry-point 0x2DF1592238420ecFe7f2431360e224707e77fA0E"
+      - save_cache:
+          key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
+          paths:
+            - .venv
+      - save_cache:
+          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+          paths:
+            - ./bundler/node_modules
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  say-hello-workflow:
+    jobs:
+      - say-hello
