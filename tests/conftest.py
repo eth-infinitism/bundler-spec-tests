@@ -1,6 +1,9 @@
+import json
+import os
 import subprocess
 
 import pytest
+import web3
 from solcx import install_solc
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
@@ -47,6 +50,20 @@ def wallet_contract(w3):
     return deploy_wallet_contract(w3)
 
 
+@pytest.fixture(scope="session")
+def entrypoint_contract(w3):
+    current_dirname = os.path.dirname(__file__)
+    entrypoint_path = os.path.realpath(
+        current_dirname
+        + "/../@account-abstraction/artifacts/contracts/core/EntryPoint.sol/EntryPoint.json"
+    )
+    with open(entrypoint_path, encoding="utf-8") as file:
+        entrypoint = json.load(file)
+        return w3.eth.contract(
+            abi=entrypoint["abi"], address=CommandLineArgs.entryPoint
+        )
+
+
 @pytest.fixture
 def userOp(wallet_contract):
     return UserOperation(
@@ -75,8 +92,8 @@ def clearState():
 
 
 @pytest.fixture
-def setBundleInterval():
-    return RPCRequest(method="aa_setBundleInterval", params=["manual"]).send()
+def setBundleInterval(interval):
+    return RPCRequest(method="aa_setBundleInterval", params=[interval]).send()
 
 
 @pytest.fixture
