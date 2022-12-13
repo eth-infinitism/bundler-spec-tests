@@ -7,24 +7,13 @@ import "./OpcodeRules.sol";
 
 contract TestRulePaymaster is IPaymaster {
 
-    TestCoin immutable coin = new TestCoin();
+    using OpcodeRules for string;
 
-    //TODO: better do it externally, but need to pass value to methods in pythonn..
-    constructor() {// }IEntryPoint ep, uint stake, uint32 stakeTime) payable {
-        //        if (address(ep) != address(0)) {
-        //            require(stake==0, "expected no stake");
-        //            uint deposit = msg.value - stake;
-        //            ep.depositTo{value : deposit}(address(this));
-        //            ep.addStake{value : stake}(stakeTime);
-        //        }
-    }
+    TestCoin immutable coin = new TestCoin();
+    uint something;
 
     function addStake(IEntryPoint ep, uint32 delay) public payable {
         ep.addStake{value: msg.value}(delay);
-    }
-
-    function eq(string memory a, string memory b) internal pure returns (bool) {
-        return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     function asdasd() public view returns (address) {
@@ -36,8 +25,14 @@ contract TestRulePaymaster is IPaymaster {
 
         //first byte after paymaster address.
         string memory rule = string(userOp.paymasterAndData[20 :]);
-        if (OpcodeRules.eq(rule, "expiredd")) {
+        if(rule.eq("self-storage")) {
+            return ("", something);
+        }
+        if (rule.eq("expired")) {
             return ("", 1);
+        }
+        if (rule.eq("context")) {
+            return ("this is a context", 0);
         }
         require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         return ("", 0);

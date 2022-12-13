@@ -18,7 +18,7 @@ def save_w3(saved_w3):
     entryPoint = w3.eth.contract(abi=compiled['abi'], address=CommandLineArgs.entryPoint)
 
 
-def test_save_w3(w3):
+def test_save_w3(w3,setBundleInterval):
     print('saving w3..')
     save_w3(w3)
 
@@ -58,7 +58,7 @@ class BaseTestPaymaster:
     @classmethod
     def init(self):
         assert w3 is not None
-        self.paymaster = deploy_contract(w3, 'TestRulePaymaster') #, [entryPoint.address, 0, 0])
+        self.paymaster = deploy_contract(w3, 'TestRulePaymaster')
         self.paymasterAddr = self.paymaster.address
         account = w3.eth.accounts[0]
         entryPoint.functions.depositTo(self.paymasterAddr).transact({'from': account, 'value': Web3.toWei(1, 'ether')})
@@ -113,7 +113,7 @@ class TestUnstakedPaymaster(BaseTestPaymaster):
         self.send('acct-self')
 
     def test_selfstorage_revert(self, noAdd):
-        with pytest.raises(Exception, match='unstaked paymaster accessed addr'):
+        with pytest.raises(Exception, match='unstaked paymaster accessed its own'):
             self.send('self-storage')
 
     def test_context_revert(self, noAdd):
@@ -144,4 +144,4 @@ class TestStakedPaymaster(BaseTestPaymaster):
     def test_many(self):
         op1 = self.send('')
         op2 = self.send('', sender=self.b)
-        assert dumpMempoool() == [op1, op2]
+        assert dumpMempool() == [op1, op2]
