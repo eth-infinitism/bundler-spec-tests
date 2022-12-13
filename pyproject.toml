@@ -20,6 +20,7 @@ function-naming-style = "camelCase"
 method-naming-style = "camelCase"
 variable-naming-style = "camelCase"
 ignored-classes = ["Error"]
+good-names = ["w3"]
 
 [tool.pdm]
 [tool.pdm.build]

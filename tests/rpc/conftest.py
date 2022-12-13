@@ -10,7 +10,7 @@ def badSigUserOp(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
-        signature="0xdead"
+        signature="0xdead",
     )
 
 
