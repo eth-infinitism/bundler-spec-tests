@@ -93,11 +93,7 @@ def test_stake_rule(entrypoint_contract, clearState, w3, entity, rule, isStake, 
     helper = deploy_contract(w3, 'Helper')
 
     def getSenderAddress(initCode):
-        return helper.functions.getSenderAddress(entryPoint.address, initCode).call()
-
-
-    #SANITY: why doesn't this run (yes, it should fail..
-    print("xxx=", getSenderAddress('0xdeadface'))
+        return helper.functions.getSenderAddress(entryPoint.address, initCode).call({'gas':10000000})
 
     # remove unsupported combinations
     if isThrottled and not isStake: return
@@ -149,7 +145,7 @@ def test_stake_rule(entrypoint_contract, clearState, w3, entity, rule, isStake, 
         if isThrottled:
             setThrottled(ent)
 
-    if initCodes != []:
+    if initCodes != ['0x', '0x']:
         # we have initcode: replace senders with initCode's sender address
         senders = [
             getSenderAddress(initCodes[0]),
@@ -158,6 +154,7 @@ def test_stake_rule(entrypoint_contract, clearState, w3, entity, rule, isStake, 
 
     action = get_action(rule, isStake, isThrottled)
 
+    print('action=', action)
     # action[0] is the action for 1st simuulation (rpc/p2p)
     # action[1] is the action for 2nd simulation (build bundle)
     if action[0] == 'ok':
