@@ -7,7 +7,6 @@ from tests.types import RPCErrorCode
 
 ADDRESS_ZERO = constants.ADDRESS_ZERO
 
-
 ruletable = '''
 |                 | unstaked    | unstaked | staked  | staked  | st-throttled | st-throttled |
 | --------------- | ----------- | -------- | ------- | ------- | ------------ | ------------ |
@@ -36,6 +35,7 @@ rules = dict(
     acct_storage=[ok, ok, ok, ok, throttle, throttle],
     ent_storage=[drop, drop, ok, ok, throttle, throttle],
     ent_ref=[drop, drop, ok, ok, throttle, throttle],
+    context=[drop, drop, ok, ok, throttle, throttle],
 
     # not a real rule: sender is entity just like others.
     # entSender=[4, 1, ok, ok, throttle, throttle],
@@ -53,6 +53,7 @@ def get_action(rule, isStake, isThrottled=False):
     if r is None: raise Exception("unknown rule: " + rule)
     index = 0 if not isStake else 2 if not isThrottled else 4
     return r[index:index + 2]
+
 
 def setThrottled(ent):
     # todo: set proper values that will consider it "throttled"
@@ -77,6 +78,7 @@ def test_stake_rule(clearState, w3, entity, rule, isStake, isThrottled):
     # (they check other entity with/without factory
     if rule.find('init') > 0 and entity == 'factory': return
     # if rule == 'entSender' and entity != 'sender': return
+    if rule == 'context' and entity != 'paymaster': return
 
     # depending on entity, fill in the fields
     # (paymaster is a single string. factory is an array, since it needs different
@@ -99,8 +101,8 @@ def test_stake_rule(clearState, w3, entity, rule, isStake, isThrottled):
             entryPoint.getSenderAddress(initCodes[0]),
             entryPoint.getSenderAddress(initCodes[1]),
         ]
-        #remove the init/noinit marker from the rule
-        rule = re.sub('-(no)?init','')
+        # remove the init/noinit marker from the rule
+        rule = re.sub('-(no)?init', '')
 
     if entity == 'paymaster':
         ent = deploy_contract(w3, 'TestPaymaster')
@@ -133,17 +135,25 @@ def test_stake_rule(clearState, w3, entity, rule, isStake, isThrottled):
     if action[0] == 'ok':
         # should succeed
         for i in range(0, 2):
-            UserOperation(sender=senders[i], signature=sig, paymasterAndData=paymasterAndData, initCode=initCodes[i]).send().result
+            UserOperation(sender=senders[i], signature=sig,
+                          paymasterAndData=paymasterAndData,
+                          initCode=initCodes[i]).send().result
     elif action[0] == 'drop':
-        UserOperation(sender=senders[0], signature=sig, paymasterAndData=paymasterAndData, initCode=initCodes[0]).send().result
-        err = UserOperation(sender=senders[0], signature=sig, paymasterAndData=paymasterAndData, initCode=initCodes[0]).send().error
+        UserOperation(sender=senders[0], signature=sig,
+                      paymasterAndData=paymasterAndData,
+                      initCode=initCodes[0]).send().result
+        err = UserOperation(sender=senders[0], signature=sig,
+                            paymasterAndData=paymasterAndData,
+                            initCode=initCodes[0]).send().error
         assertRpcError(err, '', RPCErrorCode.BANNED_OR_THROTTLED_PAYMASTER)
     elif action[0] == '4':
         # special case for wallet: allow 4 entries in mempool (different nonces)
-        for i in range(0, 4):
-            UserOperation(sender=senders[0], signature=sig, paymasterAndData=paymasterAndData, nonce=i).send().result
+        for i in range(1, 5):
+            UserOperation(sender=senders[0], signature=sig,
+                          paymasterAndData=paymasterAndData, nonce=i).send().result
         # the next will fail:
-        err = UserOperation(sender=senders[0], signature=sig, paymasterAndData=paymasterAndData, nonce=5).send().error
+        err = UserOperation(sender=senders[0], signature=sig,
+                            paymasterAndData=paymasterAndData, nonce=5).send().error
         assertRpcError(err, '', RPCErrorCode.BANNED_OR_THROTTLED_PAYMASTER)
     else:
         assert False, "unknown action" + action[0]
