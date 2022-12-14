@@ -16,10 +16,6 @@ contract TestRulePaymaster is IPaymaster {
         ep.addStake{value: msg.value}(delay);
     }
 
-    function asdasd() public view returns (address) {
-        return address(this);
-    }
-
     function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
 

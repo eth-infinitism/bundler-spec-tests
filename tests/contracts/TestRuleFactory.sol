@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "./OpcodeRules.sol";
+
 contract TestRuleFactory {
 
     using OpcodeRules for string;
@@ -14,9 +15,9 @@ contract TestRuleFactory {
         entryPoint = _entryPoint;
     }
 
-
     function create(uint nonce, string memory rule) public returns (IAccount) {
-        if (eq(rule, 'TestOpcodeAccount')) return new TestRulesAccount{salt : bytes32(nonce)}(entryPoint);
+        require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, "unknown rule");
+        return new TestRulesAccount{salt : bytes32(nonce)}(entryPoint);
         revert(string.concat("unknown rule: ", rule));
     }
 }

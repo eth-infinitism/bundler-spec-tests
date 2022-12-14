@@ -23,24 +23,31 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_wallet_contract(w3):
-    wallet_interface = compile_contract("SimpleWallet")
-    wallet = w3.eth.contract(
-        abi=wallet_interface["abi"], bytecode=wallet_interface["bin"]
+def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=1000000):
+    interface = compile_contract(contractName)
+    contract = w3.eth.contract(
+        abi=interface["abi"], bytecode=interface["bin"]
     )
     account = w3.eth.accounts[0]
-    tx_hash = wallet.constructor(CommandLineArgs.entryPoint).transact(
-        {"gas": 10000000, "from": account, "value": hex(2 * 10**18)}
+    tx_hash = contract.constructor(*ctrParams).transact(
+        {"gas": gas, "from": account, "value": hex(value)}
     )
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    # print('Deployed wallet contract. hash, receipt:', tx_hash.hex(), tx_receipt)
+    # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
     return w3.eth.contract(
-        abi=wallet_interface["abi"], address=tx_receipt.contractAddress
+        abi=interface["abi"], address=tx_receipt.contractAddress
     )
 
 def deploy_wallet_contract(w3):
-    return deploy_contract(w3, 'SimpleWallet', [CommandLineArgs.entryPoint], valueEth=0.1)
+    return deploy_contract(w3, 'SimpleWallet', ctrParams=[CommandLineArgs.entryPoint], value=2*10**18)
+
+
+def get_contract(w3, contractName, address=None):
+    interface = compile_contract(contractName)
+    return w3.eth.contract(
+        abi=interface["abi"], address=address
+    )
 
 def userOpHash(wallet_contract, userOp):
     payload = (

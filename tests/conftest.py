@@ -38,7 +38,7 @@ def pytest_addoption(parser):
     parser.addoption("--launcher-script", action="store")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereumNode))
     w3.middleware_onion.inject(geth_poa_middleware, layer=0)
