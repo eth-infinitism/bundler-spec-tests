@@ -50,6 +50,11 @@ def wallet_contract(w3):
     return deploy_wallet_contract(w3)
 
 
+@pytest.fixture
+def wallet_contracts(w3, amount):
+    return [deploy_wallet_contract(w3) for _ in range(amount)]
+
+
 @pytest.fixture(scope="session")
 def entrypoint_contract(w3):
     current_dirname = os.path.dirname(__file__)

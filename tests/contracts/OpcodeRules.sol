@@ -1,21 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.15;
-
-contract Dummy {
-}
-
-
-contract TestCoin {
-    mapping(address => uint) balances;
-
-    function balanceOf(address addr) public returns (uint) {
-        return balances[addr];
-    }
-
-    function mint(address addr) public returns (uint) {
-        return balances[addr] += 100;
-    }
-}
+import "./TestRulesAccount.sol";
 
 library OpcodeRules {
 
@@ -27,6 +12,7 @@ library OpcodeRules {
     uint constant public UNKNOWN = type(uint).max;
 
     function runRule(string memory rule, TestCoin coin) internal returns (uint) {
+//        return 0;
         if (eq(rule, "")) return 0;
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;

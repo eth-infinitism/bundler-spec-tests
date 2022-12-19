@@ -23,11 +23,9 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=1000000):
+def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=4 * 10**6):
     interface = compile_contract(contractName)
-    contract = w3.eth.contract(
-        abi=interface["abi"], bytecode=interface["bin"]
-    )
+    contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     account = w3.eth.accounts[0]
     tx_hash = contract.constructor(*ctrParams).transact(
         {"gas": gas, "from": account, "value": hex(value)}
@@ -35,19 +33,20 @@ def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=1000000):
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
-    return w3.eth.contract(
-        abi=interface["abi"], address=tx_receipt.contractAddress
-    )
+    assert tx_receipt.status == 1, "deployment of " + contractName + " failed"
+    return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
+
 
 def deploy_wallet_contract(w3):
-    return deploy_contract(w3, 'SimpleWallet', ctrParams=[CommandLineArgs.entryPoint], value=2*10**18)
+    return deploy_contract(
+        w3, "SimpleWallet", ctrParams=[CommandLineArgs.entryPoint], value=2 * 10**18
+    )
 
 
 def get_contract(w3, contractName, address=None):
     interface = compile_contract(contractName)
-    return w3.eth.contract(
-        abi=interface["abi"], address=address
-    )
+    return w3.eth.contract(abi=interface["abi"], address=address)
+
 
 def userOpHash(wallet_contract, userOp):
     payload = (
@@ -74,12 +73,13 @@ def assertRpcError(response, message, code):
 def dumpMempool():
     mempool = RPCRequest(method="aa_dumpMempool").send().result["mempool"]
     # print('what is mempool', mempool)
-    for i ,entry in enumerate(mempool):
-        mempool[i] = UserOperation(**entry['userOp'])
+    for i, entry in enumerate(mempool):
+        mempool[i] = UserOperation(**entry["userOp"])
     return mempool
 
+
 def clearMempool():
-    mempool = RPCRequest(method='aa_clearMempool').send().result['mempool']
+    mempool = RPCRequest(method="aa_clearMempool").send().result["mempool"]
     # print('what is mempool', mempool)
     for i, entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry["userOp"])

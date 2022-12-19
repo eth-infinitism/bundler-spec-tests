@@ -36,7 +36,6 @@ def test_bundle_replace_by_fee(w3):
     assert dumpMempool() == [higherFeeOp]
 
 
-@pytest.mark.skip
 @pytest.mark.usefixtures("clearState", "setBundleInterval")
 def test_bundle(w3):
     wallet1 = deploy_wallet_contract(w3)
@@ -51,4 +50,4 @@ def test_bundle(w3):
     wallet1op2.send()
     assert dumpMempool() == [wallet1op1]
     wallet2op1.send()
-    assert dumpMempool() == [wallet1op2, wallet2op1]
+    assert dumpMempool() == [wallet1op1, wallet2op1]

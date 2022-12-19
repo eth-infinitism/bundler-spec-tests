@@ -42,7 +42,7 @@ contract TestRulesAccount is IAccount, IPaymaster {
     event State(uint oldState, uint newState);
 
     constructor(address _ep) payable {
-        if (_ep != address(0)) {
+        if (_ep != address(0) && msg.value > 0) {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
         }
