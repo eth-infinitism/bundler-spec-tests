@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
+import "./Stakable.sol";
 
 contract Dummy {
     uint public value = 1;
@@ -34,7 +35,7 @@ contract TestCoin {
     }
 }
 
-contract TestRulesAccount is IAccount, IPaymaster {
+contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
     uint state;
     TestCoin public coin;
@@ -88,6 +89,11 @@ contract TestRulesAccount is IAccount, IPaymaster {
 
         else if (eq(rule, "inner-revert")) return coin.reverting();
         else if (eq(rule, "oog")) return coin.wasteGas();
+
+        else if (eq(rule, "no_storage")) return 0;
+        else if (eq(rule, "account_storage")) return state;
+        else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(this));
+        else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
 
         revert(string.concat("unknown rule: ", rule));
     }

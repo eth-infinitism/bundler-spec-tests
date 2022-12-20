@@ -43,11 +43,6 @@ def deploy_wallet_contract(w3):
     )
 
 
-def get_contract(w3, contractName, address=None):
-    interface = compile_contract(contractName)
-    return w3.eth.contract(abi=interface["abi"], address=address)
-
-
 def userOpHash(wallet_contract, userOp):
     payload = (
         userOp.sender,
@@ -84,3 +79,14 @@ def clearMempool():
     for i, entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry["userOp"])
     return mempool
+
+
+def setThrottled(address):
+    assert (
+        RPCRequest(
+            method="aa_setReputation",
+            params=[{"reputation": {address: {"opsSeen": 1, "opsIncluded": 2}}}],
+        )
+        .send()
+        .result
+    )

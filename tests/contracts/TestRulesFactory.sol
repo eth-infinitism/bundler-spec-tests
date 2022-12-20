@@ -5,8 +5,9 @@ import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "./OpcodeRules.sol";
 import "./SimpleWallet.sol";
+import "./Stakable.sol";
 
-contract TestRulesFactory {
+contract TestRulesFactory is Stakable {
 
     using OpcodeRules for string;
 
