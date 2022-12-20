@@ -6,7 +6,7 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./OpcodeRules.sol";
 import "./SimpleWallet.sol";
 
-contract TestRulePaymaster is IPaymaster {
+contract TestRulesPaymaster is IPaymaster {
 
     using OpcodeRules for string;
 
@@ -32,17 +32,21 @@ contract TestRulePaymaster is IPaymaster {
         if (rule.eq("no_storage")) {
             return ("", 0);
         }
-        if (rule.eq("account_reference_storage")) {
-            return ("", coin.balanceOf(userOp.sender));
+        if (rule.eq("storage")) {
+            return ("", something);
         }
-        if (rule.eq("account_reference_storage_init_code")) {
-            return ("", coin.balanceOf(userOp.sender));
+        if (rule.eq("reference_storage")) {
+            return ("", coin.balanceOf(address (this)));
         }
         if (rule.eq("account_storage")) {
             return ("", SimpleWallet(userOp.sender).state());
         }
-        if(rule.eq("self-storage")) {
-            return ("", something);
+        if (rule.eq("account_reference_storage")) {
+            require(userOp.initCode.length == 0, "iniCode not allowed");
+            return ("", coin.balanceOf(userOp.sender));
+        }
+        if (rule.eq("account_reference_storage_init_code")) {
+            return ("", coin.balanceOf(userOp.sender));
         }
         if (rule.eq("expired")) {
             return ("", 1);

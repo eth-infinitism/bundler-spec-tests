@@ -65,7 +65,7 @@ class BaseTestPaymaster:
     @classmethod
     def init(self):
         assert w3 is not None
-        self.paymaster = deploy_contract(w3, "TestRulePaymaster")
+        self.paymaster = deploy_contract(w3, "TestRulesPaymaster")
         self.paymasterAddr = self.paymaster.address
         account = w3.eth.accounts[0]
         entryPoint.functions.depositTo(self.paymasterAddr).transact(
