@@ -41,12 +41,12 @@ drop = "drop"
 #     sender = "sender"
 #     aggregator = "aggregator"
 
-Rule = collections.namedtuple('Rule', ['Unstaked', 'Staked', 'Throttled'])
+Rule = collections.namedtuple("Rule", ["Unstaked", "Staked", "Throttled"])
 
 # keys are rules to pass to our entity
 # values are 6 columns: 2 columns for each scenario of (unstaked, staked, staked+throttle)
 # the 2 are rule for 1st simulation (rpc/p2p) and rule for 2nd simulation (bundling)
-rules = dict(
+paymaster_rules = dict(
     no_storage=Rule(ok, ok, throttle),
     storage=Rule(drop, ok, throttle),
     reference_storage=Rule(drop, ok, throttle),
@@ -54,9 +54,17 @@ rules = dict(
     account_reference_storage=Rule(ok, ok, throttle),
     # account_reference_storage_init_code=Rule(drop, ok, throttle),
     context=Rule(drop, ok, throttle),
-    # not a real rule: sender is entity just like others.
-    # entSender=[4, 1, ok, ok, throttle, throttle],
 )
+
+factory_rules = dict(
+    no_storage=Rule(ok, ok, throttle),
+    storage=Rule(drop, ok, throttle),
+    reference_storage=Rule(drop, ok, throttle),
+    account_storage=Rule(ok, ok, throttle),
+    account_reference_storage=Rule(drop, ok, throttle),
+    # account_reference_storage_init_code=Rule(drop, ok, throttle), irrelevant here
+)
+
 
 def setThrottled(ent):
     # todo: set proper values that will consider it "throttled"
@@ -75,8 +83,20 @@ entityTypes = [
 
 def test_dict():
     # git nocommit
-    print(dict((key, value) for key, value in rules.items() if value.Unstaked == "drop"))
-    print(dict((key, value) for key, value in rules.items() if value.Unstaked == "ok"))
+    print(
+        dict(
+            (key, value)
+            for key, value in paymaster_rules.items()
+            if value.Unstaked == "drop"
+        )
+    )
+    print(
+        dict(
+            (key, value)
+            for key, value in paymaster_rules.items()
+            if value.Unstaked == "ok"
+        )
+    )
 
 
 def getSenderAddress(w3, initCode):
@@ -93,29 +113,69 @@ def assertStakeStatus(isStaked, address, entrypoint_contract):
 
 
 @pytest.mark.usefixtures("clearState")
-@pytest.mark.parametrize("amount", [2], ids=[""])
 @pytest.mark.parametrize(
-    "rule", dict((key, value) for key, value in rules.items() if value.Unstaked == "ok")
+    "rule",
+    dict(
+        (key, value) for key, value in factory_rules.items() if value.Unstaked == "ok"
+    ),
 )
-def test_unstaked_deployer_storage_ok(entrypoint_contract, wallet_contracts, paymaster_contract, rule):
-    assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
-    senders = [wallet.address for wallet in wallet_contracts]
-    paymasterAndData = paymaster_contract.address + rule.encode().hex()
-    for sender in senders:
-        assert (
-            UserOperation(sender=sender, paymasterAndData=paymasterAndData)
-                .send()
-                .result
-        )
+def test_unstaked_factory_storage_ok(w3, entrypoint_contract, rule):
 
+    factory = deploy_contract(w3, "TestRulesFactory", [entrypoint_contract.address])
+    initCode = (
+        factory.address
+        + factory.functions.create(
+            123, rule, entrypoint_contract.address
+        ).build_transaction()["data"][2:]
+    )
+    print("what is initCode", initCode)
+    assertStakeStatus(False, factory.address, entrypoint_contract)
+    sender = getSenderAddress(w3, initCode)
+    entrypoint_contract.functions.depositTo(sender).transact(
+        {"value": 10**18, "from": w3.eth.accounts[0]}
+    )
+    print("what is sender", sender)
+    assert UserOperation(sender=sender, initCode=initCode).send().result
+
+
+@pytest.mark.usefixtures("clearState")
+@pytest.mark.parametrize(
+    "rule",
+    dict(
+        (key, value) for key, value in factory_rules.items() if value.Unstaked == "drop"
+    ),
+)
+def test_unstaked_factory_storage_drop(w3, entrypoint_contract, rule):
+
+    factory = deploy_contract(w3, "TestRulesFactory", [entrypoint_contract.address])
+    initCode = (
+        factory.address
+        + factory.functions.create(
+            123, rule, entrypoint_contract.address
+        ).build_transaction()["data"][2:]
+    )
+    print("what is initCode", initCode)
+    assertStakeStatus(False, factory.address, entrypoint_contract)
+    sender = getSenderAddress(w3, initCode)
+    entrypoint_contract.functions.depositTo(sender).transact(
+        {"value": 10**18, "from": w3.eth.accounts[0]}
+    )
+    print("what is sender", sender)
+    response = UserOperation(sender=sender, initCode=initCode).send()
+    assertRpcError(response, "unstaked factory", RPCErrorCode.BANNED_OPCODE)
 
 
 @pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize("amount", [2], ids=[""])
 @pytest.mark.parametrize(
-    "rule", dict((key, value) for key, value in rules.items() if value.Unstaked == "ok")
+    "rule",
+    dict(
+        (key, value) for key, value in paymaster_rules.items() if value.Unstaked == "ok"
+    ),
 )
-def test_unstaked_paymaster_storage_ok(entrypoint_contract, wallet_contracts, paymaster_contract, rule):
+def test_unstaked_paymaster_storage_ok(
+    entrypoint_contract, wallet_contracts, paymaster_contract, rule
+):
     assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
     senders = [wallet.address for wallet in wallet_contracts]
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
@@ -129,27 +189,36 @@ def test_unstaked_paymaster_storage_ok(entrypoint_contract, wallet_contracts, pa
 
 @pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize(
-    "rule", dict((key, value) for key, value in rules.items() if value.Unstaked == "drop")
+    "rule",
+    dict(
+        (key, value)
+        for key, value in paymaster_rules.items()
+        if value.Unstaked == "drop"
+    ),
 )
-def test_unstaked_paymaster_storage_drop(entrypoint_contract, paymaster_contract, wallet_contract, rule):
+def test_unstaked_paymaster_storage_drop(
+    entrypoint_contract, paymaster_contract, wallet_contract, rule
+):
     assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     response = UserOperation(
-        sender=wallet_contract.address,
-        paymasterAndData=paymasterAndData
+        sender=wallet_contract.address, paymasterAndData=paymasterAndData
     ).send()
     assertRpcError(response, "unstaked paymaster", RPCErrorCode.BANNED_OPCODE)
 
 
-@pytest.mark.skip
 @pytest.mark.usefixtures("clearState")
-def test_unstaked_paymaster_storage_initcode_drop(w3, paymaster_contract, entrypoint_contract):
+def test_unstaked_paymaster_storage_initcode_drop(
+    w3, paymaster_contract, entrypoint_contract
+):
 
     rule = "account_reference_storage_init_code"
-    factory = deploy_contract(w3, "TestRulesDeployer", [entrypoint_contract.address])
+    factory = deploy_contract(w3, "TestRulesFactory", [entrypoint_contract.address])
     initCode = (
         factory.address
-        + factory.functions.create(123, "").build_transaction()["data"][2:]
+        + factory.functions.create(
+            123, "", entrypoint_contract.address
+        ).build_transaction()["data"][2:]
     )
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     response = UserOperation(
@@ -157,33 +226,36 @@ def test_unstaked_paymaster_storage_initcode_drop(w3, paymaster_contract, entryp
         paymasterAndData=paymasterAndData,
         initCode=initCode,
     ).send()
-    assertRpcError(response, "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+    assertRpcError(response, "", RPCErrorCode.BANNED_OPCODE)
 
 
 @pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize("amount", [2], ids=[""])
 @pytest.mark.parametrize(
-    "rule", dict((key, value) for key, value in rules.items() if value.Staked == "ok")
+    "rule",
+    dict(
+        (key, value) for key, value in paymaster_rules.items() if value.Staked == "ok"
+    ),
 )
 def test_staked_paymaster_storage_ok(
     w3, entrypoint_contract, wallet_contracts, paymaster_contract, rule
 ):
-    paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact({'from': w3.eth.accounts[0], 'value': 1 * 10 ** 18})
+    paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact(
+        {"from": w3.eth.accounts[0], "value": 1 * 10**18}
+    )
     assertStakeStatus(True, paymaster_contract.address, entrypoint_contract)
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     senders = [wallet.address for wallet in wallet_contracts]
     for sender in senders:
         assert (
-            UserOperation(
-                sender=sender,
-                paymasterAndData=paymasterAndData
-            )
+            UserOperation(sender=sender, paymasterAndData=paymasterAndData)
             .send()
             .result
         )
 
+
 @pytest.mark.parametrize("amount", [2])
-@pytest.mark.parametrize("rule", rules.keys())
+@pytest.mark.parametrize("rule", paymaster_rules.keys())
 @pytest.mark.parametrize("entity", entityTypes)
 @pytest.mark.parametrize("isStaked", [False, True])
 @pytest.mark.parametrize("isThrottled", [False, True])
@@ -235,7 +307,7 @@ def detest_stake_rule(
         ent = deploy_contract(w3, "TestRulesPaymaster")
         paymasterAndData = ent.address + rule.encode().hex()
     elif entity == "factory":
-        ent = deploy_contract(w3, "TestRulesDeployer", [CommandLineArgs.entryPoint])
+        ent = deploy_contract(w3, "TestRulesFactory", [CommandLineArgs.entryPoint])
         initCodes = [
             ent.address + ent.functions.create(1, rule).build_transaction()["data"],
             ent.address + ent.functions.create(2, rule).build_transaction()["data"],

@@ -108,7 +108,7 @@ class TestUnstakedPaymaster(BaseTestPaymaster):
     def test_nostorage(self, addToPool):
         self.send("")
 
-    def test_acct_ref_storage_no_initCode(self, addToPool):
+    def te1st_acct_ref_storage_no_initCode(self, addToPool):
         self.send("acct-balance")
 
     # def createInitCode(self):
