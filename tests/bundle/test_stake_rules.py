@@ -130,19 +130,6 @@ def test_staked_sender_storage_ok(
         .result
     )
 
-    # initCode = (
-    #         rules_account_contract.address
-    #         + rules_account_contract.functions.create(
-    #     123, rule, entrypoint_contract.address
-    # ).build_transaction()["data"][2:]
-    # )
-    # sender = getSenderAddress(w3, initCode)
-    # entrypoint_contract.functions.depositTo(sender).transact(
-    #     {"value": 10**18, "from": w3.eth.accounts[0]}
-    # )
-    # print('what is factory, sender', factory_contract.address, sender)
-    # assert UserOperation(sender=sender, initCode=initCode).send().result
-
 
 ################### sender tests end ##############
 
@@ -265,6 +252,7 @@ def test_unstaked_paymaster_storage_initcode_drop(
 ):
 
     rule = "account_reference_storage_init_code"
+    assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
     initCode = (
         factory_contract.address
         + factory_contract.functions.create(
@@ -281,23 +269,47 @@ def test_unstaked_paymaster_storage_initcode_drop(
 
 
 @pytest.mark.usefixtures("clearState")
-@pytest.mark.parametrize("amount", [2], ids=[""])
+def test_staked_paymaster_storage_initcode_ok(
+    w3, paymaster_contract, entrypoint_contract, factory_contract
+):
+    rule = "account_reference_storage_init_code"
+    paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact(
+        {"from": w3.eth.accounts[0], "value": 1 * 10**18}
+    )
+    assertStakeStatus(True, paymaster_contract.address, entrypoint_contract)
+    initCode = (
+        factory_contract.address
+        + factory_contract.functions.create(
+            123, "", entrypoint_contract.address
+        ).build_transaction()["data"][2:]
+    )
+    paymasterAndData = paymaster_contract.address + rule.encode().hex()
+    assert (
+        UserOperation(
+            sender=getSenderAddress(w3, initCode),
+            paymasterAndData=paymasterAndData,
+            initCode=initCode,
+        )
+        .send()
+        .result
+    )
+
+
+@pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in paymaster_rules.items() if value.Staked == ok),
 )
 def test_staked_paymaster_storage_ok(
-    w3, entrypoint_contract, wallet_contracts, paymaster_contract, rule
+    w3, entrypoint_contract, wallet_contract, paymaster_contract, rule
 ):
     paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
     )
     assertStakeStatus(True, paymaster_contract.address, entrypoint_contract)
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
-    senders = [wallet.address for wallet in wallet_contracts]
-    for sender in senders:
-        assert (
-            UserOperation(sender=sender, paymasterAndData=paymasterAndData)
-            .send()
-            .result
-        )
+    assert (
+        UserOperation(sender=wallet_contract.address, paymasterAndData=paymasterAndData)
+        .send()
+        .result
+    )
