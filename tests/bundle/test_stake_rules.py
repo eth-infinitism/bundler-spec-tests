@@ -1,12 +1,12 @@
+import collections
+
 import pytest
+from tests.types import RPCErrorCode
 from tests.utils import (
-    deploy_contract,
     UserOperation,
     assertRpcError,
-    CommandLineArgs,
 )
-from tests.types import RPCErrorCode
-import collections
+from .conftest import getSenderAddress
 
 # see actions in https://docs.google.com/document/d/1DFX5hUhv_fwqC7wez6SBT3pWTGfSDiV45NyXllhxYik/edit?usp=sharing
 ok = "ok"
@@ -43,24 +43,6 @@ sender_rules = dict(
     account_reference_storage_init_code=Rule(drop, ok, throttle),
 )
 
-entityTypes = [
-    # 'factory',
-    # 'account',
-    "paymaster"
-]
-
-
-def getSenderAddress(w3, initCode):
-    helper = deploy_contract(w3, "Helper")
-    return helper.functions.getSenderAddress(CommandLineArgs.entryPoint, initCode).call(
-        {"gas": 10000000}
-    )
-
-
-def assertStakeStatus(isStaked, address, entrypoint_contract):
-    info = entrypoint_contract.functions.deposits(address).call()
-    assert info[1] == isStaked
-
 
 ################### sender tests #################
 @pytest.mark.usefixtures("clearState")
@@ -68,13 +50,7 @@ def assertStakeStatus(isStaked, address, entrypoint_contract):
     "rule",
     dict((key, value) for key, value in sender_rules.items() if value.Unstaked == ok),
 )
-def test_unstaked_sender_storage_ok(
-    w3, rules_account_contract, entrypoint_contract, rule
-):
-    entrypoint_contract.functions.depositTo(rules_account_contract.address).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
-    )
-    assertStakeStatus(False, rules_account_contract.address, entrypoint_contract)
+def test_unstaked_sender_storage_ok(rules_account_contract, rule):
     signature = "0x" + rule.encode().hex()
     assert (
         UserOperation(sender=rules_account_contract.address, signature=signature)
@@ -88,7 +64,9 @@ def test_unstaked_sender_storage_ok(
     "rule",
     dict((key, value) for key, value in sender_rules.items() if value.Unstaked == drop),
 )
-def test_unstaked_sender_storage_drop(w3, entrypoint_contract, factory_contract, rule):
+def test_unstaked_sender_storage_initcode_drop(
+    w3, entrypoint_contract, factory_contract, rule
+):
     initCode = (
         factory_contract.address
         + factory_contract.functions.create(
@@ -99,7 +77,6 @@ def test_unstaked_sender_storage_drop(w3, entrypoint_contract, factory_contract,
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
-    assertStakeStatus(False, sender, entrypoint_contract)
     signature = "0x" + rule.encode().hex()
     print("what is sender", sender)
     response = UserOperation(
@@ -118,10 +95,6 @@ def test_staked_sender_storage_ok(
 ):
     rules_account_contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
-    )
-    assertStakeStatus(True, rules_account_contract.address, entrypoint_contract)
-    entrypoint_contract.functions.depositTo(rules_account_contract.address).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
     )
     signature = "0x" + rule.encode().hex()
     assert (
@@ -147,7 +120,6 @@ def test_unstaked_factory_storage_ok(w3, entrypoint_contract, factory_contract, 
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    assertStakeStatus(False, factory_contract.address, entrypoint_contract)
     sender = getSenderAddress(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
@@ -170,7 +142,6 @@ def test_unstaked_factory_storage_drop(w3, entrypoint_contract, factory_contract
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    assertStakeStatus(False, factory_contract.address, entrypoint_contract)
     sender = getSenderAddress(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
@@ -188,7 +159,6 @@ def test_staked_factory_storage_ok(w3, entrypoint_contract, factory_contract, ru
     factory_contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
     )
-    assertStakeStatus(True, factory_contract.address, entrypoint_contract)
     initCode = (
         factory_contract.address
         + factory_contract.functions.create(
@@ -207,25 +177,19 @@ def test_staked_factory_storage_ok(w3, entrypoint_contract, factory_contract, ru
 
 ################### paymaster tests start ##############
 @pytest.mark.usefixtures("clearState")
-@pytest.mark.parametrize("amount", [2], ids=[""])
 @pytest.mark.parametrize(
     "rule",
     dict(
         (key, value) for key, value in paymaster_rules.items() if value.Unstaked == ok
     ),
 )
-def test_unstaked_paymaster_storage_ok(
-    entrypoint_contract, wallet_contracts, paymaster_contract, rule
-):
-    assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
-    senders = [wallet.address for wallet in wallet_contracts]
+def test_unstaked_paymaster_storage_ok(wallet_contract, paymaster_contract, rule):
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
-    for sender in senders:
-        assert (
-            UserOperation(sender=sender, paymasterAndData=paymasterAndData)
-            .send()
-            .result
-        )
+    assert (
+        UserOperation(sender=wallet_contract.address, paymasterAndData=paymasterAndData)
+        .send()
+        .result
+    )
 
 
 @pytest.mark.usefixtures("clearState")
@@ -235,10 +199,7 @@ def test_unstaked_paymaster_storage_ok(
         (key, value) for key, value in paymaster_rules.items() if value.Unstaked == drop
     ),
 )
-def test_unstaked_paymaster_storage_drop(
-    entrypoint_contract, paymaster_contract, wallet_contract, rule
-):
-    assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
+def test_unstaked_paymaster_storage_drop(paymaster_contract, wallet_contract, rule):
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     response = UserOperation(
         sender=wallet_contract.address, paymasterAndData=paymasterAndData
@@ -250,9 +211,7 @@ def test_unstaked_paymaster_storage_drop(
 def test_unstaked_paymaster_storage_initcode_drop(
     w3, paymaster_contract, entrypoint_contract, factory_contract
 ):
-
     rule = "account_reference_storage_init_code"
-    assertStakeStatus(False, paymaster_contract.address, entrypoint_contract)
     initCode = (
         factory_contract.address
         + factory_contract.functions.create(
@@ -276,7 +235,6 @@ def test_staked_paymaster_storage_initcode_ok(
     paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
     )
-    assertStakeStatus(True, paymaster_contract.address, entrypoint_contract)
     initCode = (
         factory_contract.address
         + factory_contract.functions.create(
@@ -306,7 +264,6 @@ def test_staked_paymaster_storage_ok(
     paymaster_contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
     )
-    assertStakeStatus(True, paymaster_contract.address, entrypoint_contract)
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     assert (
         UserOperation(sender=wallet_contract.address, paymasterAndData=paymasterAndData)

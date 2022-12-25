@@ -4,7 +4,7 @@ from tests.types import UserOperation, RPCErrorCode
 from tests.utils import assertRpcError, dumpMempool, deploy_wallet_contract
 
 
-@pytest.mark.parametrize("interval", ["manual"])
+@pytest.mark.parametrize("interval", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clearState", "setBundleInterval")
 def test_bundle_replace_by_fee(w3):
     wallet = deploy_wallet_contract(w3)
@@ -36,6 +36,7 @@ def test_bundle_replace_by_fee(w3):
     assert dumpMempool() == [higherFeeOp]
 
 
+@pytest.mark.parametrize("interval", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clearState", "setBundleInterval")
 def test_bundle(w3):
     wallet1 = deploy_wallet_contract(w3)
