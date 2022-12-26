@@ -67,15 +67,6 @@ def assertRpcError(response, message, code):
 
 def dumpMempool():
     mempool = RPCRequest(method="aa_dumpMempool").send().result["mempool"]
-    # print('what is mempool', mempool)
-    for i, entry in enumerate(mempool):
-        mempool[i] = UserOperation(**entry["userOp"])
-    return mempool
-
-
-def clearMempool():
-    mempool = RPCRequest(method="aa_clearMempool").send().result["mempool"]
-    # print('what is mempool', mempool)
     for i, entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry["userOp"])
     return mempool

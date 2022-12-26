@@ -28,32 +28,6 @@ library OpcodeRules {
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
         else if (eq(rule, "CREATE")) return uint160(address(new Dummy()));
         else if (eq(rule, "CREATE2")) return uint160(address(new Dummy{salt : bytes32(uint(0x1))}()));
-        else if (eq(rule, "OTHERSLOAD")) return coin.balanceOf(address(1));
-        else if (eq(rule, "OTHERSSTORE")) return coin.mint(address(1));
-        else if (eq(rule, "SELFSSLOAD")) {
-            assembly {
-                pop(sload(1000))
-            }
-            return 0;
-        }
-        else if (eq(rule, "SELFSSTORE")) {
-            assembly {
-                sstore(100000,1)
-            }
-            return 0;
-        }
-        else if (eq(rule, "acct-balance")) return coin.balanceOf(address(this));
-        else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
-        else if (eq(rule, "inner-revert")) {
-            revert("inner revert");
-            return 0;
-        }
-        else if (eq(rule, "oog")) {
-            while (true) {
-                require(msg.sender != ecrecover("message", 27, bytes32(0), bytes32(0)));
-            }
-            return 0;
-        }
         return UNKNOWN;
     }
 }

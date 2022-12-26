@@ -6,7 +6,7 @@ Python version 3.8+
 PDM - python package and dependency manager version 2.2.1+
 
 #### Installation
-Run `pdm install && git submodule update --init --recursive`
+Run `pdm install && git submodule update --init --recursive && pdm run init-deps`
 
 #### Running the tests
 

@@ -32,26 +32,7 @@ banned_opcodes = [
     "BLOCKHASH",
     "CREATE",
     "CREATE2",
-    "OTHERSLOAD",
-    "OTHERSSTORE",
 ]
-
-allowed_opcodes = [
-    "",
-    "SELFSSLOAD",
-    "SELFSSTORE",
-    "SELFREFSLOAD",
-    "SELFREFSSTORE",
-]
-
-
-@pytest.mark.parametrize("allowed_op", allowed_opcodes)
-def test_allowed_opcode(opban_contract, allowed_op):
-    response = UserOperation(
-        sender=opban_contract.address, signature=stringToPrefixedHex(allowed_op)
-    ).send()
-    # assert response.result == userOpHash(opban_contract, userOp)
-    assert int(response.result, 16)
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
