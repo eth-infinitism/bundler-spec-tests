@@ -98,6 +98,10 @@ def getSenderAddress(w3, initCode):
     )
 
 
+def sendBundleNow():
+    return RPCRequest(method="aa_sendBundleNow").send()
+
+
 def dumpMempool():
     mempool = RPCRequest(method="aa_dumpMempool").send().result["mempool"]
     for i, entry in enumerate(mempool):
