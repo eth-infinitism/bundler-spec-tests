@@ -3,12 +3,11 @@ import os
 import subprocess
 
 import pytest
-import web3
 from solcx import install_solc
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
-from .utils import deploy_wallet_contract
+from .utils import deploy_wallet_contract, deploy_and_deposit, deploy_contract
 
 
 def pytest_configure(config):
@@ -50,11 +49,6 @@ def wallet_contract(w3):
     return deploy_wallet_contract(w3)
 
 
-@pytest.fixture
-def wallet_contracts(w3, amount):
-    return [deploy_wallet_contract(w3) for _ in range(amount)]
-
-
 @pytest.fixture(scope="session")
 def entrypoint_contract(w3):
     current_dirname = os.path.dirname(__file__)
@@ -67,6 +61,26 @@ def entrypoint_contract(w3):
         return w3.eth.contract(
             abi=entrypoint["abi"], address=CommandLineArgs.entryPoint
         )
+
+
+@pytest.fixture
+def paymaster_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
+
+
+@pytest.fixture
+def factory_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
+
+
+@pytest.fixture
+def rules_account_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", False)
+
+
+@pytest.fixture(scope="session")
+def helper_contract(w3):
+    return deploy_contract(w3, "Helper")
 
 
 @pytest.fixture

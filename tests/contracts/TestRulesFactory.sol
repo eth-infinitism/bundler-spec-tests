@@ -38,6 +38,9 @@ contract TestRulesFactory is Stakable {
         else if (rule.eq("account_reference_storage")) {
             emit Uint(coin.balanceOf(address(account)));
         }
+        else {
+            require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
+        }
         return account;
     }
 }

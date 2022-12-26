@@ -3,8 +3,13 @@ import re
 
 import pytest
 from tests.types import UserOperation
-from tests.utils import assertRpcError, deploy_wallet_contract, deploy_contract
-from .conftest import deploy_and_deposit, getSenderAddress
+from tests.utils import (
+    assertRpcError,
+    deploy_wallet_contract,
+    deploy_contract,
+    getSenderAddress,
+    deploy_and_deposit,
+)
 
 
 def assertOk(response):

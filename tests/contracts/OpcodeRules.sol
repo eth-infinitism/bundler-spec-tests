@@ -12,7 +12,6 @@ library OpcodeRules {
     uint constant public UNKNOWN = type(uint).max;
 
     function runRule(string memory rule, TestCoin coin) internal returns (uint) {
-//        return 0;
         if (eq(rule, "")) return 0;
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;

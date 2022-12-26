@@ -37,6 +37,29 @@ def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=4 * 10**6):
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
+def deploy_and_deposit(w3, entrypoint_contract, contractName, staked):
+    contract = deploy_contract(
+        w3,
+        contractName,
+        ctrParams=[entrypoint_contract.address],
+    )
+    entrypoint_contract.functions.depositTo(contract.address).transact(
+        {"value": 10**18, "from": w3.eth.accounts[0]}
+    )
+    if staked:
+        return staked_contract(w3, entrypoint_contract, contract)
+    return contract
+
+
+def staked_contract(w3, entrypoint_contract, contract):
+    contract.functions.addStake(entrypoint_contract.address, 2).transact(
+        {"from": w3.eth.accounts[0], "value": 1 * 10**18}
+    )
+    info = entrypoint_contract.functions.deposits(contract.address).call()
+    assert info[1], "could not stake contract"
+    return contract
+
+
 def deploy_wallet_contract(w3):
     return deploy_contract(
         w3, "SimpleWallet", ctrParams=[CommandLineArgs.entryPoint], value=2 * 10**18
@@ -66,6 +89,13 @@ def assertRpcError(response, message, code):
         assert message in response.message
     except AttributeError:
         raise Exception(response)
+
+
+def getSenderAddress(w3, initCode):
+    helper = deploy_contract(w3, "Helper")
+    return helper.functions.getSenderAddress(CommandLineArgs.entryPoint, initCode).call(
+        {"gas": 10000000}
+    )
 
 
 def dumpMempool():

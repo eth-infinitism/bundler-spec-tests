@@ -6,7 +6,7 @@ from tests.utils import (
     UserOperation,
     assertRpcError,
 )
-from .conftest import getSenderAddress
+from tests.utils import getSenderAddress
 
 pytest.skip(allow_module_level=True)
 
