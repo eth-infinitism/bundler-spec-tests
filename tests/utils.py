@@ -61,8 +61,11 @@ def userOpHash(wallet_contract, userOp):
 
 
 def assertRpcError(response, message, code):
-    assert response.code == code
-    assert message in response.message
+    try:
+        assert response.code == code
+        assert message in response.message
+    except AttributeError:
+        raise Exception(response)
 
 
 def dumpMempool():

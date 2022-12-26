@@ -8,7 +8,10 @@ from .conftest import deploy_and_deposit, getSenderAddress
 
 
 def assertOk(response):
-    assert response.result
+    try:
+        assert response.result
+    except AttributeError:
+        raise Exception(response)
 
 
 def assertError(response):
