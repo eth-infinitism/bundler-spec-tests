@@ -8,6 +8,8 @@ from tests.utils import (
 )
 from .conftest import getSenderAddress
 
+pytest.skip(allow_module_level=True)
+
 # see actions in https://docs.google.com/document/d/1DFX5hUhv_fwqC7wez6SBT3pWTGfSDiV45NyXllhxYik/edit?usp=sharing
 ok = "ok"
 throttle = 1

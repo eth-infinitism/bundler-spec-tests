@@ -33,7 +33,7 @@ def rules_account_contract(w3, entrypoint_contract):
 
 
 @pytest.fixture(scope="session")
-def helper_contract(w3, entrypoint_contract):
+def helper_contract(w3):
     return deploy_contract(w3, "Helper")
 
 

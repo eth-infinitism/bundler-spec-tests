@@ -37,13 +37,13 @@ def withInitCode(buildUserOpFunc):
     return _withInitCode
 
 
-def buildUserOpForPaymasterTest(w3, entrypoint_contract, paymaster_contract, rule):
+def buildUserOpForPaymasterTest(w3, _entrypoint_contract, paymaster_contract, rule):
     wallet = deploy_wallet_contract(w3)
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     return UserOperation(sender=wallet.address, paymasterAndData=paymasterAndData)
 
 
-def buildUserOpForSenderTest(w3, entrypoint_contract, rules_account_contract, rule):
+def buildUserOpForSenderTest(_w3, _entrypoint_contract, rules_account_contract, rule):
     signature = "0x" + rule.encode().hex()
     return UserOperation(sender=rules_account_contract.address, signature=signature)
 
