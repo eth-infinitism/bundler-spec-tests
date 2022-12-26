@@ -45,7 +45,6 @@ def test_account_banned_opcode(opban_contract, banned_op):
     )
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_banned_opcode(opban_contract, banned_op):
     response = UserOperation(
