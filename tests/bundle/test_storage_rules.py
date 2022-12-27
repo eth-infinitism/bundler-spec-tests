@@ -220,6 +220,10 @@ def idfunction(case):
 @pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 def test_rule(w3, entrypoint_contract, case):
+    if "account_reference_storage_init_code" in case.rule:
+        pytest.skip()
+    if "account_reference_storage" in case.rule and case.assertFunc == assertOk:
+        pytest.skip()
     entity_contract = deploy_and_deposit(
         w3, entrypoint_contract, case.entity, case.staked
     )
