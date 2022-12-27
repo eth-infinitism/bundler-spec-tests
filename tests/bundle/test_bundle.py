@@ -49,7 +49,6 @@ def test_bundle(w3):
     wallet2op1 = UserOperation(sender=wallet2.address, nonce="0x1", callData=callData)
 
     for i, op in enumerate(wallet1ops):
-        print("what is i", i)
         op.send()
         assert dumpMempool() == wallet1ops[: i + 1]
 

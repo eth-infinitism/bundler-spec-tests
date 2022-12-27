@@ -80,7 +80,6 @@ def test_unstaked_sender_storage_initcode_drop(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
     signature = "0x" + rule.encode().hex()
-    print("what is sender", sender)
     response = UserOperation(
         sender=sender, signature=signature, initCode=initCode
     ).send()
@@ -171,7 +170,6 @@ def test_staked_factory_storage_ok(w3, entrypoint_contract, factory_contract, ru
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
-    print("what is factory, sender", factory_contract.address, sender)
     assert UserOperation(sender=sender, initCode=initCode).send().result
 
 
