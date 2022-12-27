@@ -32,7 +32,7 @@ build-backend = "pdm.pep517.api"
 [tool.pdm.scripts]
 init-deps = {shell = "cd @account-abstraction; yarn; cd ../; cd spec; yarn && yarn build"}
 update-deps = {shell = "git submodule foreach git pull; cd @account-abstraction; yarn && yarn compile;  cd ../spec; yarn && yarn build"}
-test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x6a414B0aDB35Ef7D072c806690c390e3B4f44824 --ethereum-node http://127.0.0.1:8545/"
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x1306b01bC3e4AD202612D3843387e94737673F53 --ethereum-node http://127.0.0.1:8545/"
 lint = "pylint tests"
 format = "black tests"
 
