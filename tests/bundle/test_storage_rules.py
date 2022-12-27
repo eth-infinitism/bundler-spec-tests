@@ -2,7 +2,7 @@ import collections
 import re
 
 import pytest
-from tests.types import UserOperation
+from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
     assertRpcError,
     deploy_wallet_contract,
@@ -20,7 +20,7 @@ def assertOk(response):
 
 
 def assertError(response):
-    assertRpcError(response, response.message, response.code)
+    assertRpcError(response, response.message, RPCErrorCode.BANNED_OPCODE)
 
 
 def withInitCode(buildUserOpFunc):
@@ -208,7 +208,6 @@ cases = [
     StorageTestCase(
         "account_reference_storage", staked, sender, buildUserOpForSenderTest, assertOk
     ),
-    # StorageTestCase('account_reference_storage_init_code', staked, sender, withInitCode(buildUserOpForSenderTest), assertOk),
 ]
 
 

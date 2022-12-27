@@ -102,24 +102,26 @@ def sendUserOperation(userOp):
 
 @pytest.fixture
 def sendBundleNow():
-    return RPCRequest(method="aa_sendBundleNow").send()
+    return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
 @pytest.fixture
 def clearState():
-    return RPCRequest(method="aa_clearState").send()
+    return RPCRequest(method="debug_bundler_clearState").send()
 
 
 @pytest.fixture
-def setBundleInterval(interval):
-    return RPCRequest(method="aa_setBundleInterval", params=[interval]).send()
+def setBundlingMode(mode):
+    response = RPCRequest(method="debug_bundler_setBundlingMode", params=[mode]).send()
+    print("what is response", response)
+    return response
 
 
 @pytest.fixture
 def setReputation():
-    return RPCRequest(method="aa_setReputation").send()
+    return RPCRequest(method="debug_bundler_setReputation").send()
 
 
 @pytest.fixture
 def dumpReputation():
-    return RPCRequest(method="aa_dumpReputation").send()
+    return RPCRequest(method="debug_bundler_dumpReputation").send()

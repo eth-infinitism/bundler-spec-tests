@@ -99,20 +99,20 @@ def getSenderAddress(w3, initCode):
 
 
 def sendBundleNow():
-    return RPCRequest(method="aa_sendBundleNow").send()
+    return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
 def dumpMempool():
-    mempool = RPCRequest(method="aa_dumpMempool").send().result["mempool"]
+    mempool = RPCRequest(method="debug_bundler_dumpMempool").send().result
     for i, entry in enumerate(mempool):
-        mempool[i] = UserOperation(**entry["userOp"])
+        mempool[i] = UserOperation(**entry)
     return mempool
 
 
 def setThrottled(address):
     assert (
         RPCRequest(
-            method="aa_setReputation",
+            method="debug_bundler_setReputation",
             params=[{"reputation": {address: {"opsSeen": 1, "opsIncluded": 2}}}],
         )
         .send()

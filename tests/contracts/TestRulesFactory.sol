@@ -24,7 +24,9 @@ contract TestRulesFactory is Stakable {
     function create(uint nonce, string memory rule, address _entryPoint) public returns (SimpleWallet account) {
         account = new SimpleWallet{salt : bytes32(nonce)}(_entryPoint);
         require(address(account) != address(0), "create failed");
-        if (rule.eq("no_storage")) {
+        if (rule.eq("")) {
+        }
+        else if (rule.eq("no_storage")) {
         }
         else if (rule.eq("storage")) {
             emit Address(entryPoint);
