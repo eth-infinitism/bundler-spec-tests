@@ -4,8 +4,8 @@ from tests.types import UserOperation, RPCErrorCode
 from tests.utils import assertRpcError, dumpMempool, deploy_wallet_contract
 
 
-@pytest.mark.parametrize("interval", ["manual"])
-@pytest.mark.usefixtures("clearState", "setBundleInterval")
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clearState", "setBundlingMode")
 def test_bundle_replace_by_fee(w3):
     wallet = deploy_wallet_contract(w3)
     callData = wallet.encodeABI(fn_name="setState", args=[1])
@@ -36,19 +36,21 @@ def test_bundle_replace_by_fee(w3):
     assert dumpMempool() == [higherFeeOp]
 
 
-@pytest.mark.skip
-@pytest.mark.usefixtures("clearState", "setBundleInterval")
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clearState", "setBundlingMode")
 def test_bundle(w3):
     wallet1 = deploy_wallet_contract(w3)
     wallet2 = deploy_wallet_contract(w3)
     callData = wallet1.encodeABI(fn_name="setState", args=[1])
-    wallet1op1 = UserOperation(sender=wallet1.address, nonce="0x1", callData=callData)
-    wallet1op2 = UserOperation(sender=wallet1.address, nonce="0x2", callData=callData)
+    wallet1ops = [
+        UserOperation(sender=wallet1.address, nonce=hex(i), callData=callData)
+        for i in range(4)
+    ]
     wallet2op1 = UserOperation(sender=wallet2.address, nonce="0x1", callData=callData)
 
-    wallet1op1.send()
-    assert dumpMempool() == [wallet1op1]
-    wallet1op2.send()
-    assert dumpMempool() == [wallet1op1]
+    for i, op in enumerate(wallet1ops):
+        op.send()
+        assert dumpMempool() == wallet1ops[: i + 1]
+
     wallet2op1.send()
-    assert dumpMempool() == [wallet1op2, wallet2op1]
+    assert dumpMempool() == wallet1ops + [wallet2op1]

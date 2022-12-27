@@ -20,6 +20,7 @@ def test_eth_estimateUserOperationGas(badSigUserOp, schema):
     validate(instance=response.result, schema=schema)
 
 
+@pytest.mark.skip
 def test_eth_estimateUserOperationGas_revert(wallet_contract, badSigUserOp):
     badSigUserOp.callData = wallet_contract.encodeABI(fn_name="fail")
     response = RPCRequest(

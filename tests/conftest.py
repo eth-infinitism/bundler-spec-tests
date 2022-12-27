@@ -3,12 +3,11 @@ import os
 import subprocess
 
 import pytest
-import web3
 from solcx import install_solc
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
-from .utils import deploy_wallet_contract
+from .utils import deploy_wallet_contract, deploy_and_deposit, deploy_contract
 
 
 def pytest_configure(config):
@@ -38,7 +37,7 @@ def pytest_addoption(parser):
     parser.addoption("--launcher-script", action="store")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereumNode))
     w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -65,6 +64,26 @@ def entrypoint_contract(w3):
 
 
 @pytest.fixture
+def paymaster_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
+
+
+@pytest.fixture
+def factory_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
+
+
+@pytest.fixture
+def rules_account_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", False)
+
+
+@pytest.fixture(scope="session")
+def helper_contract(w3):
+    return deploy_contract(w3, "Helper")
+
+
+@pytest.fixture
 def userOp(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
@@ -83,24 +102,30 @@ def sendUserOperation(userOp):
 
 @pytest.fixture
 def sendBundleNow():
-    return RPCRequest(method="aa_sendBundleNow").send()
+    return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
 @pytest.fixture
 def clearState():
-    return RPCRequest(method="aa_clearState").send()
+    return RPCRequest(method="debug_bundler_clearState").send()
 
 
 @pytest.fixture
-def setBundleInterval(interval):
-    return RPCRequest(method="aa_setBundleInterval", params=[interval]).send()
+def setBundlingMode(mode):
+    response = RPCRequest(method="debug_bundler_setBundlingMode", params=[mode]).send()
+    return response
 
 
 @pytest.fixture
-def setReputation():
-    return RPCRequest(method="aa_setReputation").send()
+def setReputation(reputations):
+    return RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[reputations, CommandLineArgs.entryPoint],
+    ).send()
 
 
 @pytest.fixture
 def dumpReputation():
-    return RPCRequest(method="aa_dumpReputation").send()
+    return RPCRequest(
+        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entryPoint]
+    ).send()

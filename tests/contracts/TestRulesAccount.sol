@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
+import "./Stakable.sol";
 
 contract Dummy {
     uint public value = 1;
@@ -34,7 +35,7 @@ contract TestCoin {
     }
 }
 
-contract TestRulesAccount is IAccount, IPaymaster {
+contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
     uint state;
     TestCoin public coin;
@@ -42,7 +43,7 @@ contract TestRulesAccount is IAccount, IPaymaster {
     event State(uint oldState, uint newState);
 
     constructor(address _ep) payable {
-        if (_ep != address(0)) {
+        if (_ep != address(0) && msg.value > 0) {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
         }
@@ -59,7 +60,7 @@ contract TestRulesAccount is IAccount, IPaymaster {
         return 0;
     }
 
-    function eq(string memory a, string memory b) internal returns (bool) {
+    function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
@@ -89,6 +90,11 @@ contract TestRulesAccount is IAccount, IPaymaster {
         else if (eq(rule, "inner-revert")) return coin.reverting();
         else if (eq(rule, "oog")) return coin.wasteGas();
 
+        else if (eq(rule, "no_storage")) return 0;
+        else if (eq(rule, "account_storage")) return state;
+        else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(this));
+        else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
+
         revert(string.concat("unknown rule: ", rule));
     }
 
@@ -111,14 +117,4 @@ contract TestRulesAccount is IAccount, IPaymaster {
     }
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
-}
-
-contract TestRulesAccountDeployer {
-    function create(string memory rule, TestCoin coin) public returns (TestRulesAccount) {
-        TestRulesAccount a = new TestRulesAccount{salt : bytes32(uint(0))}(address(0));
-        a.setCoin(coin);
-        a.runRule(rule);
-        return a;
-    }
-
 }

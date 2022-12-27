@@ -6,7 +6,7 @@ See https://github.com/eth-infinitism/bundler
 import pytest
 
 from tests.types import UserOperation, RPCErrorCode
-from tests.utils import assertRpcError
+from tests.utils import assertRpcError, getSenderAddress
 
 
 def stringToPrefixedHex(s):
@@ -32,47 +32,52 @@ banned_opcodes = [
     "BLOCKHASH",
     "CREATE",
     "CREATE2",
-    "OTHERSLOAD",
-    "OTHERSSTORE",
 ]
-
-allowed_opcodes = [
-    "",
-    "SELFSSLOAD",
-    "SELFSSTORE",
-    "SELFREFSLOAD",
-    "SELFREFSSTORE",
-]
-
-
-@pytest.mark.parametrize("allowed_op", allowed_opcodes)
-def test_allowed_opcode(opban_contract, allowed_op):
-    response = UserOperation(
-        sender=opban_contract.address, signature=stringToPrefixedHex(allowed_op)
-    ).send()
-    # assert response.result == userOpHash(opban_contract, userOp)
-    assert int(response.result, 16)
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
-def test_account_banned_opcode(opban_contract, banned_op):
+def test_account_banned_opcode(rules_account_contract, banned_op):
     response = UserOperation(
-        sender=opban_contract.address, signature=stringToPrefixedHex(banned_op)
+        sender=rules_account_contract.address, signature=stringToPrefixedHex(banned_op)
     ).send()
     assertRpcError(
         response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
     )
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize("banned_op", banned_opcodes)
-def test_paymaster_banned_opcode(opban_contract, banned_op):
+def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):
     response = UserOperation(
-        sender=opban_contract.address,
-        paymasterAndData=opban_contract.address + stringToHex(banned_op),
+        sender=wallet_contract.address,
+        paymasterAndData=paymaster_contract.address + stringToHex(banned_op),
     ).send()
     assertRpcError(
         response,
         "paymaster uses banned opcode: " + banned_op,
+        RPCErrorCode.BANNED_OPCODE,
+    )
+
+
+@pytest.mark.parametrize("banned_op", banned_opcodes)
+def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned_op):
+    initCode = (
+        factory_contract.address
+        + factory_contract.functions.create(
+            123, banned_op, entrypoint_contract.address
+        ).build_transaction()["data"][2:]
+    )
+    sender = getSenderAddress(w3, initCode)
+    entrypoint_contract.functions.depositTo(sender).transact(
+        {"value": 10**18, "from": w3.eth.accounts[0]}
+    )
+    response = UserOperation(sender=sender, initCode=initCode).send()
+    assertRpcError(
+        response,
+        "factory",
+        RPCErrorCode.BANNED_OPCODE,
+    )
+    assertRpcError(
+        response,
+        banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )

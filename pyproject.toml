@@ -16,11 +16,11 @@ line-length = 88
 disable = ["C0114", "C0115", "C0116", "W0621"] # missing-module-docstring, redefined-outer-name as it conflicts with pytest fixtures
 argument-naming-style = "camelCase"
 attr-naming-style = "camelCase"
-function-naming-style = "camelCase"
+#function-naming-style = "camelCase"
 method-naming-style = "camelCase"
 variable-naming-style = "camelCase"
 ignored-classes = ["Error"]
-good-names = ["w3"]
+good-names = ["w3", "id"]
 
 [tool.pdm]
 [tool.pdm.build]
@@ -31,6 +31,10 @@ build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
 init-deps = {shell = "cd @account-abstraction; yarn; cd ../; cd spec; yarn && yarn build"}
+update-deps = {shell = "git submodule foreach git pull; cd @account-abstraction; yarn && yarn compile;  cd ../spec; yarn && yarn build"}
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x1306b01bC3e4AD202612D3843387e94737673F53 --ethereum-node http://127.0.0.1:8545/"
+lint = "pylint tests"
+format = "black tests"
 
 [project]
 name = "bundler-spec-tests"
@@ -52,7 +56,7 @@ dependencies = [
     "black>=22.12.0",
     "pylint>=2.15.8",
 ]
-requires-python = ">=3.8,<4.0"
+requires-python = ">=3.8,<3.11"
 license = {text = "MIT"}
 readme = "README.md"
 
