@@ -103,7 +103,13 @@ def sendBundleNow():
 
 
 def dumpMempool():
-    mempool = RPCRequest(method="debug_bundler_dumpMempool").send().result
+    mempool = (
+        RPCRequest(
+            method="debug_bundler_dumpMempool", params=[CommandLineArgs.entryPoint]
+        )
+        .send()
+        .result
+    )
     for i, entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry)
     return mempool
@@ -113,7 +119,10 @@ def setThrottled(address):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
-            params=[{"reputation": {address: {"opsSeen": 1, "opsIncluded": 2}}}],
+            params=[
+                {"address": address, "opsSeen": 1, "opsIncluded": 2},
+                CommandLineArgs.entryPoint,
+            ],
         )
         .send()
         .result

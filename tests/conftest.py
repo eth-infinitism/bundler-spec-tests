@@ -118,10 +118,15 @@ def setBundlingMode(mode):
 
 
 @pytest.fixture
-def setReputation():
-    return RPCRequest(method="debug_bundler_setReputation").send()
+def setReputation(reputations):
+    return RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[reputations, CommandLineArgs.entryPoint],
+    ).send()
 
 
 @pytest.fixture
 def dumpReputation():
-    return RPCRequest(method="debug_bundler_dumpReputation").send()
+    return RPCRequest(
+        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entryPoint]
+    ).send()
