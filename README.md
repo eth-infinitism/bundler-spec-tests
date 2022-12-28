@@ -1,12 +1,14 @@
 # EIP4337 bundler compatibility tests.
 
+For additional information on the motivation and importance of having a compatibility test suite, see https://notes.ethereum.org/@yoav/unified-erc-4337-mempool
+
 #### Prerequisites 
 
 Python version 3.8+
 PDM - python package and dependency manager version 2.2.1+
 
 #### Installation
-Run `pdm install && git submodule update --init --recursive && pdm run init-deps`
+Run `pdm install && git submodule update --init --recursive && pdm run update-deps`
 
 #### Running the tests
 
