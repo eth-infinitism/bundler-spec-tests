@@ -214,7 +214,7 @@ cases = [
 def idfunction(case):
     entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
     result = "ok" if case.assertFunc == assertOk else "drop"
-    return f"{'staked' if case.staked else 'unstaked'}_{entity}][{case.rule}_{result}"
+    return f"{'staked' if case.staked else 'unstaked'}][{entity}][{case.rule}][{result}"
 
 
 @pytest.mark.usefixtures("clearState")

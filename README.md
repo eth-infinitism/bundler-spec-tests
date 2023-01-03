@@ -1,6 +1,8 @@
 # EIP4337 bundler compatibility tests.
 
-For additional information on the motivation and importance of having a compatibility test suite, see https://notes.ethereum.org/@yoav/unified-erc-4337-mempool
+For more information on the motivation and importance of having a compatibility test suite, see https://notes.ethereum.org/@yoav/unified-erc-4337-mempool
+
+For the formal schema EIP-4337 bundler RPC API spec, see https://github.com/eth-infinitism/bundler-spec
 
 #### Prerequisites 
 
