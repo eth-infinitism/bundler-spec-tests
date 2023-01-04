@@ -50,8 +50,11 @@ jobs:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
+          name: "update-deps"
+          command: "pdm run update-deps"
+      - run:
           name: "pdm install"
-          command: "pdm install && git submodule update --init --recursive && pdm run update-deps"
+          command: "pdm install"
       - run:
           name: "clone bundler"
           command: git clone https://github.com/eth-infinitism/bundler.git
