@@ -37,7 +37,7 @@ contract TestCoin {
 
 contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
-    uint state;
+    uint public state;
     TestCoin public coin;
 
     event State(uint oldState, uint newState);

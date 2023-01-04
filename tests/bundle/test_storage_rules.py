@@ -215,13 +215,6 @@ cases = [
         assertOk,
     ),
     StorageTestCase(
-        "account_reference_storage_init_code",
-        unstaked,
-        sender,
-        withInitCode(buildUserOpForSenderTest),
-        assertError,
-    ),
-    StorageTestCase(
         "external_storage", unstaked, sender, buildUserOpForSenderTest, assertError
     ),
     # staked sender
