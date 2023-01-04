@@ -52,11 +52,13 @@ def deploy_and_deposit(w3, entrypoint_contract, contractName, staked):
 
 
 def staked_contract(w3, entrypoint_contract, contract):
-    contract.functions.addStake(entrypoint_contract.address, 2).transact(
+    tx_hash = contract.functions.addStake(entrypoint_contract.address, 2).transact(
         {"from": w3.eth.accounts[0], "value": 1 * 10**18}
     )
+    assert int(tx_hash.hex(), 16), "could not stake contract"
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     info = entrypoint_contract.functions.deposits(contract.address).call()
-    assert info[1], "could not stake contract"
+    assert info[1], "could not get deposit information"
     return contract
 
 
