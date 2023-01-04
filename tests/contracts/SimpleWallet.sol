@@ -15,6 +15,10 @@ contract SimpleWallet is IAccount {
         require(req);
     }
 
+    function addStake(IEntryPoint ep, uint32 delay) public payable {
+        ep.addStake{value: msg.value}(delay);
+    }
+
     function setState(uint _state) external {
         state=_state;
     }
