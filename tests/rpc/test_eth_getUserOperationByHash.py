@@ -1,6 +1,6 @@
 import pytest
 from jsonschema import validate, Validator
-from tests.types import RPCRequest
+from tests.types import RPCRequest, CommandLineArgs, UserOperation
 from tests.utils import userOpHash, assertRpcError
 
 
@@ -11,8 +11,14 @@ def test_eth_getUserOperationByHash(wallet_contract, userOp, schema):
         method="eth_getUserOperationByHash",
         params=[userOpHash(wallet_contract, userOp)],
     ).send()
-    print("response is", response)
-    assert response.result["userOpHash"] == userOpHash(wallet_contract, userOp)
+    assert userOpHash(
+        wallet_contract, UserOperation(**response.result["userOperation"])
+    ) == userOpHash(wallet_contract, userOp), "user operation mismatch"
+    assert (
+        response.result["entryPoint"] == CommandLineArgs.entryPoint
+    ), "wrong entrypoint"
+    assert response.result["blockNumber"], "no block number"
+    assert response.result["blockHash"], "no block hash"
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
 
