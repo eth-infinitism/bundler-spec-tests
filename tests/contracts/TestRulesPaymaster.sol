@@ -54,6 +54,9 @@ contract TestRulesPaymaster is IPaymaster {
         if (rule.eq("context")) {
             return ("this is a context", 0);
         }
+        if (rule.eq("external_storage")) {
+            return ("", coin.balanceOf(address(0xdeadcafe)));
+        }
         require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         return ("", 0);
     }

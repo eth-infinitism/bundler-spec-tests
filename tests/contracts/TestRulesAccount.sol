@@ -37,7 +37,7 @@ contract TestCoin {
 
 contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
-    uint state;
+    uint public state;
     TestCoin public coin;
 
     event State(uint oldState, uint newState);
@@ -94,6 +94,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "account_storage")) return state;
         else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(this));
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
+        else if (eq(rule, "external_storage")) return coin.balanceOf(address(0xdeadcafe));
 
         revert(string.concat("unknown rule: ", rule));
     }

@@ -38,6 +38,10 @@ def withInitCode(buildUserOpFunc):
             ).build_transaction()["data"][2:]
         )
         sender = getSenderAddress(w3, initCode)
+        tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
+            {"value": 10**18, "from": w3.eth.accounts[0]}
+        )
+        w3.eth.wait_for_transaction_receipt(tx_hash)
         userOp.sender = sender
         userOp.initCode = initCode
         return userOp
@@ -64,9 +68,10 @@ def buildUserOpForFactoryTest(w3, entrypoint_contract, factory_contract, rule):
         ).build_transaction()["data"][2:]
     )
     sender = getSenderAddress(w3, initCode)
-    entrypoint_contract.functions.depositTo(sender).transact(
+    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     return UserOperation(sender=sender, initCode=initCode)
 
 
@@ -115,6 +120,13 @@ cases = [
     StorageTestCase(
         "context", unstaked, paymaster, buildUserOpForPaymasterTest, assertError
     ),
+    StorageTestCase(
+        "external_storage",
+        unstaked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertError,
+    ),
     # staked paymaster
     StorageTestCase(
         "no_storage", staked, paymaster, buildUserOpForPaymasterTest, assertOk
@@ -145,6 +157,9 @@ cases = [
     StorageTestCase(
         "context", staked, paymaster, buildUserOpForPaymasterTest, assertOk
     ),
+    StorageTestCase(
+        "external_storage", staked, paymaster, buildUserOpForPaymasterTest, assertError
+    ),
     # unstaked factory
     StorageTestCase(
         "no_storage", unstaked, factory, buildUserOpForFactoryTest, assertOk
@@ -165,6 +180,9 @@ cases = [
         buildUserOpForFactoryTest,
         assertError,
     ),
+    StorageTestCase(
+        "external_storage", unstaked, factory, buildUserOpForFactoryTest, assertError
+    ),
     # staked factory
     StorageTestCase("no_storage", staked, factory, buildUserOpForFactoryTest, assertOk),
     StorageTestCase("storage", staked, factory, buildUserOpForFactoryTest, assertOk),
@@ -181,6 +199,9 @@ cases = [
         buildUserOpForFactoryTest,
         assertOk,
     ),
+    StorageTestCase(
+        "external_storage", staked, factory, buildUserOpForFactoryTest, assertError
+    ),
     # unstaked sender
     StorageTestCase("no_storage", unstaked, sender, buildUserOpForSenderTest, assertOk),
     StorageTestCase(
@@ -194,11 +215,7 @@ cases = [
         assertOk,
     ),
     StorageTestCase(
-        "account_reference_storage_init_code",
-        unstaked,
-        sender,
-        withInitCode(buildUserOpForSenderTest),
-        assertError,
+        "external_storage", unstaked, sender, buildUserOpForSenderTest, assertError
     ),
     # staked sender
     StorageTestCase("no_storage", staked, sender, buildUserOpForSenderTest, assertOk),
@@ -207,6 +224,9 @@ cases = [
     ),
     StorageTestCase(
         "account_reference_storage", staked, sender, buildUserOpForSenderTest, assertOk
+    ),
+    StorageTestCase(
+        "external_storage", staked, sender, buildUserOpForSenderTest, assertError
     ),
 ]
 
@@ -220,10 +240,6 @@ def idfunction(case):
 @pytest.mark.usefixtures("clearState")
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 def test_rule(w3, entrypoint_contract, case):
-    if "account_reference_storage_init_code" in case.rule:
-        pytest.skip()
-    if "account_reference_storage" in case.rule and case.assertFunc == assertOk:
-        pytest.skip()
     entity_contract = deploy_and_deposit(
         w3, entrypoint_contract, case.entity, case.staked
     )
