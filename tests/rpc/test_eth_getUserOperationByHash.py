@@ -4,7 +4,7 @@ from tests.types import RPCRequest, CommandLineArgs, UserOperation
 from tests.utils import userOpHash, assertRpcError
 
 
-@pytest.mark.usefixtures("sendUserOperation")
+@pytest.mark.usefixtures("sendUserOperation", "sendBundleNow")
 @pytest.mark.parametrize("method", ["eth_getUserOperationByHash"], ids=[""])
 def test_eth_getUserOperationByHash(wallet_contract, userOp, schema):
     response = RPCRequest(
