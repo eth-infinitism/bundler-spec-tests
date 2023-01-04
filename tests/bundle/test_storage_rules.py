@@ -64,9 +64,10 @@ def buildUserOpForFactoryTest(w3, entrypoint_contract, factory_contract, rule):
         ).build_transaction()["data"][2:]
     )
     sender = getSenderAddress(w3, initCode)
-    entrypoint_contract.functions.depositTo(sender).transact(
+    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     return UserOperation(sender=sender, initCode=initCode)
 
 

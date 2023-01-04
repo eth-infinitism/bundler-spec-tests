@@ -67,9 +67,10 @@ def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned
         ).build_transaction()["data"][2:]
     )
     sender = getSenderAddress(w3, initCode)
-    entrypoint_contract.functions.depositTo(sender).transact(
+    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     response = UserOperation(sender=sender, initCode=initCode).send()
     assertRpcError(
         response,
