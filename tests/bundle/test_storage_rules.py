@@ -115,6 +115,13 @@ cases = [
     StorageTestCase(
         "context", unstaked, paymaster, buildUserOpForPaymasterTest, assertError
     ),
+    StorageTestCase(
+        "external_storage",
+        unstaked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertError,
+    ),
     # staked paymaster
     StorageTestCase(
         "no_storage", staked, paymaster, buildUserOpForPaymasterTest, assertOk
@@ -145,6 +152,9 @@ cases = [
     StorageTestCase(
         "context", staked, paymaster, buildUserOpForPaymasterTest, assertOk
     ),
+    StorageTestCase(
+        "external_storage", staked, paymaster, buildUserOpForPaymasterTest, assertError
+    ),
     # unstaked factory
     StorageTestCase(
         "no_storage", unstaked, factory, buildUserOpForFactoryTest, assertOk
@@ -165,6 +175,9 @@ cases = [
         buildUserOpForFactoryTest,
         assertError,
     ),
+    StorageTestCase(
+        "external_storage", unstaked, factory, buildUserOpForFactoryTest, assertError
+    ),
     # staked factory
     StorageTestCase("no_storage", staked, factory, buildUserOpForFactoryTest, assertOk),
     StorageTestCase("storage", staked, factory, buildUserOpForFactoryTest, assertOk),
@@ -180,6 +193,9 @@ cases = [
         factory,
         buildUserOpForFactoryTest,
         assertOk,
+    ),
+    StorageTestCase(
+        "external_storage", staked, factory, buildUserOpForFactoryTest, assertError
     ),
     # unstaked sender
     StorageTestCase("no_storage", unstaked, sender, buildUserOpForSenderTest, assertOk),
@@ -200,6 +216,9 @@ cases = [
         withInitCode(buildUserOpForSenderTest),
         assertError,
     ),
+    StorageTestCase(
+        "external_storage", unstaked, sender, buildUserOpForSenderTest, assertError
+    ),
     # staked sender
     StorageTestCase("no_storage", staked, sender, buildUserOpForSenderTest, assertOk),
     StorageTestCase(
@@ -207,6 +226,9 @@ cases = [
     ),
     StorageTestCase(
         "account_reference_storage", staked, sender, buildUserOpForSenderTest, assertOk
+    ),
+    StorageTestCase(
+        "external_storage", staked, sender, buildUserOpForSenderTest, assertError
     ),
 ]
 
