@@ -44,7 +44,7 @@ def w3():
     return w3
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def wallet_contract(w3):
     return deploy_wallet_contract(w3)
 

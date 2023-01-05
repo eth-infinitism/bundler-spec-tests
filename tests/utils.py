@@ -91,7 +91,7 @@ def assertRpcError(response, message, code):
         assert response.code == code
         assert message in response.message
     except AttributeError:
-        raise Exception(response)
+        raise Exception(f"expected error object, got:\n{response}")
 
 
 def getSenderAddress(w3, initCode):
