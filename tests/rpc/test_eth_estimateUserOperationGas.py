@@ -6,25 +6,32 @@ See https://github.com/eth-infinitism/bundler
 from dataclasses import asdict
 import pytest
 from jsonschema import validate, Validator
-from tests.types import RPCRequest, CommandLineArgs
+from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode
 from tests.utils import assertRpcError
 
 
 @pytest.mark.parametrize("method", ["eth_estimateUserOperationGas"], ids=[""])
-def test_eth_estimateUserOperationGas(badSigUserOp, schema):
+def test_eth_estimateUserOperationGas(userOp, schema):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
-        params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
+        params=[asdict(userOp), CommandLineArgs.entryPoint],
     ).send()
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
 
 
-@pytest.mark.skip
-def test_eth_estimateUserOperationGas_revert(wallet_contract, badSigUserOp):
-    badSigUserOp.callData = wallet_contract.encodeABI(fn_name="fail")
+def test_eth_estimateUserOperationGas_execution_revert(wallet_contract, userOp):
+    userOp.callData = wallet_contract.encodeABI(fn_name="fail")
+    response = RPCRequest(
+        method="eth_estimateUserOperationGas",
+        params=[asdict(userOp), CommandLineArgs.entryPoint],
+    ).send()
+    assertRpcError(response, "test fail", RPCErrorCode.EXECUTION_REVERTED)
+
+
+def test_eth_estimateUserOperationGas_simulation_revert(wallet_contract, badSigUserOp):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
         params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
     ).send()
-    assertRpcError(response, "test fail", -32500)
+    assertRpcError(response, "dead signature", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)

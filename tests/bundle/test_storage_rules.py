@@ -16,7 +16,7 @@ def assertOk(response):
     try:
         assert response.result
     except AttributeError:
-        raise Exception(response)
+        raise Exception(f"expected result object, got:\n{response}")
 
 
 def assertError(response):
