@@ -1,3 +1,4 @@
+import itertools
 from dataclasses import dataclass, field, asdict
 from enum import IntEnum
 from typing import ClassVar
@@ -50,7 +51,7 @@ class UserOperation:
 @dataclass
 class RPCRequest:
     method: str
-    id: int = 1234
+    id: int = field(default_factory=itertools.count().__next__)
     params: list = field(default_factory=list, compare=False)
     jsonrpc: str = "2.0"
 
