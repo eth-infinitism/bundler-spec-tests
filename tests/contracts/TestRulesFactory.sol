@@ -43,6 +43,12 @@ contract TestRulesFactory is Stakable {
         else if (rule.eq("external_storage")) {
             emit Uint(coin.balanceOf(address(0xdeadcafe)));
         }
+        else if (rule.eq("account_reference_storage_struct")) {
+            emit Uint(coin.getInfo(address(account)).c);
+        }
+        else if (rule.eq("reference_storage_struct")) {
+            emit Uint(coin.getInfo(address(this)).c);
+        }
         else {
             require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         }

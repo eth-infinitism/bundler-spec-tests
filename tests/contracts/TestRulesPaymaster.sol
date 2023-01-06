@@ -38,12 +38,18 @@ contract TestRulesPaymaster is IPaymaster {
         if (rule.eq("reference_storage")) {
             return ("", coin.balanceOf(address (this)));
         }
+        if (rule.eq("reference_storage_struct")) {
+            return ("", coin.getInfo(address(this)).c);
+        }
         if (rule.eq("account_storage")) {
             return ("", SimpleWallet(userOp.sender).state());
         }
         if (rule.eq("account_reference_storage")) {
             require(userOp.initCode.length == 0, "iniCode not allowed");
             return ("", coin.balanceOf(userOp.sender));
+        }
+        if (rule.eq("account_reference_storage_struct")) {
+            return ("", coin.getInfo(address(userOp.sender)).c);
         }
         if (rule.eq("account_reference_storage_init_code")) {
             return ("", coin.balanceOf(userOp.sender));
