@@ -101,10 +101,24 @@ cases = [
         assertError,
     ),
     StorageTestCase(
+        "reference_storage_struct",
+        unstaked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertError,
+    ),
+    StorageTestCase(
         "account_storage", unstaked, paymaster, buildUserOpForPaymasterTest, assertOk
     ),
     StorageTestCase(
         "account_reference_storage",
+        unstaked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertOk,
+    ),
+    StorageTestCase(
+        "account_reference_storage_struct",
         unstaked,
         paymaster,
         buildUserOpForPaymasterTest,
@@ -138,10 +152,24 @@ cases = [
         "reference_storage", staked, paymaster, buildUserOpForPaymasterTest, assertOk
     ),
     StorageTestCase(
+        "reference_storage_struct",
+        staked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertOk,
+    ),
+    StorageTestCase(
         "account_storage", staked, paymaster, buildUserOpForPaymasterTest, assertOk
     ),
     StorageTestCase(
         "account_reference_storage",
+        staked,
+        paymaster,
+        buildUserOpForPaymasterTest,
+        assertOk,
+    ),
+    StorageTestCase(
+        "account_reference_storage_struct",
         staked,
         paymaster,
         buildUserOpForPaymasterTest,
@@ -171,10 +199,24 @@ cases = [
         "reference_storage", unstaked, factory, buildUserOpForFactoryTest, assertError
     ),
     StorageTestCase(
+        "reference_storage_struct",
+        unstaked,
+        factory,
+        buildUserOpForFactoryTest,
+        assertError,
+    ),
+    StorageTestCase(
         "account_storage", unstaked, factory, buildUserOpForFactoryTest, assertOk
     ),
     StorageTestCase(
         "account_reference_storage",
+        unstaked,
+        factory,
+        buildUserOpForFactoryTest,
+        assertError,
+    ),
+    StorageTestCase(
+        "account_reference_storage_struct",
         unstaked,
         factory,
         buildUserOpForFactoryTest,
@@ -190,10 +232,20 @@ cases = [
         "reference_storage", staked, factory, buildUserOpForFactoryTest, assertOk
     ),
     StorageTestCase(
+        "reference_storage_struct", staked, factory, buildUserOpForFactoryTest, assertOk
+    ),
+    StorageTestCase(
         "account_storage", staked, factory, buildUserOpForFactoryTest, assertOk
     ),
     StorageTestCase(
         "account_reference_storage",
+        staked,
+        factory,
+        buildUserOpForFactoryTest,
+        assertOk,
+    ),
+    StorageTestCase(
+        "account_reference_storage_struct",
         staked,
         factory,
         buildUserOpForFactoryTest,
@@ -215,6 +267,13 @@ cases = [
         assertOk,
     ),
     StorageTestCase(
+        "account_reference_storage_struct",
+        unstaked,
+        sender,
+        buildUserOpForSenderTest,
+        assertOk,
+    ),
+    StorageTestCase(
         "external_storage", unstaked, sender, buildUserOpForSenderTest, assertError
     ),
     # staked sender
@@ -224,6 +283,13 @@ cases = [
     ),
     StorageTestCase(
         "account_reference_storage", staked, sender, buildUserOpForSenderTest, assertOk
+    ),
+    StorageTestCase(
+        "account_reference_storage_struct",
+        staked,
+        sender,
+        buildUserOpForSenderTest,
+        assertOk,
     ),
     StorageTestCase(
         "external_storage", staked, sender, buildUserOpForSenderTest, assertError

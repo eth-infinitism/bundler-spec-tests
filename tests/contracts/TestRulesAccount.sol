@@ -13,6 +13,17 @@ contract Dummy {
 contract TestCoin {
     mapping(address => uint) balances;
 
+    struct Struct {
+        uint a;
+        uint b;
+        uint c;
+    }
+    mapping(address=>Struct) public structInfo;
+
+    function getInfo(address addr) public returns (Struct memory) {
+        return structInfo[addr];
+    }
+
     function balanceOf(address addr) public returns (uint) {
         return balances[addr];
     }
@@ -87,14 +98,13 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "SELFREFSLOAD")) return coin.balanceOf(address(this));
         else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
 
-        else if (eq(rule, "inner-revert")) return coin.reverting();
-        else if (eq(rule, "oog")) return coin.wasteGas();
-
         else if (eq(rule, "no_storage")) return 0;
         else if (eq(rule, "account_storage")) return state;
         else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(this));
+        else if (eq(rule, "account_reference_storage_struct")) return coin.getInfo(address(this)).c;
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
         else if (eq(rule, "external_storage")) return coin.balanceOf(address(0xdeadcafe));
+
 
         revert(string.concat("unknown rule: ", rule));
     }
