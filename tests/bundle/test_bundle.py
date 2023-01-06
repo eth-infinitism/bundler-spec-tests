@@ -64,12 +64,12 @@ def test_max_allowed_ops_unstaked_sender(w3):
     sendBundleNow()
     mempool = dumpMempool()
     assert mempool == walletOps[1:-1]
-    hash = userOpHash(wallet, walletOps[0])
+    ophash = userOpHash(wallet, walletOps[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
-        params=[hash],
+        params=[ophash],
     ).send()
-    assert response.result["userOpHash"] == hash
+    assert response.result["userOpHash"] == ophash
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
@@ -88,9 +88,9 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract):
     sendBundleNow()
     mempool = dumpMempool()
     assert mempool == walletOps[1:]
-    hash = userOpHash(wallet, walletOps[0])
+    ophash = userOpHash(wallet, walletOps[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
-        params=[hash],
+        params=[ophash],
     ).send()
-    assert response.result["userOpHash"] == hash
+    assert response.result["userOpHash"] == ophash

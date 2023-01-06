@@ -23,7 +23,9 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractName, ctrParams=[], value=0, gas=4 * 10**6):
+def deploy_contract(w3, contractName, ctrParams=None, value=0, gas=4 * 10**6):
+    if ctrParams is None:
+        ctrParams = []
     interface = compile_contract(contractName)
     contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     account = w3.eth.accounts[0]
@@ -90,8 +92,8 @@ def assertRpcError(response, message, code):
     try:
         assert response.code == code
         assert message in response.message
-    except AttributeError:
-        raise Exception(f"expected error object, got:\n{response}")
+    except AttributeError as exc:
+        raise Exception(f"expected error object, got:\n{response}") from exc
 
 
 def getSenderAddress(w3, initCode):

@@ -15,8 +15,8 @@ from tests.utils import (
 def assertOk(response):
     try:
         assert response.result
-    except AttributeError:
-        raise Exception(f"expected result object, got:\n{response}")
+    except AttributeError as exc:
+        raise Exception(f"expected result object, got:\n{response}") from exc
 
 
 def assertError(response):
@@ -299,7 +299,7 @@ cases = [
 
 def idfunction(case):
     entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
-    result = "ok" if case.assertFunc == assertOk else "drop"
+    result = "ok" if case.assertFunc.__name__ == assertOk.__name__ else "drop"
     return f"{'staked' if case.staked else 'unstaked'}][{entity}][{case.rule}][{result}"
 
 

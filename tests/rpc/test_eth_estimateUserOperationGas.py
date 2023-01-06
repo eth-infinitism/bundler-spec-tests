@@ -29,7 +29,7 @@ def test_eth_estimateUserOperationGas_execution_revert(wallet_contract, userOp):
     assertRpcError(response, "test fail", RPCErrorCode.EXECUTION_REVERTED)
 
 
-def test_eth_estimateUserOperationGas_simulation_revert(wallet_contract, badSigUserOp):
+def test_eth_estimateUserOperationGas_simulation_revert(badSigUserOp):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
         params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
