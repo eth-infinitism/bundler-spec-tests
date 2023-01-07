@@ -10,7 +10,7 @@ from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode
 from tests.utils import assert_rpc_error
 
 
-@pytest.mark.parametrize("method", ["eth_estimateUserOperationGas"], ids=[""])
+@pytest.mark.parametrize("schema_method", ["eth_estimateUserOperationGas"], ids=[""])
 def test_eth_estimateUserOperationGas(userop, schema):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",

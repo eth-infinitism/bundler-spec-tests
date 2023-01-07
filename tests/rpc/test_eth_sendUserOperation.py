@@ -9,7 +9,7 @@ from tests.types import RPCErrorCode
 from tests.utils import userop_hash, assert_rpc_error, send_bundle_now
 
 
-@pytest.mark.parametrize("method", ["eth_sendUserOperation"], ids=[""])
+@pytest.mark.parametrize("schema_method", ["eth_sendUserOperation"], ids=[""])
 def test_eth_sendUserOperation(wallet_contract, userop, schema):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0

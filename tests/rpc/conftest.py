@@ -24,7 +24,9 @@ def openrpcschema():
 
 
 @pytest.fixture
-def schema(openrpcschema, method):
+def schema(openrpcschema, schema_method):
     return next(
-        m["result"]["schema"] for m in openrpcschema["methods"] if m["name"] == method
+        m["result"]["schema"]
+        for m in openrpcschema["methods"]
+        if m["name"] == schema_method
     )

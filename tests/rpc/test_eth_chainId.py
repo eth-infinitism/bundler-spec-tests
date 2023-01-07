@@ -3,7 +3,7 @@ from jsonschema import validate, Validator
 from tests.types import RPCRequest, CommandLineArgs
 
 
-@pytest.mark.parametrize("method", ["eth_chainId"], ids=[""])
+@pytest.mark.parametrize("schema_method", ["eth_chainId"], ids=[""])
 def test_eth_chainId(schema):
     request = RPCRequest(method="eth_chainId")
     bundler_response = request.send(CommandLineArgs.url)

@@ -6,7 +6,7 @@ from tests.utils import userop_hash, assert_rpc_error
 
 
 @pytest.mark.usefixtures("send_user_operation", "send_bundle_now")
-@pytest.mark.parametrize("method", ["eth_getUserOperationReceipt"], ids=[""])
+@pytest.mark.parametrize("schema_method", ["eth_getUserOperationReceipt"], ids=[""])
 def test_eth_getUserOperationReceipt(wallet_contract, userop, w3, schema):
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
