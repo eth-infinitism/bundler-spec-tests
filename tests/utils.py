@@ -10,8 +10,10 @@ def compile_contract(contract):
     aa_path = os.path.realpath(current_dirname + "/../@account-abstraction")
     aa_relpath = os.path.relpath(aa_path, contracts_dirname)
     remap = "@account-abstraction=" + aa_relpath
-    with open(contracts_dirname + contract + ".sol", "r", encoding="utf-8") as f:
-        test_source = f.read()
+    with open(
+        contracts_dirname + contract + ".sol", "r", encoding="utf-8"
+    ) as contractfile:
+        test_source = contractfile.read()
         compiled_sol = compile_source(
             test_source,
             base_path=contracts_dirname,
@@ -23,27 +25,27 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractName, ctrParams=None, value=0, gas=4 * 10**6):
-    if ctrParams is None:
-        ctrParams = []
-    interface = compile_contract(contractName)
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=4 * 10**6):
+    if ctrparams is None:
+        ctrparams = []
+    interface = compile_contract(contractname)
     contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     account = w3.eth.accounts[0]
-    tx_hash = contract.constructor(*ctrParams).transact(
+    tx_hash = contract.constructor(*ctrparams).transact(
         {"gas": gas, "from": account, "value": hex(value)}
     )
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
-    assert tx_receipt.status == 1, "deployment of " + contractName + " failed"
+    assert tx_receipt.status == 1, "deployment of " + contractname + " failed"
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
-def deploy_and_deposit(w3, entrypoint_contract, contractName, staked):
+def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
     contract = deploy_contract(
         w3,
-        contractName,
-        ctrParams=[entrypoint_contract.address],
+        contractname,
+        ctrparams=[entrypoint_contract.address],
     )
     tx_hash = entrypoint_contract.functions.depositTo(contract.address).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
@@ -67,28 +69,28 @@ def staked_contract(w3, entrypoint_contract, contract):
 
 def deploy_wallet_contract(w3):
     return deploy_contract(
-        w3, "SimpleWallet", ctrParams=[CommandLineArgs.entryPoint], value=2 * 10**18
+        w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=2 * 10**18
     )
 
 
-def userOpHash(wallet_contract, userOp):
+def userop_hash(wallet_contract, userop):
     payload = (
-        userOp.sender,
-        int(userOp.nonce, 16),
-        userOp.initCode,
-        userOp.callData,
-        int(userOp.callGasLimit, 16),
-        int(userOp.verificationGasLimit, 16),
-        int(userOp.preVerificationGas, 16),
-        int(userOp.maxFeePerGas, 16),
-        int(userOp.maxPriorityFeePerGas, 16),
-        userOp.paymasterAndData,
-        userOp.signature,
+        userop.sender,
+        int(userop.nonce, 16),
+        userop.initCode,
+        userop.callData,
+        int(userop.callGasLimit, 16),
+        int(userop.verificationGasLimit, 16),
+        int(userop.preVerificationGas, 16),
+        int(userop.maxFeePerGas, 16),
+        int(userop.maxPriorityFeePerGas, 16),
+        userop.paymasterAndData,
+        userop.signature,
     )
     return "0x" + wallet_contract.functions.getUserOpHash(payload).call().hex()
 
 
-def assertRpcError(response, message, code):
+def assert_rpc_error(response, message, code):
     try:
         assert response.code == code
         assert message in response.message
@@ -96,21 +98,30 @@ def assertRpcError(response, message, code):
         raise Exception(f"expected error object, got:\n{response}") from exc
 
 
-def getSenderAddress(w3, initCode):
+def get_sender_address(w3, initcode):
     helper = deploy_contract(w3, "Helper")
-    return helper.functions.getSenderAddress(CommandLineArgs.entryPoint, initCode).call(
+    return helper.functions.getSenderAddress(CommandLineArgs.entrypoint, initcode).call(
         {"gas": 10000000}
     )
 
 
-def sendBundleNow():
+def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
+    sender = get_sender_address(w3, initcode)
+    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
+        {"value": 10**18, "from": w3.eth.accounts[0]}
+    )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
+    return sender
+
+
+def send_bundle_now():
     return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
-def dumpMempool():
+def dump_mempool():
     mempool = (
         RPCRequest(
-            method="debug_bundler_dumpMempool", params=[CommandLineArgs.entryPoint]
+            method="debug_bundler_dumpMempool", params=[CommandLineArgs.entrypoint]
         )
         .send()
         .result
@@ -120,15 +131,23 @@ def dumpMempool():
     return mempool
 
 
-def setThrottled(address):
+def set_throttled(address):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
             params=[
                 {"address": address, "opsSeen": 1, "opsIncluded": 2},
-                CommandLineArgs.entryPoint,
+                CommandLineArgs.entrypoint,
             ],
         )
         .send()
         .result
     )
+
+
+def to_prefixed_hex(s):
+    return "0x" + to_hex(s)
+
+
+def to_hex(s):
+    return s.encode().hex()

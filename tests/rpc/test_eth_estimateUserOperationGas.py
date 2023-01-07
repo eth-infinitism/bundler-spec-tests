@@ -7,31 +7,31 @@ from dataclasses import asdict
 import pytest
 from jsonschema import validate, Validator
 from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode
-from tests.utils import assertRpcError
+from tests.utils import assert_rpc_error
 
 
 @pytest.mark.parametrize("method", ["eth_estimateUserOperationGas"], ids=[""])
-def test_eth_estimateUserOperationGas(userOp, schema):
+def test_eth_estimateUserOperationGas(userop, schema):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
-        params=[asdict(userOp), CommandLineArgs.entryPoint],
+        params=[asdict(userop), CommandLineArgs.entrypoint],
     ).send()
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
 
 
-def test_eth_estimateUserOperationGas_execution_revert(wallet_contract, userOp):
-    userOp.callData = wallet_contract.encodeABI(fn_name="fail")
+def test_eth_estimateUserOperationGas_execution_revert(wallet_contract, userop):
+    userop.callData = wallet_contract.encodeABI(fn_name="fail")
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
-        params=[asdict(userOp), CommandLineArgs.entryPoint],
+        params=[asdict(userop), CommandLineArgs.entrypoint],
     ).send()
-    assertRpcError(response, "test fail", RPCErrorCode.EXECUTION_REVERTED)
+    assert_rpc_error(response, "test fail", RPCErrorCode.EXECUTION_REVERTED)
 
 
-def test_eth_estimateUserOperationGas_simulation_revert(badSigUserOp):
+def test_eth_estimateUserOperationGas_simulation_revert(bad_sig_userop):
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
-        params=[asdict(badSigUserOp), CommandLineArgs.entryPoint],
+        params=[asdict(bad_sig_userop), CommandLineArgs.entrypoint],
     ).send()
-    assertRpcError(response, "dead signature", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+    assert_rpc_error(response, "dead signature", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)

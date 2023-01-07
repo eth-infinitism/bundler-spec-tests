@@ -13,21 +13,23 @@ from .utils import deploy_wallet_contract, deploy_and_deposit, deploy_contract
 def pytest_configure(config):
     CommandLineArgs.configure(
         url=config.getoption("--url"),
-        entryPoint=config.getoption("--entry-point"),
-        ethereumNode=config.getoption("--ethereum-node"),
-        launcherScript=config.getoption("--launcher-script"),
+        entrypoint=config.getoption("--entry-point"),
+        ethereum_node=config.getoption("--ethereum-node"),
+        launcher_script=config.getoption("--launcher-script"),
     )
     install_solc(version="0.8.15")
 
 
 def pytest_sessionstart():
-    if CommandLineArgs.launcherScript is not None:
-        subprocess.run([CommandLineArgs.launcherScript, "start"], check=True, text=True)
+    if CommandLineArgs.launcher_script is not None:
+        subprocess.run(
+            [CommandLineArgs.launcher_script, "start"], check=True, text=True
+        )
 
 
 def pytest_sessionfinish():
-    if CommandLineArgs.launcherScript is not None:
-        subprocess.run([CommandLineArgs.launcherScript, "stop"], check=True, text=True)
+    if CommandLineArgs.launcher_script is not None:
+        subprocess.run([CommandLineArgs.launcher_script, "stop"], check=True, text=True)
 
 
 def pytest_addoption(parser):
@@ -39,7 +41,7 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def w3():
-    w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereumNode))
+    w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereum_node))
     w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     return w3
 
@@ -59,7 +61,7 @@ def entrypoint_contract(w3):
     with open(entrypoint_path, encoding="utf-8") as file:
         entrypoint = json.load(file)
         return w3.eth.contract(
-            abi=entrypoint["abi"], address=CommandLineArgs.entryPoint
+            abi=entrypoint["abi"], address=CommandLineArgs.entrypoint
         )
 
 
@@ -84,7 +86,7 @@ def helper_contract(w3):
 
 
 @pytest.fixture
-def userOp(wallet_contract):
+def userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
@@ -93,39 +95,39 @@ def userOp(wallet_contract):
 
 
 @pytest.fixture
-def sendUserOperation(userOp):
-    return userOp.send()
+def send_user_operation(userop):
+    return userop.send()
 
 
 # debug apis
 
 
 @pytest.fixture
-def sendBundleNow():
+def send_bundle_now():
     return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
 @pytest.fixture
-def clearState():
+def clear_state():
     return RPCRequest(method="debug_bundler_clearState").send()
 
 
 @pytest.fixture
-def setBundlingMode(mode):
+def set_bundling_mode(mode):
     response = RPCRequest(method="debug_bundler_setBundlingMode", params=[mode]).send()
     return response
 
 
 @pytest.fixture
-def setReputation(reputations):
+def set_reputation(reputations):
     return RPCRequest(
         method="debug_bundler_setReputation",
-        params=[reputations, CommandLineArgs.entryPoint],
+        params=[reputations, CommandLineArgs.entrypoint],
     ).send()
 
 
 @pytest.fixture
-def dumpReputation():
+def dump_reputation():
     return RPCRequest(
-        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entryPoint]
+        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
     ).send()

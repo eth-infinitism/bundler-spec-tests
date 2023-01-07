@@ -14,13 +14,9 @@ line-length = 88
 
 [tool.pylint]
 disable = ["C0114", "C0115", "C0116", "W0621"] # missing-module-docstring, redefined-outer-name as it conflicts with pytest fixtures
-argument-naming-style = "camelCase"
-attr-naming-style = "camelCase"
-#function-naming-style = "camelCase"
-method-naming-style = "camelCase"
-variable-naming-style = "camelCase"
 ignored-classes = ["Error"]
-good-names = ["w3", "id"]
+good-names = ["w3", "id", "i", "s"]
+good-names-rgxs = ["test_.*"]
 
 [tool.pdm]
 [tool.pdm.build]

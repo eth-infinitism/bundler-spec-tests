@@ -6,15 +6,12 @@ See https://github.com/eth-infinitism/bundler
 import pytest
 
 from tests.types import UserOperation, RPCErrorCode
-from tests.utils import assertRpcError, getSenderAddress
-
-
-def stringToPrefixedHex(s):
-    return "0x" + stringToHex(s)
-
-
-def stringToHex(s):
-    return s.encode().hex()
+from tests.utils import (
+    assert_rpc_error,
+    deposit_to_undeployed_sender,
+    to_hex,
+    to_prefixed_hex,
+)
 
 
 banned_opcodes = [
@@ -38,9 +35,9 @@ banned_opcodes = [
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_banned_opcode(rules_account_contract, banned_op):
     response = UserOperation(
-        sender=rules_account_contract.address, signature=stringToPrefixedHex(banned_op)
+        sender=rules_account_contract.address, signature=to_prefixed_hex(banned_op)
     ).send()
-    assertRpcError(
+    assert_rpc_error(
         response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
     )
 
@@ -49,9 +46,9 @@ def test_account_banned_opcode(rules_account_contract, banned_op):
 def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):
     response = UserOperation(
         sender=wallet_contract.address,
-        paymasterAndData=paymaster_contract.address + stringToHex(banned_op),
+        paymasterAndData=paymaster_contract.address + to_hex(banned_op),
     ).send()
-    assertRpcError(
+    assert_rpc_error(
         response,
         "paymaster uses banned opcode: " + banned_op,
         RPCErrorCode.BANNED_OPCODE,
@@ -60,24 +57,20 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned_op):
-    initCode = (
+    initcode = (
         factory_contract.address
         + factory_contract.functions.create(
             123, banned_op, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = getSenderAddress(w3, initCode)
-    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
-    response = UserOperation(sender=sender, initCode=initCode).send()
-    assertRpcError(
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+    response = UserOperation(sender=sender, initCode=initcode).send()
+    assert_rpc_error(
         response,
         "factory",
         RPCErrorCode.BANNED_OPCODE,
     )
-    assertRpcError(
+    assert_rpc_error(
         response,
         banned_op,
         RPCErrorCode.BANNED_OPCODE,

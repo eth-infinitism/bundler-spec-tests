@@ -6,7 +6,7 @@ from tests.types import UserOperation
 
 
 @pytest.fixture
-def badSigUserOp(wallet_contract):
+def bad_sig_userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
@@ -19,8 +19,8 @@ def openrpcschema():
     current_dirname = os.path.dirname(__file__)
     spec_filename = "openrpc.json"
     spec_path = os.path.realpath(current_dirname + "/../../spec/")
-    with open(os.path.join(spec_path, spec_filename), encoding="utf-8") as f:
-        return json.load(f)
+    with open(os.path.join(spec_path, spec_filename), encoding="utf-8") as contractfile:
+        return json.load(contractfile)
 
 
 @pytest.fixture

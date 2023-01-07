@@ -2,69 +2,69 @@ import pytest
 
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
-    assertRpcError,
-    dumpMempool,
+    assert_rpc_error,
+    dump_mempool,
     deploy_wallet_contract,
     deploy_and_deposit,
-    sendBundleNow,
-    userOpHash,
+    send_bundle_now,
+    userop_hash,
 )
 
-allowedOpsPerUnstakedSender = 4
+ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
-@pytest.mark.usefixtures("clearState", "setBundlingMode")
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_bundle_replace_by_fee(w3):
     wallet = deploy_wallet_contract(w3)
-    callData = wallet.encodeABI(fn_name="setState", args=[1])
-    lowerFeeOp = UserOperation(
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    lower_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
-        callData=callData,
+        callData=calldata,
         maxPriorityFeePerGas=hex(10**9),
     )
-    higherFeeOp = UserOperation(
+    higher_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
-        callData=callData,
+        callData=calldata,
         maxPriorityFeePerGas=hex(10**10),
     )
-    midFeeOp = UserOperation(
+    mid_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
-        callData=callData,
+        callData=calldata,
         maxPriorityFeePerGas=hex(5 * 10**9),
     )
 
-    assert lowerFeeOp.send().result
-    assert dumpMempool() == [lowerFeeOp]
-    assert higherFeeOp.send().result
-    assert dumpMempool() == [higherFeeOp]
-    assertRpcError(midFeeOp.send(), "", RPCErrorCode.INVALID_FIELDS)
-    assert dumpMempool() == [higherFeeOp]
+    assert lower_fee_op.send().result
+    assert dump_mempool() == [lower_fee_op]
+    assert higher_fee_op.send().result
+    assert dump_mempool() == [higher_fee_op]
+    assert_rpc_error(mid_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [higher_fee_op]
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
-@pytest.mark.usefixtures("clearState", "setBundlingMode")
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_max_allowed_ops_unstaked_sender(w3):
     wallet = deploy_wallet_contract(w3)
-    callData = wallet.encodeABI(fn_name="setState", args=[1])
-    walletOps = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=callData)
-        for i in range(allowedOpsPerUnstakedSender + 1)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    wallet_ops = [
+        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
-    for i, op in enumerate(walletOps):
-        op.send()
-        if i < allowedOpsPerUnstakedSender:
-            assert dumpMempool() == walletOps[: i + 1]
+    for i, userop in enumerate(wallet_ops):
+        userop.send()
+        if i < ALLOWED_OPS_PER_UNSTAKED_SENDER:
+            assert dump_mempool() == wallet_ops[: i + 1]
         else:
-            mempool = dumpMempool()
-            assert mempool == walletOps[:-1]
-    sendBundleNow()
-    mempool = dumpMempool()
-    assert mempool == walletOps[1:-1]
-    ophash = userOpHash(wallet, walletOps[0])
+            mempool = dump_mempool()
+            assert mempool == wallet_ops[:-1]
+    send_bundle_now()
+    mempool = dump_mempool()
+    assert mempool == wallet_ops[1:-1]
+    ophash = userop_hash(wallet, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
         params=[ophash],
@@ -73,22 +73,22 @@ def test_max_allowed_ops_unstaked_sender(w3):
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
-@pytest.mark.usefixtures("clearState", "setBundlingMode")
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_max_allowed_ops_staked_sender(w3, entrypoint_contract):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
-    callData = wallet.encodeABI(fn_name="setState", args=[1])
-    walletOps = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=callData)
-        for i in range(allowedOpsPerUnstakedSender + 1)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    wallet_ops = [
+        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
-    for i, op in enumerate(walletOps):
-        op.send()
-        assert dumpMempool() == walletOps[: i + 1]
-    assert dumpMempool() == walletOps
-    sendBundleNow()
-    mempool = dumpMempool()
-    assert mempool == walletOps[1:]
-    ophash = userOpHash(wallet, walletOps[0])
+    for i, userop in enumerate(wallet_ops):
+        userop.send()
+        assert dump_mempool() == wallet_ops[: i + 1]
+    assert dump_mempool() == wallet_ops
+    send_bundle_now()
+    mempool = dump_mempool()
+    assert mempool == wallet_ops[1:]
+    ophash = userop_hash(wallet, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
         params=[ophash],
