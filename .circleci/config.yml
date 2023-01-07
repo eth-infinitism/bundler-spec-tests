@@ -56,6 +56,9 @@ jobs:
           name: "pdm install"
           command: "pdm install"
       - run:
+          name: "lint"
+          command: "pdm run lint"
+      - run:
           name: "clone bundler"
           command: git clone https://github.com/eth-infinitism/bundler.git
       - restore_cache:
