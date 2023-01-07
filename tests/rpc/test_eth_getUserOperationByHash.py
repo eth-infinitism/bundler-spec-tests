@@ -1,21 +1,21 @@
 import pytest
 from jsonschema import validate, Validator
 from tests.types import RPCRequest, CommandLineArgs, UserOperation
-from tests.utils import userOpHash, assertRpcError
+from tests.utils import userop_hash, assert_rpc_error
 
 
-@pytest.mark.usefixtures("sendUserOperation", "sendBundleNow")
-@pytest.mark.parametrize("method", ["eth_getUserOperationByHash"], ids=[""])
-def test_eth_getUserOperationByHash(wallet_contract, userOp, schema):
+@pytest.mark.usefixtures("send_user_operation", "send_bundle_now")
+@pytest.mark.parametrize("schema_method", ["eth_getUserOperationByHash"], ids=[""])
+def test_eth_getUserOperationByHash(wallet_contract, userop, schema):
     response = RPCRequest(
         method="eth_getUserOperationByHash",
-        params=[userOpHash(wallet_contract, userOp)],
+        params=[userop_hash(wallet_contract, userop)],
     ).send()
-    assert userOpHash(
+    assert userop_hash(
         wallet_contract, UserOperation(**response.result["userOperation"])
-    ) == userOpHash(wallet_contract, userOp), "user operation mismatch"
+    ) == userop_hash(wallet_contract, userop), "user operation mismatch"
     assert (
-        response.result["entryPoint"] == CommandLineArgs.entryPoint
+        response.result["entryPoint"] == CommandLineArgs.entrypoint
     ), "wrong entrypoint"
     assert response.result["blockNumber"], "no block number"
     assert response.result["blockHash"], "no block hash"
@@ -25,4 +25,4 @@ def test_eth_getUserOperationByHash(wallet_contract, userOp, schema):
 
 def test_eth_getUserOperationByHash_error():
     response = RPCRequest(method="eth_getUserOperationByHash", params=[""]).send()
-    assertRpcError(response, "Missing/invalid userOpHash", -32601)
+    assert_rpc_error(response, "Missing/invalid userOpHash", -32601)

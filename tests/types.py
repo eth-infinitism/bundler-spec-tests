@@ -13,21 +13,21 @@ from eth_typing import (
 @dataclass()
 class CommandLineArgs:
     url: ClassVar[str]
-    entryPoint: ClassVar[str]
-    ethereumNode: ClassVar[str]
-    launcherScript: ClassVar[str]
+    entrypoint: ClassVar[str]
+    ethereum_node: ClassVar[str]
+    launcher_script: ClassVar[str]
 
     @classmethod
-    def configure(cls, url, entryPoint, ethereumNode, launcherScript):
+    def configure(cls, url, entrypoint, ethereum_node, launcher_script):
         cls.url = url
-        cls.entryPoint = entryPoint
-        cls.ethereumNode = ethereumNode
-        cls.launcherScript = launcherScript
+        cls.entrypoint = entrypoint
+        cls.ethereum_node = ethereum_node
+        cls.launcher_script = launcher_script
 
 
 @dataclass
 class UserOperation:
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes, invalid-name
     sender: HexStr
     nonce: HexStr = hex(0)
     initCode: HexStr = "0x"
@@ -40,11 +40,11 @@ class UserOperation:
     paymasterAndData: HexStr = "0x"
     signature: HexStr = "0x"
 
-    def send(self, entryPoint=None, url=None):
-        if entryPoint is None:
-            entryPoint = CommandLineArgs.entryPoint
+    def send(self, entrypoint=None, url=None):
+        if entrypoint is None:
+            entrypoint = CommandLineArgs.entrypoint
         return RPCRequest(
-            method="eth_sendUserOperation", params=[asdict(self), entryPoint]
+            method="eth_sendUserOperation", params=[asdict(self), entrypoint]
         ).send(url)
 
 

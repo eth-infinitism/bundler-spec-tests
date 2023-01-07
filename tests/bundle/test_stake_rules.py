@@ -1,12 +1,13 @@
+# pylint: skip-file
 import collections
 
 import pytest
 from tests.types import RPCErrorCode
 from tests.utils import (
     UserOperation,
-    assertRpcError,
+    assert_rpc_error,
 )
-from tests.utils import getSenderAddress
+from tests.utils import get_sender_address
 
 pytest.skip(allow_module_level=True)
 
@@ -47,7 +48,7 @@ sender_rules = dict(
 
 
 ################### sender tests #################
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in sender_rules.items() if value.Unstaked == ok),
@@ -61,7 +62,7 @@ def test_unstaked_sender_storage_ok(rules_account_contract, rule):
     )
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in sender_rules.items() if value.Unstaked == drop),
@@ -75,7 +76,7 @@ def test_unstaked_sender_storage_initcode_drop(
             123, "", entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = getSenderAddress(w3, initCode)
+    sender = get_sender_address(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
@@ -83,10 +84,10 @@ def test_unstaked_sender_storage_initcode_drop(
     response = UserOperation(
         sender=sender, signature=signature, initCode=initCode
     ).send()
-    assertRpcError(response, "unstaked account", RPCErrorCode.BANNED_OPCODE)
+    assert_rpc_error(response, "unstaked account", RPCErrorCode.BANNED_OPCODE)
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in sender_rules.items() if value.Staked == ok),
@@ -109,7 +110,7 @@ def test_staked_sender_storage_ok(
 
 
 ################### factory tests start ##############
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in factory_rules.items() if value.Unstaked == ok),
@@ -121,14 +122,14 @@ def test_unstaked_factory_storage_ok(w3, entrypoint_contract, factory_contract, 
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = getSenderAddress(w3, initCode)
+    sender = get_sender_address(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
     assert UserOperation(sender=sender, initCode=initCode).send().result
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict(
@@ -143,15 +144,15 @@ def test_unstaked_factory_storage_drop(w3, entrypoint_contract, factory_contract
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = getSenderAddress(w3, initCode)
+    sender = get_sender_address(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
     response = UserOperation(sender=sender, initCode=initCode).send()
-    assertRpcError(response, "unstaked factory", RPCErrorCode.BANNED_OPCODE)
+    assert_rpc_error(response, "unstaked factory", RPCErrorCode.BANNED_OPCODE)
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in factory_rules.items() if value.Staked == ok),
@@ -166,7 +167,7 @@ def test_staked_factory_storage_ok(w3, entrypoint_contract, factory_contract, ru
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = getSenderAddress(w3, initCode)
+    sender = get_sender_address(w3, initCode)
     entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
@@ -176,7 +177,7 @@ def test_staked_factory_storage_ok(w3, entrypoint_contract, factory_contract, ru
 ################### factory tests end ##############
 
 ################### paymaster tests start ##############
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict(
@@ -192,7 +193,7 @@ def test_unstaked_paymaster_storage_ok(wallet_contract, paymaster_contract, rule
     )
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict(
@@ -204,10 +205,10 @@ def test_unstaked_paymaster_storage_drop(paymaster_contract, wallet_contract, ru
     response = UserOperation(
         sender=wallet_contract.address, paymasterAndData=paymasterAndData
     ).send()
-    assertRpcError(response, "unstaked paymaster", RPCErrorCode.BANNED_OPCODE)
+    assert_rpc_error(response, "unstaked paymaster", RPCErrorCode.BANNED_OPCODE)
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 def test_unstaked_paymaster_storage_initcode_drop(
     w3, paymaster_contract, entrypoint_contract, factory_contract
 ):
@@ -220,14 +221,14 @@ def test_unstaked_paymaster_storage_initcode_drop(
     )
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     response = UserOperation(
-        sender=getSenderAddress(w3, initCode),
+        sender=get_sender_address(w3, initCode),
         paymasterAndData=paymasterAndData,
         initCode=initCode,
     ).send()
-    assertRpcError(response, "", RPCErrorCode.BANNED_OPCODE)
+    assert_rpc_error(response, "", RPCErrorCode.BANNED_OPCODE)
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 def test_staked_paymaster_storage_initcode_ok(
     w3, paymaster_contract, entrypoint_contract, factory_contract
 ):
@@ -244,7 +245,7 @@ def test_staked_paymaster_storage_initcode_ok(
     paymasterAndData = paymaster_contract.address + rule.encode().hex()
     assert (
         UserOperation(
-            sender=getSenderAddress(w3, initCode),
+            sender=get_sender_address(w3, initCode),
             paymasterAndData=paymasterAndData,
             initCode=initCode,
         )
@@ -253,7 +254,7 @@ def test_staked_paymaster_storage_initcode_ok(
     )
 
 
-@pytest.mark.usefixtures("clearState")
+@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize(
     "rule",
     dict((key, value) for key, value in paymaster_rules.items() if value.Staked == ok),
