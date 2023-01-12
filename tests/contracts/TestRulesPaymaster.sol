@@ -64,7 +64,7 @@ contract TestRulesPaymaster is IPaymaster {
             return ("", coin.balanceOf(address(0xdeadcafe)));
         }
         else if (rule.eq("SELFDESTRUCT")) {
-            selfdestruct(payable(address(this)));
+            coin.destruct();
             return ("", 0);
         }
         require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));

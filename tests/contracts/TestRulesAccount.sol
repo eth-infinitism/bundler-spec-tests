@@ -44,6 +44,10 @@ contract TestCoin {
         }
         return 0;
     }
+
+    function destruct() public {
+        selfdestruct(payable(msg.sender));
+    }
 }
 
 contract TestRulesAccount is IAccount, IPaymaster, Stakable {
@@ -92,7 +96,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
         else if (eq(rule, "SELFDESTRUCT")) {
-            selfdestruct(payable(address(this)));
+            coin.destruct();
             return 0;
         }
 

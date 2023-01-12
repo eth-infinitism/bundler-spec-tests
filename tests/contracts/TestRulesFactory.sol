@@ -50,18 +50,11 @@ contract TestRulesFactory is Stakable {
             emit Uint(coin.getInfo(address(this)).c);
         }
         else if (rule.eq("SELFDESTRUCT")) {
-            new SelfDestructAccount{salt: bytes32(nonce)}(_entryPoint);
+            coin.destruct();
         }
         else {
             require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         }
         return account;
-    }
-}
-
-
-contract SelfDestructAccount is SimpleWallet {
-    constructor (address _ep) payable SimpleWallet(_ep) {
-        selfdestruct(payable(msg.sender));
     }
 }
