@@ -63,6 +63,10 @@ contract TestRulesPaymaster is IPaymaster {
         if (rule.eq("external_storage")) {
             return ("", coin.balanceOf(address(0xdeadcafe)));
         }
+        else if (rule.eq("SELFDESTRUCT")) {
+            coin.destruct();
+            return ("", 0);
+        }
         require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         return ("", 0);
     }

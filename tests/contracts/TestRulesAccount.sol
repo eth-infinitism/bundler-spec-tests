@@ -44,6 +44,10 @@ contract TestCoin {
         }
         return 0;
     }
+
+    function destruct() public {
+        selfdestruct(payable(msg.sender));
+    }
 }
 
 contract TestRulesAccount is IAccount, IPaymaster, Stakable {
@@ -91,12 +95,10 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
-        else if (eq(rule, "OTHERSLOAD")) return coin.balanceOf(address(1));
-        else if (eq(rule, "OTHERSSTORE")) return coin.mint(address(1));
-        else if (eq(rule, "SELFSSLOAD")) return uint160(address(coin));
-        else if (eq(rule, "SELFSSTORE")) return setCoin(TestCoin(address(0xdead)));
-        else if (eq(rule, "SELFREFSLOAD")) return coin.balanceOf(address(this));
-        else if (eq(rule, "SELFREFSSTORE")) return coin.mint(address(this));
+        else if (eq(rule, "SELFDESTRUCT")) {
+            coin.destruct();
+            return 0;
+        }
 
         else if (eq(rule, "no_storage")) return 0;
         else if (eq(rule, "account_storage")) return state;
