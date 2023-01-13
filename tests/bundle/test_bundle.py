@@ -45,7 +45,7 @@ def test_bundle_replace_with_only_priority_fee_change(w3):
 
     assert_rpc_error(lower_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
     assert dump_mempool() == [mid_fee_op]
-    
+
     assert_rpc_error(higher_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
     assert dump_mempool() == [mid_fee_op]
 
@@ -61,7 +61,8 @@ def test_bundle_replace_with_equally_increasing_max_fee(w3):
         maxPriorityFeePerGas=hex(LOWER_MAX_PRIORITY_FEE_PER_GAS),
     )
 
-    mid_max_fee_per_gas = int(lower_fee_op.maxFeePerGas, 16)+(MID_MAX_PRIORITY_FEE_PER_GAS-LOWER_MAX_PRIORITY_FEE_PER_GAS)
+    mid_max_fee_per_gas = (int(lower_fee_op.maxFeePerGas, 16)
+    + (MID_MAX_PRIORITY_FEE_PER_GAS-LOWER_MAX_PRIORITY_FEE_PER_GAS))
     mid_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
@@ -70,7 +71,8 @@ def test_bundle_replace_with_equally_increasing_max_fee(w3):
         maxFeePerGas=hex(mid_max_fee_per_gas)
     )
 
-    higher_max_fee_per_gas = int(mid_fee_op.maxFeePerGas, 16)+(HIGHER_MAX_PRIORITY_FEE_PER_GAS-MID_MAX_PRIORITY_FEE_PER_GAS)
+    higher_max_fee_per_gas = (int(mid_fee_op.maxFeePerGas, 16)
+    + (HIGHER_MAX_PRIORITY_FEE_PER_GAS-MID_MAX_PRIORITY_FEE_PER_GAS))
     higher_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
