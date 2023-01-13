@@ -73,7 +73,7 @@ def deploy_wallet_contract(w3):
     )
 
 
-def userop_hash(wallet_contract, userop):
+def userop_hash(helper_contract, userop):
     payload = (
         userop.sender,
         int(userop.nonce, 16),
@@ -87,7 +87,12 @@ def userop_hash(wallet_contract, userop):
         userop.paymasterAndData,
         userop.signature,
     )
-    return "0x" + wallet_contract.functions.getUserOpHash(payload).call().hex()
+    return (
+        "0x"
+        + helper_contract.functions.getUserOpHash(CommandLineArgs.entrypoint, payload)
+        .call()
+        .hex()
+    )
 
 
 def assert_rpc_error(response, message, code):

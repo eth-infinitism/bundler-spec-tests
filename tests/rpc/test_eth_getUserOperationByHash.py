@@ -6,14 +6,14 @@ from tests.utils import userop_hash, assert_rpc_error
 
 @pytest.mark.usefixtures("send_user_operation", "send_bundle_now")
 @pytest.mark.parametrize("schema_method", ["eth_getUserOperationByHash"], ids=[""])
-def test_eth_getUserOperationByHash(wallet_contract, userop, schema):
+def test_eth_getUserOperationByHash(helper_contract, wallet_contract, userop, schema):
     response = RPCRequest(
         method="eth_getUserOperationByHash",
-        params=[userop_hash(wallet_contract, userop)],
+        params=[userop_hash(helper_contract, userop)],
     ).send()
     assert userop_hash(
-        wallet_contract, UserOperation(**response.result["userOperation"])
-    ) == userop_hash(wallet_contract, userop), "user operation mismatch"
+        helper_contract, UserOperation(**response.result["userOperation"])
+    ) == userop_hash(helper_contract, userop), "user operation mismatch"
     assert (
         response.result["entryPoint"] == CommandLineArgs.entrypoint
     ), "wrong entrypoint"

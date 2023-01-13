@@ -10,13 +10,13 @@ from tests.utils import userop_hash, assert_rpc_error, send_bundle_now
 
 
 @pytest.mark.parametrize("schema_method", ["eth_sendUserOperation"], ids=[""])
-def test_eth_sendUserOperation(wallet_contract, userop, schema):
+def test_eth_sendUserOperation(wallet_contract, helper_contract, userop, schema):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     response = userop.send()
     send_bundle_now()
     state_after = wallet_contract.functions.state().call()
-    assert response.result == userop_hash(wallet_contract, userop)
+    assert response.result == userop_hash(helper_contract, userop)
     assert state_after == 1111111
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
