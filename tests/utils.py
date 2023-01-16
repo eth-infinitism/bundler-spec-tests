@@ -120,7 +120,10 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
 
 
 def send_bundle_now():
-    return RPCRequest(method="debug_bundler_sendBundleNow").send()
+    try:
+        return RPCRequest(method="debug_bundler_sendBundleNow").send()
+    except KeyError:
+        pass
 
 
 def dump_mempool():

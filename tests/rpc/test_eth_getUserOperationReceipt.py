@@ -5,7 +5,7 @@ from tests.types import RPCRequest
 from tests.utils import userop_hash, assert_rpc_error
 
 
-@pytest.mark.usefixtures("send_user_operation", "send_bundle_now")
+@pytest.mark.usefixtures("execute_user_operation")
 @pytest.mark.parametrize("schema_method", ["eth_getUserOperationReceipt"], ids=[""])
 def test_eth_getUserOperationReceipt(helper_contract, userop, w3, schema):
     response = RPCRequest(

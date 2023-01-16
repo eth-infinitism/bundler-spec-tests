@@ -29,23 +29,19 @@ def create_account(w3, codehash_factory_contract, entrypoint_contract, num):
     logs = codehash_factory_contract.events.ContractCreated().processReceipt(receipt)
     account = logs[0].args.account
     codehash = w3.eth.get_proof(account, [])["codeHash"].hex()
-    print("account num", account, num)
-    print("nums", codehash_factory_contract.functions.getNums(account).call())
-    print("codehash", codehash)
     return account, codehash
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_codehash_changed(w3, entrypoint_contract):
-    block_number = w3.eth.get_block_number()
-    print("block number", block_number)
     codehash_factory_contract = deploy_contract(w3, "TestCodeHashFactory")
     # Creating account with num == 0
     account0, codehash0 = create_account(
         w3, codehash_factory_contract, entrypoint_contract, 0
     )
-    userop = UserOperation(sender=account0)
+    block_number = w3.eth.get_block_number()
+    userop = UserOperation(sender=account0, nonce="0x0")
     response = userop.send()
     assert response.result, "userop dropped by bundler"
     assert dump_mempool() == [userop]
