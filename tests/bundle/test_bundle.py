@@ -11,80 +11,165 @@ from tests.utils import (
 )
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
-LOWER_MAX_PRIORITY_FEE_PER_GAS = 10**9
-MID_MAX_PRIORITY_FEE_PER_GAS = 10**10
-HIGHER_MAX_PRIORITY_FEE_PER_GAS = 5*10**10
+DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
+DEFAULT_MAX_FEE_PER_GAS = 5*10**9
+MIN_PRICE_BUMP = 10
+
+def bump_fee_by(fee, percentage):
+    return round(fee*(100+percentage)/100)
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_bundle_replace_with_only_priority_fee_change(w3):
+def test_bundle_replace_with_only_priority_fee_bump(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    new_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    new_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, MIN_PRICE_BUMP)
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    assert_rpc_error(replacement_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [new_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_only_max_fee_bump(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    new_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    new_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, MIN_PRICE_BUMP)
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(new_max_fee_per_gas),
+    )
+
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    assert_rpc_error(replacement_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [new_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_fee_reduction(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    new_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    new_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, -MIN_PRICE_BUMP)
+    new_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, -MIN_PRICE_BUMP)
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
+        maxFeePerGas=hex(new_max_fee_per_gas),
+    )
+
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    assert_rpc_error(replacement_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [new_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_fee_bump_below_threshold(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    new_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    new_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, MIN_PRICE_BUMP-1)
+    new_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, MIN_PRICE_BUMP-1)
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
+        maxFeePerGas=hex(new_max_fee_per_gas),
+    )
+
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    assert_rpc_error(replacement_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [new_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_fee_bump_above_threshold(w3):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     lower_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
         callData=calldata,
-        maxPriorityFeePerGas=hex(LOWER_MAX_PRIORITY_FEE_PER_GAS),
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
     )
+
+    mid_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, MIN_PRICE_BUMP)
+    mid_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, MIN_PRICE_BUMP)
     mid_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
         callData=calldata,
-        maxPriorityFeePerGas=hex(MID_MAX_PRIORITY_FEE_PER_GAS),
-    )
-    higher_fee_op = UserOperation(
-        sender=wallet.address,
-        nonce="0x1",
-        callData=calldata,
-        maxPriorityFeePerGas=hex(HIGHER_MAX_PRIORITY_FEE_PER_GAS),
-    )
-
-    assert mid_fee_op.send().result
-    assert dump_mempool() == [mid_fee_op]
-
-    assert_rpc_error(lower_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
-    assert dump_mempool() == [mid_fee_op]
-
-    assert_rpc_error(higher_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
-    assert dump_mempool() == [mid_fee_op]
-
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
-@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_bundle_replace_with_equally_increasing_max_fee(w3):
-    wallet = deploy_wallet_contract(w3)
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
-    lower_fee_op = UserOperation(
-        sender=wallet.address,
-        nonce="0x1",
-        callData=calldata,
-        maxPriorityFeePerGas=hex(LOWER_MAX_PRIORITY_FEE_PER_GAS),
-    )
-
-    mid_max_fee_per_gas = (int(lower_fee_op.maxFeePerGas, 16)
-    + (MID_MAX_PRIORITY_FEE_PER_GAS-LOWER_MAX_PRIORITY_FEE_PER_GAS))
-    mid_fee_op = UserOperation(
-        sender=wallet.address,
-        nonce="0x1",
-        callData=calldata,
-        maxPriorityFeePerGas=hex(MID_MAX_PRIORITY_FEE_PER_GAS),
+        maxPriorityFeePerGas=hex(mid_priority_fee_per_gas),
         maxFeePerGas=hex(mid_max_fee_per_gas)
     )
 
-    higher_max_fee_per_gas = (int(mid_fee_op.maxFeePerGas, 16)
-    + (HIGHER_MAX_PRIORITY_FEE_PER_GAS-MID_MAX_PRIORITY_FEE_PER_GAS))
+    higher_priority_fee_per_gas = bump_fee_by(mid_priority_fee_per_gas, MIN_PRICE_BUMP)
+    higher_max_fee_per_gas = bump_fee_by(mid_max_fee_per_gas, MIN_PRICE_BUMP)
     higher_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
         callData=calldata,
-        maxPriorityFeePerGas=hex(HIGHER_MAX_PRIORITY_FEE_PER_GAS),
+        maxPriorityFeePerGas=hex(higher_priority_fee_per_gas),
         maxFeePerGas=hex(higher_max_fee_per_gas)
     )
 
-    assert mid_fee_op.send().result
-    assert dump_mempool() == [mid_fee_op]
+    assert lower_fee_op.send().result
+    assert dump_mempool() == [lower_fee_op]
 
-    assert_rpc_error(lower_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert mid_fee_op.send().result
     assert dump_mempool() == [mid_fee_op]
 
     assert higher_fee_op.send().result
