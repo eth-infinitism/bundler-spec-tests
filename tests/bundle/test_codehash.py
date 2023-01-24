@@ -57,18 +57,21 @@ def test_codehash_changed(w3, entrypoint_contract):
     assert account0 == account1, "could not create account on the same address"
     assert codehash0 != codehash1, "could not create account with a different codehash"
     send_bundle_now()
-    # Asserting that the bundler failed second simulation, so no bundle was sent
+    # Asserting that the even though second simulation passes, codehash change is sufficient to remove a userop
+    # so no bundle was sent.
     assert_no_useroperation_event(entrypoint_contract, from_block=block_number)
-    # Bundler should drop the op from the mempool after failing simulation
+    # Bundler should drop the op from the mempool after codehash changed
     assert dump_mempool() == []
-    # Sanity check: reconstructing the account with num == 0 again to see that it can be bundled
-    tx_hash = codehash_factory_contract.functions.destroy(account0).transact(
-        {"from": w3.eth.accounts[0]}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
-    create_account(w3, codehash_factory_contract, entrypoint_contract, 0)
-    userop.send()
-    assert dump_mempool() == [userop]
-    send_bundle_now()
-    assert dump_mempool() == []
-    assert_useroperation_event(entrypoint_contract, userop, from_block=block_number)
+    # Sanity check: reconstructing the accounts again to see that they can be bundled
+    for i in range(2):
+        tx_hash = codehash_factory_contract.functions.destroy(account0).transact(
+            {"from": w3.eth.accounts[0]}
+        )
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+        block_number = w3.eth.get_block_number()
+        create_account(w3, codehash_factory_contract, entrypoint_contract, i)
+        userop.send()
+        assert dump_mempool() == [userop]
+        send_bundle_now()
+        assert dump_mempool() == []
+        assert_useroperation_event(entrypoint_contract, userop, from_block=block_number)
