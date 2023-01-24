@@ -73,7 +73,7 @@ def deploy_wallet_contract(w3):
     )
 
 
-def userop_hash(wallet_contract, userop):
+def userop_hash(helper_contract, userop):
     payload = (
         userop.sender,
         int(userop.nonce, 16),
@@ -87,7 +87,12 @@ def userop_hash(wallet_contract, userop):
         userop.paymasterAndData,
         userop.signature,
     )
-    return "0x" + wallet_contract.functions.getUserOpHash(payload).call().hex()
+    return (
+        "0x"
+        + helper_contract.functions.getUserOpHash(CommandLineArgs.entrypoint, payload)
+        .call()
+        .hex()
+    )
 
 
 def assert_rpc_error(response, message, code):
@@ -115,7 +120,10 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
 
 
 def send_bundle_now():
-    return RPCRequest(method="debug_bundler_sendBundleNow").send()
+    try:
+        RPCRequest(method="debug_bundler_sendBundleNow").send()
+    except KeyError:
+        pass
 
 
 def dump_mempool():

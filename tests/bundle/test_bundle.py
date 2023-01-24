@@ -47,7 +47,7 @@ def test_bundle_replace_by_fee(w3):
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_max_allowed_ops_unstaked_sender(w3):
+def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
@@ -64,7 +64,7 @@ def test_max_allowed_ops_unstaked_sender(w3):
     send_bundle_now()
     mempool = dump_mempool()
     assert mempool == wallet_ops[1:-1]
-    ophash = userop_hash(wallet, wallet_ops[0])
+    ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
         params=[ophash],
@@ -74,7 +74,7 @@ def test_max_allowed_ops_unstaked_sender(w3):
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_max_allowed_ops_staked_sender(w3, entrypoint_contract):
+def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
@@ -88,7 +88,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract):
     send_bundle_now()
     mempool = dump_mempool()
     assert mempool == wallet_ops[1:]
-    ophash = userop_hash(wallet, wallet_ops[0])
+    ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
         params=[ophash],
