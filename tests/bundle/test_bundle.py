@@ -1,4 +1,3 @@
-import math
 import pytest
 
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
@@ -17,7 +16,7 @@ DEFAULT_MAX_FEE_PER_GAS = 5*10**9
 MIN_PRICE_BUMP = 10
 
 def bump_fee_by(fee, factor):
-    return math.ceil((fee*(100+factor)/100))
+    return round((fee*(100+factor)/100))
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
