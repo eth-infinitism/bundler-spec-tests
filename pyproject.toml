@@ -17,6 +17,7 @@ disable = ["C0114", "C0115", "C0116", "W0621"] # missing-module-docstring, redef
 ignored-classes = ["Error"]
 good-names = ["w3", "id", "i", "s"]
 good-names-rgxs = ["test_.*"]
+max-line-length=120
 
 [tool.pdm]
 [tool.pdm.build]

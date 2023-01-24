@@ -1,9 +1,7 @@
 import pytest
-from tests.types import UserOperation, RPCErrorCode
-from web3.constants import ADDRESS_ZERO
+from tests.types import UserOperation
 from tests.utils import (
     dump_mempool,
-    userop_hash,
     send_bundle_now,
     deploy_contract,
 )
