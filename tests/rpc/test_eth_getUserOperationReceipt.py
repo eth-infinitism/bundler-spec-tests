@@ -5,14 +5,14 @@ from tests.types import RPCRequest
 from tests.utils import userop_hash, assert_rpc_error
 
 
-@pytest.mark.usefixtures("send_user_operation", "send_bundle_now")
+@pytest.mark.usefixtures("execute_user_operation")
 @pytest.mark.parametrize("schema_method", ["eth_getUserOperationReceipt"], ids=[""])
-def test_eth_getUserOperationReceipt(wallet_contract, userop, w3, schema):
+def test_eth_getUserOperationReceipt(helper_contract, userop, w3, schema):
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
-        params=[userop_hash(wallet_contract, userop)],
+        params=[userop_hash(helper_contract, userop)],
     ).send()
-    assert response.result["userOpHash"] == userop_hash(wallet_contract, userop)
+    assert response.result["userOpHash"] == userop_hash(helper_contract, userop)
     receipt = w3.eth.get_transaction_receipt(
         response.result["receipt"]["transactionHash"]
     )

@@ -21,4 +21,8 @@ contract Helper {
     function SenderAddressResult(address sender) external returns (address){
         return sender;
     }
+
+    function getUserOpHash(IEntryPoint ep, UserOperation calldata userOp) public view returns (bytes32) {
+        return IEntryPoint(ep).getUserOpHash(userOp);
+    }
 }

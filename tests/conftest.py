@@ -7,7 +7,12 @@ from solcx import install_solc
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
-from .utils import deploy_wallet_contract, deploy_and_deposit, deploy_contract
+from .utils import (
+    deploy_wallet_contract,
+    deploy_and_deposit,
+    deploy_contract,
+    send_bundle_now,
+)
 
 
 def pytest_configure(config):
@@ -95,16 +100,12 @@ def userop(wallet_contract):
 
 
 @pytest.fixture
-def send_user_operation(userop):
-    return userop.send()
+def execute_user_operation(userop):
+    userop.send()
+    send_bundle_now()
 
 
 # debug apis
-
-
-@pytest.fixture
-def send_bundle_now():
-    return RPCRequest(method="debug_bundler_sendBundleNow").send()
 
 
 @pytest.fixture

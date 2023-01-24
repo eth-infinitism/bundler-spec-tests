@@ -15,8 +15,8 @@ contract SimpleWallet is IAccount {
         require(req);
     }
 
-    function addStake(IEntryPoint ep, uint32 delay) public payable {
-        ep.addStake{value: msg.value}(delay);
+    function addStake(IEntryPoint _ep, uint32 delay) public payable {
+        _ep.addStake{value: msg.value}(delay);
     }
 
     function setState(uint _state) external {
@@ -35,10 +35,5 @@ contract SimpleWallet is IAccount {
         bytes2 dead = bytes2(userOp.signature);
         require(dead != 0xdead, "testWallet: dead signature");
         return 0;
-    }
-
-    // todo move
-    function getUserOpHash(UserOperation calldata userOp) public view returns (bytes32) {
-        return IEntryPoint(ep).getUserOpHash(userOp);
     }
 }
