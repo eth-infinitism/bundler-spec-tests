@@ -77,6 +77,34 @@ def test_bundle_replace_with_only_max_fee_bump(w3):
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_same_fee(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    new_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    replacement_calldata = wallet.encodeABI(fn_name="setState", args=[2])
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=replacement_calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    assert_rpc_error(replacement_op.send(), "", RPCErrorCode.INVALID_FIELDS)
+    assert dump_mempool() == [new_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_bundle_replace_with_fee_reduction(w3):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
