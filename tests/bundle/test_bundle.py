@@ -105,7 +105,7 @@ def test_bundle_replace_with_same_fee(w3):
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_bundle_replace_with_fee_reduction(w3):
+def test_bundle_replace_with_less_fee(w3):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     new_op = UserOperation(
