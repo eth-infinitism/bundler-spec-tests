@@ -1,5 +1,5 @@
-import pytest
 import math
+import pytest
 
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
