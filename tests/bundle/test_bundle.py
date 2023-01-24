@@ -15,8 +15,8 @@ DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
 DEFAULT_MAX_FEE_PER_GAS = 5*10**9
 MIN_PRICE_BUMP = 10
 
-def bump_fee_by(fee, percentage):
-    return round(fee*(100+percentage)/100)
+def bump_fee_by(fee, factor):
+    return round(fee*(100+factor)/100)
 
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
