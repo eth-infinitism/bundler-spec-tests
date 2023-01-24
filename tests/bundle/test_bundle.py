@@ -136,7 +136,7 @@ def test_bundle_replace_with_fee_bump_below_threshold(w3):
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_bundle_replace_with_fee_bump_above_threshold(w3):
+def test_bundle_replace_with_fee_bump_at_threshold(w3):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     lower_fee_op = UserOperation(
@@ -159,6 +159,48 @@ def test_bundle_replace_with_fee_bump_above_threshold(w3):
 
     higher_priority_fee_per_gas = bump_fee_by(mid_priority_fee_per_gas, MIN_PRICE_BUMP)
     higher_max_fee_per_gas = bump_fee_by(mid_max_fee_per_gas, MIN_PRICE_BUMP)
+    higher_fee_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(higher_priority_fee_per_gas),
+        maxFeePerGas=hex(higher_max_fee_per_gas)
+    )
+
+    assert lower_fee_op.send().result
+    assert dump_mempool() == [lower_fee_op]
+
+    assert mid_fee_op.send().result
+    assert dump_mempool() == [mid_fee_op]
+
+    assert higher_fee_op.send().result
+    assert dump_mempool() == [higher_fee_op]
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_bundle_replace_with_fee_bump_above_threshold(w3):
+    wallet = deploy_wallet_contract(w3)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    lower_fee_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
+    )
+
+    mid_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, MIN_PRICE_BUMP + 1)
+    mid_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, MIN_PRICE_BUMP + 1)
+    mid_fee_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=calldata,
+        maxPriorityFeePerGas=hex(mid_priority_fee_per_gas),
+        maxFeePerGas=hex(mid_max_fee_per_gas)
+    )
+
+    higher_priority_fee_per_gas = bump_fee_by(mid_priority_fee_per_gas, MIN_PRICE_BUMP + 1)
+    higher_max_fee_per_gas = bump_fee_by(mid_max_fee_per_gas, MIN_PRICE_BUMP + 1)
     higher_fee_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
