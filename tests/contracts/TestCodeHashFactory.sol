@@ -15,7 +15,7 @@ contract TestCodeHashAccount is IAccount {
     function destruct() public {
         selfdestruct(payable(msg.sender));
     }
-    function validateUserOp(UserOperation calldata userOp, bytes32, address, uint256 missingWalletFunds)
+    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     external override returns (uint256 deadline) {
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");
