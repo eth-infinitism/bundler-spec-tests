@@ -28,7 +28,7 @@ build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
 update-deps = {shell = "git submodule update --remote --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build"}
-test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x1306b01bC3e4AD202612D3843387e94737673F53 --ethereum-node http://127.0.0.1:8545/"
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0576a174D229E3cFA37253523E645A78A0C91B57 --ethereum-node http://127.0.0.1:8545/"
 lint = "pylint tests"
 format = "black tests"
 

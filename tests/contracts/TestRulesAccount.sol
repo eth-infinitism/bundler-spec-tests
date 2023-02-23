@@ -111,7 +111,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         revert(string.concat("unknown rule: ", rule));
     }
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, address, uint256 missingAccountFunds)
+    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingAccountFunds)
     external override returns (uint256 deadline) {
         if (missingAccountFunds > 0) {
             /* solhint-disable-next-line avoid-low-level-calls */
