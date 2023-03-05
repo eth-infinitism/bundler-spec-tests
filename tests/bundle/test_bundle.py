@@ -1,5 +1,6 @@
-import pytest
+import collections
 
+import pytest
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_rpc_error,
@@ -11,39 +12,75 @@ from tests.utils import (
 )
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
+DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
+DEFAULT_MAX_FEE_PER_GAS = 5*10**9
+MIN_PRICE_BUMP = 10
 
+def bump_fee_by(fee, factor):
+    return round((fee*(100+factor)/100))
 
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
-@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_bundle_replace_by_fee(w3):
+def assert_ok(response):
+    assert response.result
+
+def assert_error(response):
+    assert_rpc_error(response, response.message, RPCErrorCode.INVALID_FIELDS)
+
+ReplaceOpTestCase = collections.namedtuple(
+    "ReplaceOpTestCase", ["rule", "bump_priority", "bump_max", "assert_func"]
+)
+replace_op_cases = [
+    ReplaceOpTestCase(
+        "only_priority_fee_bump", MIN_PRICE_BUMP, 0, assert_error
+    ),
+    ReplaceOpTestCase(
+        "only_max_fee_bump", 0, MIN_PRICE_BUMP, assert_error
+    ),
+    ReplaceOpTestCase(
+        "with_same_fee", 0, 0, assert_error
+    ),
+    ReplaceOpTestCase(
+        "with_less_fee", -MIN_PRICE_BUMP, -MIN_PRICE_BUMP, assert_error
+    ),
+    ReplaceOpTestCase(
+        "fee_bump_below_threshold", MIN_PRICE_BUMP-1, MIN_PRICE_BUMP-1, assert_error
+    ),
+    ReplaceOpTestCase(
+        "fee_bump_at_threshold", MIN_PRICE_BUMP, MIN_PRICE_BUMP, assert_ok
+    ),
+    ReplaceOpTestCase(
+        "fee_bump_above_threshold", MIN_PRICE_BUMP+1, MIN_PRICE_BUMP+1, assert_ok
+    )
+]
+
+@pytest.mark.usefixtures("clear_state")
+@pytest.mark.parametrize("case", replace_op_cases, ids=lambda case: case.rule)
+def test_bundle_replace_op(w3, case):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
-    lower_fee_op = UserOperation(
+    new_op = UserOperation(
         sender=wallet.address,
         nonce="0x1",
         callData=calldata,
-        maxPriorityFeePerGas=hex(10**9),
-    )
-    higher_fee_op = UserOperation(
-        sender=wallet.address,
-        nonce="0x1",
-        callData=calldata,
-        maxPriorityFeePerGas=hex(10**10),
-    )
-    mid_fee_op = UserOperation(
-        sender=wallet.address,
-        nonce="0x1",
-        callData=calldata,
-        maxPriorityFeePerGas=hex(5 * 10**9),
+        maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
+        maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
     )
 
-    assert lower_fee_op.send().result
-    assert dump_mempool() == [lower_fee_op]
-    assert higher_fee_op.send().result
-    assert dump_mempool() == [higher_fee_op]
-    assert_rpc_error(mid_fee_op.send(), "", RPCErrorCode.INVALID_FIELDS)
-    assert dump_mempool() == [higher_fee_op]
+    new_priority_fee_per_gas = bump_fee_by(DEFAULT_MAX_PRIORITY_FEE_PER_GAS, case.bump_priority)
+    new_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, case.bump_max)
+    replacement_calldata = wallet.encodeABI(fn_name="setState", args=[2])
+    replacement_op = UserOperation(
+        sender=wallet.address,
+        nonce="0x1",
+        callData=replacement_calldata,
+        maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
+        maxFeePerGas=hex(new_max_fee_per_gas),
+    )
 
+    assert new_op.send().result
+    assert dump_mempool() == [new_op]
+
+    case.assert_func(replacement_op.send())
+    assert dump_mempool() == [replacement_op if case.assert_func.__name__ == assert_ok.__name__ else new_op]
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
