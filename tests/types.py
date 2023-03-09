@@ -3,8 +3,8 @@ from dataclasses import dataclass, field, asdict
 from enum import IntEnum
 from typing import ClassVar
 
-import jsonrpcclient
 import json
+import jsonrpcclient
 import requests
 from eth_typing import (
     HexStr,
