@@ -21,6 +21,7 @@ def pytest_configure(config):
         entrypoint=config.getoption("--entry-point"),
         ethereum_node=config.getoption("--ethereum-node"),
         launcher_script=config.getoption("--launcher-script"),
+        log_rpc=config.getoption("--log-rpc")
     )
     install_solc(version="0.8.15")
 
@@ -42,6 +43,7 @@ def pytest_addoption(parser):
     parser.addoption("--entry-point", action="store")
     parser.addoption("--ethereum-node", action="store")
     parser.addoption("--launcher-script", action="store")
+    parser.addoption("--log-rpc", action="store_true", default=False)
 
 
 @pytest.fixture(scope="session")

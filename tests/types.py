@@ -4,6 +4,7 @@ from enum import IntEnum
 from typing import ClassVar
 
 import jsonrpcclient
+import json
 import requests
 from eth_typing import (
     HexStr,
@@ -16,13 +17,15 @@ class CommandLineArgs:
     entrypoint: ClassVar[str]
     ethereum_node: ClassVar[str]
     launcher_script: ClassVar[str]
+    log_rpc: ClassVar[bool]
 
     @classmethod
-    def configure(cls, url, entrypoint, ethereum_node, launcher_script):
+    def configure(cls, url, entrypoint, ethereum_node, launcher_script, log_rpc):
         cls.url = url
         cls.entrypoint = entrypoint
         cls.ethereum_node = ethereum_node
         cls.launcher_script = launcher_script
+        cls.log_rpc = log_rpc
 
 
 @dataclass
@@ -59,9 +62,14 @@ class RPCRequest:
         if url is None:
             url = CommandLineArgs.url
         # return requests.post(url, json=asdict(self)).json()
-        return jsonrpcclient.responses.to_result(
+        if CommandLineArgs.log_rpc:
+            print(">>", json.dumps(asdict(self)))
+        res = jsonrpcclient.responses.to_result(
             requests.post(url, json=asdict(self), timeout=10).json()
         )
+        if CommandLineArgs.log_rpc:
+            print("<<", json.dumps(res._asdict()))
+        return res
 
 
 class RPCErrorCode(IntEnum):
