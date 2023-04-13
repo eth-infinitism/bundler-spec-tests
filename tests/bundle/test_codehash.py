@@ -68,6 +68,7 @@ def test_codehash_changed(w3, entrypoint_contract):
         w3.eth.wait_for_transaction_receipt(tx_hash)
         block_number = w3.eth.get_block_number()
         create_account(w3, codehash_factory_contract, entrypoint_contract, i)
+        userop = UserOperation(sender=account0, nonce=hex(i))
         userop.send()
         assert dump_mempool() == [userop]
         send_bundle_now()

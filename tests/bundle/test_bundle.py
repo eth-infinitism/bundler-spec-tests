@@ -59,7 +59,7 @@ def test_bundle_replace_op(w3, case):
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     new_op = UserOperation(
         sender=wallet.address,
-        nonce="0x1",
+        nonce="0x0",
         callData=calldata,
         maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
         maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
@@ -70,7 +70,7 @@ def test_bundle_replace_op(w3, case):
     replacement_calldata = wallet.encodeABI(fn_name="setState", args=[2])
     replacement_op = UserOperation(
         sender=wallet.address,
-        nonce="0x1",
+        nonce="0x0",
         callData=replacement_calldata,
         maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
         maxFeePerGas=hex(new_max_fee_per_gas),
@@ -88,7 +88,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        UserOperation(sender=wallet.address, nonce=hex((i << 64)), callData=calldata)
         for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
     for i, userop in enumerate(wallet_ops):
@@ -115,7 +115,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        UserOperation(sender=wallet.address, nonce=hex((i << 64)), callData=calldata)
         for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
     for i, userop in enumerate(wallet_ops):
