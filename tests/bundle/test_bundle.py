@@ -59,7 +59,7 @@ def test_bundle_replace_op(w3, case):
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     new_op = UserOperation(
         sender=wallet.address,
-        nonce="0x1",
+        nonce="0x0",
         callData=calldata,
         maxPriorityFeePerGas=hex(DEFAULT_MAX_PRIORITY_FEE_PER_GAS),
         maxFeePerGas=hex(DEFAULT_MAX_FEE_PER_GAS),
@@ -70,7 +70,7 @@ def test_bundle_replace_op(w3, case):
     replacement_calldata = wallet.encodeABI(fn_name="setState", args=[2])
     replacement_op = UserOperation(
         sender=wallet.address,
-        nonce="0x1",
+        nonce="0x0",
         callData=replacement_calldata,
         maxPriorityFeePerGas=hex(new_priority_fee_per_gas),
         maxFeePerGas=hex(new_max_fee_per_gas),
