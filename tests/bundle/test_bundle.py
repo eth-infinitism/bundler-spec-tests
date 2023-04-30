@@ -88,7 +88,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        UserOperation(sender=wallet.address, nonce=hex(i << 64), callData=calldata)
         for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
     for i, userop in enumerate(wallet_ops):
@@ -115,7 +115,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
-        UserOperation(sender=wallet.address, nonce=hex(i), callData=calldata)
+        UserOperation(sender=wallet.address, nonce=hex(i << 64), callData=calldata)
         for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
     ]
     for i, userop in enumerate(wallet_ops):
