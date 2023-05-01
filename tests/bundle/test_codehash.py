@@ -39,7 +39,8 @@ def test_codehash_changed(w3, entrypoint_contract):
         w3, codehash_factory_contract, entrypoint_contract, 0
     )
     block_number = w3.eth.get_block_number()
-    userop = UserOperation(sender=account0, nonce="0x0")
+    nonce = entrypoint_contract.functions.getNonce(account0, 123).call()
+    userop = UserOperation(sender=account0, nonce=hex(nonce))
     response = userop.send()
     assert response.result, "userop dropped by bundler"
     assert dump_mempool() == [userop]
@@ -68,6 +69,7 @@ def test_codehash_changed(w3, entrypoint_contract):
         w3.eth.wait_for_transaction_receipt(tx_hash)
         block_number = w3.eth.get_block_number()
         create_account(w3, codehash_factory_contract, entrypoint_contract, i)
+        userop.nonce = hex(i)
         userop.send()
         assert dump_mempool() == [userop]
         send_bundle_now()
