@@ -28,12 +28,12 @@ contract SimpleWallet is IAccount {
     }
 
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
-    external override returns (uint256 deadline) {
+    external override returns (uint256 validationData) {
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");
         }
-        bytes2 dead = bytes2(userOp.signature);
-        require(dead != 0xdead, "testWallet: dead signature");
-        return 0;
+        bytes2 sig = bytes2(userOp.signature);
+        require(sig != 0xdead, "testWallet: dead signature");
+        return sig == 0xdeaf ? 1 : 0;
     }
 }
