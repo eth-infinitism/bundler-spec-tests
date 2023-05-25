@@ -25,7 +25,7 @@ def invalid_sig_userop(wallet_contract):
     )
 
 @pytest.fixture
-def expire_shortly_userop(wallet_contract):
+def expires_shortly_userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
