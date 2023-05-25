@@ -1,7 +1,10 @@
 import json
 import os
 
+import time
 import pytest
+from web3 import Web3
+from eth_abi import encode_abi
 from tests.types import UserOperation
 
 
@@ -19,6 +22,14 @@ def invalid_sig_userop(wallet_contract):
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
         signature="0xdeaf",
+    )
+
+@pytest.fixture
+def expire_shortly_userop(wallet_contract):
+    return UserOperation(
+        sender=wallet_contract.address,
+        callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
+        signature=Web3.toHex(encode_abi(['uint48', 'uint48'], [int(time.time())+30, 0])),
     )
 
 @pytest.fixture(scope="session")

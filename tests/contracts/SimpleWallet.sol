@@ -39,6 +39,12 @@ contract SimpleWallet is IAccount {
         }
         bytes2 sig = bytes2(userOp.signature);
         require(sig != 0xdead, "testWallet: dead signature");
-        return sig == 0xdeaf ? 1 : 0;
+        if (sig == 0xdeaf) return 1;
+        if (userOp.signature.length == 64) {
+            (uint48 validUntil, uint48 validAfter) = abi.decode(userOp.signature,(uint48, uint48));
+            return (uint256(validUntil) << 160) | (uint256(validAfter) << (160 + 48));
+        }
+
+        return 0;
     }
 }
