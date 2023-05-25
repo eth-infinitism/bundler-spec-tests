@@ -29,7 +29,7 @@ def expires_shortly_userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
-        signature=Web3.toHex(encode_abi(['uint48', 'uint48'], [int(time.time())+30, 0])),
+        signature=Web3.toHex(encode_abi(['uint48', 'uint48'], [int(time.time())+29, 0])),
     )
 
 @pytest.fixture(scope="session")
