@@ -72,6 +72,9 @@ def deploy_wallet_contract(w3):
         w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=2 * 10**18
     )
 
+def deploy_state_contract(w3):
+    return deploy_contract(w3, "State")
+
 
 def userop_hash(helper_contract, userop):
     payload = (

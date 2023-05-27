@@ -6,6 +6,7 @@ from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
     assert_rpc_error,
     deploy_wallet_contract,
+    deploy_state_contract,
     deploy_contract,
     get_sender_address,
     deploy_and_deposit,
@@ -52,9 +53,10 @@ def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rul
     return UserOperation(sender=wallet.address, paymasterAndData=paymaster_and_data)
 
 
-def build_userop_for_sender(_w3, _entrypoint_contract, rules_account_contract, rule):
+def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
+    callData = deploy_state_contract(w3).address
     signature = "0x" + rule.encode().hex()
-    return UserOperation(sender=rules_account_contract.address, signature=signature)
+    return UserOperation(sender=rules_account_contract.address, callData=callData, signature=signature)
 
 
 def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
@@ -261,6 +263,13 @@ cases = [
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "account_reference_storage_init_code",
+        UNSTAKED,
+        SENDER,
+        with_initcode(build_userop_for_sender),
         assert_ok,
     ),
     StorageTestCase(
