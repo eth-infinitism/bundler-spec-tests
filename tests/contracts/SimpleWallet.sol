@@ -3,6 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "./State.sol";
 
 contract SimpleWallet is IAccount {
 
@@ -29,6 +30,10 @@ contract SimpleWallet is IAccount {
 
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     external override returns (uint256 validationData) {
+        if (userOp.callData.length == 20) {
+            State(address(bytes20(userOp.callData))).getState(address(this));
+        }
+
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");
         }
