@@ -270,7 +270,7 @@ cases = [
         UNSTAKED,
         SENDER,
         with_initcode(build_userop_for_sender),
-        assert_ok,
+        assert_error,
     ),
     StorageTestCase(
         "account_reference_storage_struct",
