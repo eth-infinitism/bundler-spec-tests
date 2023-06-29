@@ -131,3 +131,43 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
         params=[ophash],
     ).send()
     assert response.result["userOpHash"] == ophash
+
+
+@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, helper_contract):
+    # wallet 2 will treat this wallet as a "token" and access associated storage
+    wallet1_token = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
+    wallet2 = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
+    wallet1_token.functions.sudoSetBalance(wallet1_token.address, 10**18).transact(
+        {"from": w3.eth.accounts[0]}
+    )
+    wallet1_token.functions.sudoSetBalance(wallet2.address, 10**18).transact(
+        {"from": w3.eth.accounts[0]}
+    )
+    wallet2.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
+        {"from": w3.eth.accounts[0]}
+    )
+    calldata1 = wallet2.address
+    calldata2 = "0x"
+    user_op1 = UserOperation(sender=wallet1_token.address, callData=calldata1)
+    user_op2 = UserOperation(sender=wallet2.address, callData=calldata2)
+    user_op1.send()
+    user_op2.send()
+    send_bundle_now()
+
+    ophash1 = userop_hash(helper_contract, user_op1)
+    ophash2 = userop_hash(helper_contract, user_op2)
+
+    response1 = RPCRequest(
+        method="eth_getUserOperationReceipt",
+        params=[ophash1],
+    ).send()
+    assert response1.result["userOpHash"] == ophash1
+
+    #
+    response2 = RPCRequest(
+        method="eth_getUserOperationReceipt",
+        params=[ophash2],
+    ).send()
+    assert response2.result is None
