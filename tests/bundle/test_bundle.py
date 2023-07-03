@@ -159,6 +159,9 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, 
     user_op2.send()
     send_bundle_now()
 
+    # check the UserOp2 is still in the mempool as it did nothing wrong
+    assert dump_mempool() == [user_op2]
+
     # only UserOp1 can be included in one bundle
     ophash1 = userop_hash(helper_contract, user_op1)
     ophash2 = userop_hash(helper_contract, user_op2)
@@ -169,12 +172,9 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, 
     ).send()
     assert response1.result["userOpHash"] == ophash1
 
-    #
     response2 = RPCRequest(
         method="eth_getUserOperationReceipt",
         params=[ophash2],
     ).send()
     assert response2.result is None
 
-    # also check the UserOp2 is still in the mempool as it did nothing wrong
-    assert dump_mempool() == [user_op2]
