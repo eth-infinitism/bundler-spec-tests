@@ -145,6 +145,9 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, 
     wallet1_token.functions.sudoSetBalance(wallet2.address, 10**18).transact(
         {"from": w3.eth.accounts[0]}
     )
+    wallet1_token.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
+        {"from": w3.eth.accounts[0]}
+    )
     wallet2.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
         {"from": w3.eth.accounts[0]}
     )
