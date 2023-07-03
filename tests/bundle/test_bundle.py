@@ -177,4 +177,3 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, 
         params=[ophash2],
     ).send()
     assert response2.result is None
-
