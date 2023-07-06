@@ -3,6 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "@account-abstraction/contracts/core/Helpers.sol";
 import "./State.sol";
 
 contract SimpleWallet is IAccount {
@@ -42,7 +43,7 @@ contract SimpleWallet is IAccount {
         if (sig == 0xdeaf) return 1;
         if (userOp.signature.length == 64) {
             (uint48 validUntil, uint48 validAfter) = abi.decode(userOp.signature,(uint48, uint48));
-            return (uint256(validUntil) << 160) | (uint256(validAfter) << (160 + 48));
+            return _packValidationData(false, validUntil, validAfter);
         }
 
         return 0;
