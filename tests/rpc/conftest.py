@@ -13,6 +13,7 @@ def bad_sig_userop(wallet_contract):
         signature="0xdead",
     )
 
+
 @pytest.fixture
 def invalid_sig_userop(wallet_contract):
     return UserOperation(
@@ -20,6 +21,7 @@ def invalid_sig_userop(wallet_contract):
         callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
         signature="0xdeaf",
     )
+
 
 @pytest.fixture(scope="session")
 def openrpcschema():
