@@ -20,6 +20,7 @@ class CommandLineArgs:
     log_rpc: ClassVar[bool]
 
     @classmethod
+    # pylint: disable=too-many-arguments
     def configure(cls, url, entrypoint, ethereum_node, launcher_script, log_rpc):
         cls.url = url
         cls.entrypoint = entrypoint
@@ -68,6 +69,8 @@ class RPCRequest:
             requests.post(url, json=asdict(self), timeout=10).json()
         )
         if CommandLineArgs.log_rpc:
+            # https://github.com/pylint-dev/pylint/issues/7891
+            # pylint: disable=no-member
             print("<<", json.dumps(res._asdict()))
         return res
 
