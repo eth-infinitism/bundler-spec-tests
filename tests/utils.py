@@ -2,8 +2,10 @@ import os
 
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
+from functools import cache
 
 
+@cache
 def compile_contract(contract):
     current_dirname = os.path.dirname(__file__)
     contracts_dirname = current_dirname + "/contracts/"
