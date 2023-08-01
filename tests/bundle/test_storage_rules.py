@@ -56,7 +56,9 @@ def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rul
 def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
     call_data = deploy_state_contract(w3).address
     signature = "0x" + rule.encode().hex()
-    return UserOperation(sender=rules_account_contract.address, callData=call_data, signature=signature)
+    return UserOperation(
+        sender=rules_account_contract.address, callData=call_data, signature=signature
+    )
 
 
 def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
