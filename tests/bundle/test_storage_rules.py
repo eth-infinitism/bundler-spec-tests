@@ -282,13 +282,22 @@ cases = [
         with_initcode(build_userop_for_sender),
         assert_error,
     ),
+    
     StorageTestCase(
-        "account_reference_storage_staked_factory",
+        "account_reference_storage_init_code",
         UNSTAKED,
         SENDER,
         with_initcode(build_userop_for_sender, deploy_staked_factory),
         assert_ok,
     ),
+    StorageTestCase(
+        "account_reference_storage_init_code",
+        UNSTAKED,
+        PAYMASTER,
+        with_initcode(build_userop_for_paymaster, deploy_staked_factory),
+        assert_error,
+    ),
+
     StorageTestCase(
         "account_reference_storage_struct",
         UNSTAKED,
