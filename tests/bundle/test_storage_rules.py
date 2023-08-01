@@ -24,14 +24,22 @@ def assert_ok(response):
 def assert_error(response):
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
 
-
-def with_initcode(build_userop_func):
-    def _with_initcode(w3, entrypoint_contract, contract, rule):
-        factory_contract = deploy_contract(
+def deploy_unstaked_factory(w3, entrypoint_contract):
+    return deploy_contract(
             w3,
             "TestRulesFactory",
             ctrparams=[entrypoint_contract.address],
         )
+
+def deploy_staked_factory(w3, entrypoint_contract):
+    return deploy_and_deposit(
+        w3, entrypoint_contract, "TestRulesFactory", True
+    )
+
+
+def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_factory):
+    def _with_initcode(w3, entrypoint_contract, contract, rule):
+        factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
         initcode = (
             factory_contract.address
@@ -273,6 +281,13 @@ cases = [
         SENDER,
         with_initcode(build_userop_for_sender),
         assert_error,
+    ),
+    StorageTestCase(
+        "account_reference_storage_staked_factory",
+        UNSTAKED,
+        SENDER,
+        with_initcode(build_userop_for_sender, deploy_staked_factory),
+        assert_ok,
     ),
     StorageTestCase(
         "account_reference_storage_struct",
