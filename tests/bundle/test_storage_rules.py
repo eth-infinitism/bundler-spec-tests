@@ -11,6 +11,7 @@ from tests.utils import (
     get_sender_address,
     deploy_and_deposit,
     deposit_to_undeployed_sender,
+    staked_contract
 )
 
 
@@ -31,6 +32,14 @@ def deploy_unstaked_factory(w3, entrypoint_contract):
             ctrparams=[entrypoint_contract.address],
         )
 
+def deploy_staked_rule_factory(w3, entrypoint_contract):
+    contract = deploy_contract(
+        w3,
+        "TestRulesAccountFactory",
+        ctrparams=[entrypoint_contract.address]
+    )
+    return staked_contract(w3, entrypoint_contract, contract)
+
 def deploy_staked_factory(w3, entrypoint_contract):
     return deploy_and_deposit(
         w3, entrypoint_contract, "TestRulesFactory", True
@@ -50,6 +59,7 @@ def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_facto
         sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
         userop.sender = sender
         userop.initCode = initcode
+        userop.verificationGasLimit = hex(3000000)
         return userop
 
     return _with_initcode
@@ -282,19 +292,19 @@ cases = [
         with_initcode(build_userop_for_sender),
         assert_error,
     ),
-    
+
     StorageTestCase(
         "account_reference_storage_init_code",
         UNSTAKED,
         SENDER,
-        with_initcode(build_userop_for_sender, deploy_staked_factory),
+        with_initcode(build_userop_for_sender, deploy_staked_rule_factory),
         assert_ok,
     ),
     StorageTestCase(
         "account_reference_storage_init_code",
         UNSTAKED,
         PAYMASTER,
-        with_initcode(build_userop_for_paymaster, deploy_staked_factory),
+        with_initcode(build_userop_for_paymaster, deploy_staked_rule_factory),
         assert_error,
     ),
 
