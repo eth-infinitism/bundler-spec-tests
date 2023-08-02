@@ -11,6 +11,7 @@ from tests.utils import (
     get_sender_address,
     deploy_and_deposit,
     deposit_to_undeployed_sender,
+    staked_contract
 )
 
 
@@ -24,14 +25,30 @@ def assert_ok(response):
 def assert_error(response):
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
 
-
-def with_initcode(build_userop_func):
-    def _with_initcode(w3, entrypoint_contract, contract, rule):
-        factory_contract = deploy_contract(
+def deploy_unstaked_factory(w3, entrypoint_contract):
+    return deploy_contract(
             w3,
             "TestRulesFactory",
             ctrparams=[entrypoint_contract.address],
         )
+
+def deploy_staked_rule_factory(w3, entrypoint_contract):
+    contract = deploy_contract(
+        w3,
+        "TestRulesAccountFactory",
+        ctrparams=[entrypoint_contract.address]
+    )
+    return staked_contract(w3, entrypoint_contract, contract)
+
+def deploy_staked_factory(w3, entrypoint_contract):
+    return deploy_and_deposit(
+        w3, entrypoint_contract, "TestRulesFactory", True
+    )
+
+
+def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_factory):
+    def _with_initcode(w3, entrypoint_contract, contract, rule):
+        factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
         initcode = (
             factory_contract.address
@@ -42,6 +59,7 @@ def with_initcode(build_userop_func):
         sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
         userop.sender = sender
         userop.initCode = initcode
+        userop.verificationGasLimit = hex(3000000)
         return userop
 
     return _with_initcode
@@ -274,6 +292,22 @@ cases = [
         with_initcode(build_userop_for_sender),
         assert_error,
     ),
+
+    StorageTestCase(
+        "account_reference_storage_init_code",
+        UNSTAKED,
+        SENDER,
+        with_initcode(build_userop_for_sender, deploy_staked_rule_factory),
+        assert_ok,
+    ),
+    StorageTestCase(
+        "account_reference_storage_init_code",
+        UNSTAKED,
+        PAYMASTER,
+        with_initcode(build_userop_for_paymaster, deploy_staked_rule_factory),
+        assert_error,
+    ),
+
     StorageTestCase(
         "account_reference_storage_struct",
         UNSTAKED,

@@ -62,7 +62,9 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
         }
-        setCoin(new TestCoin());
+        if ( _ep != address(0)) {
+            setCoin(new TestCoin());
+        }
     }
 
     function setState(uint _state) external {
