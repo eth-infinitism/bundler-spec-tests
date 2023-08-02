@@ -145,7 +145,7 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         with_initcode(build_userop_for_paymaster, deploy_staked_factory),
-        assert_ok,
+        assert_error,
     ),
     StorageTestCase(
         "context", UNSTAKED, PAYMASTER, build_userop_for_paymaster, assert_error
