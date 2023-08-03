@@ -1,9 +1,11 @@
 import os
 
+from functools import cache
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
+@cache
 def compile_contract(contract):
     current_dirname = os.path.dirname(__file__)
     contracts_dirname = current_dirname + "/contracts/"
@@ -71,6 +73,7 @@ def deploy_wallet_contract(w3):
     return deploy_contract(
         w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=2 * 10**18
     )
+
 
 def deploy_state_contract(w3):
     return deploy_contract(w3, "State")
