@@ -29,7 +29,7 @@ contract SimpleWallet is IAccount {
     }
 
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
-    external override returns (uint256 validationData) {
+    public override virtual returns (uint256 validationData) {
         if (userOp.callData.length == 20) {
             State(address(bytes20(userOp.callData))).getState(address(this));
         }
