@@ -349,6 +349,13 @@ cases = [
         "external_storage", STAKED, SENDER, build_userop_for_sender, assert_error
     ),
     StorageTestCase(
+        "entryPoint_call_balanceOf",
+        UNSTAKED,
+        SENDER,
+        with_ether_value(build_userop_for_sender),
+        assert_error,
+    ),
+    StorageTestCase(
         "eth_value_transfer",
         UNSTAKED,
         SENDER,

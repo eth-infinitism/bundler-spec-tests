@@ -118,6 +118,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "account_reference_storage_struct")) return coin.getInfo(address(this)).c;
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
         else if (eq(rule, "external_storage")) return coin.balanceOf(address(0xdeadcafe));
+        else if (eq(rule, "entryPoint_call_balanceOf")) return entryPoint.balanceOf(address(this));
         else if (eq(rule, "eth_value_transfer")) return coin.receiveValue{value: 777}();
         else if (eq(rule, "eth_value_transfer_depositTo")) {
             entryPoint.depositTo{value: 888}(address(this));
