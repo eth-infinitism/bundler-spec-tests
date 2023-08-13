@@ -352,7 +352,7 @@ cases = [
         "entryPoint_call_balanceOf",
         UNSTAKED,
         SENDER,
-        with_ether_value(build_userop_for_sender),
+        build_userop_for_sender,
         assert_error,
     ),
     StorageTestCase(
