@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
+import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "./Stakable.sol";
 
@@ -45,6 +46,11 @@ contract TestCoin {
         return 0;
     }
 
+    function receiveValue() public payable returns (uint256) {
+        require(msg.value > 0, "value is zero");
+        return msg.value;
+    }
+
     function destruct() public {
         selfdestruct(payable(msg.sender));
     }
@@ -54,10 +60,12 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
     uint public state;
     TestCoin public coin;
+    IEntryPoint entryPoint;
 
     event State(uint oldState, uint newState);
 
     constructor(address _ep) payable {
+        entryPoint = IEntryPoint(_ep);
         if (_ep != address(0) && msg.value > 0) {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
@@ -66,6 +74,8 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
             setCoin(new TestCoin());
         }
     }
+
+    receive() external payable {}
 
     function setState(uint _state) external {
         emit State(state, _state);
@@ -108,6 +118,11 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "account_reference_storage_struct")) return coin.getInfo(address(this)).c;
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(this));
         else if (eq(rule, "external_storage")) return coin.balanceOf(address(0xdeadcafe));
+        else if (eq(rule, "eth_value_transfer")) return coin.receiveValue{value: 777}();
+        else if (eq(rule, "eth_value_transfer_depositTo")) {
+            entryPoint.depositTo{value: 888}(address(this));
+            return 888;
+        }
 
 
         revert(string.concat("unknown rule: ", rule));

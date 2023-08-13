@@ -46,6 +46,18 @@ def deploy_staked_factory(w3, entrypoint_contract):
     )
 
 
+def with_ether_value(build_userop_func):
+    def _with_ether_value(w3, entrypoint_contract, contract, rule):
+        userop = build_userop_func(w3, entrypoint_contract, contract, rule)
+        w3.eth.send_transaction({
+            "from": w3.eth.accounts[0],
+            'to': userop.sender,
+            'value': 10**18
+        })
+        return userop
+    return _with_ether_value
+
+
 def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_factory):
     def _with_initcode(w3, entrypoint_contract, contract, rule):
         factory_contract = deploy_factory_func(w3, entrypoint_contract)
@@ -335,6 +347,20 @@ cases = [
     ),
     StorageTestCase(
         "external_storage", STAKED, SENDER, build_userop_for_sender, assert_error
+    ),
+    StorageTestCase(
+        "eth_value_transfer",
+        UNSTAKED,
+        SENDER,
+        with_ether_value(build_userop_for_sender),
+        assert_error,
+    ),
+    StorageTestCase(
+        "eth_value_transfer_depositTo",
+        UNSTAKED,
+        SENDER,
+        with_ether_value(build_userop_for_sender),
+        assert_ok,
     ),
 ]
 
