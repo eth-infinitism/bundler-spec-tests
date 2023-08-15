@@ -49,9 +49,11 @@ def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
         contractname,
         ctrparams=[entrypoint_contract.address],
     )
-    tx_hash = entrypoint_contract.functions.depositTo(contract.address).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
-    )
+    tx_hash = w3.eth.send_transaction({
+        "from": w3.eth.accounts[0],
+        "to": contract.address,
+        "value": 10**18
+    })
     w3.eth.wait_for_transaction_receipt(tx_hash)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)

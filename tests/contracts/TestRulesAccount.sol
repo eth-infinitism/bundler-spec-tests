@@ -60,7 +60,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
 
     uint public state;
     TestCoin public coin;
-    IEntryPoint entryPoint;
+    IEntryPoint public entryPoint;
 
     event State(uint oldState, uint newState);
 

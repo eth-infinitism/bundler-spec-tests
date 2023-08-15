@@ -10,10 +10,12 @@ contract TestRulesPaymaster is IPaymaster {
 
     using OpcodeRules for string;
 
+    IEntryPoint public entryPoint;
     TestCoin immutable coin = new TestCoin();
     uint something;
 
     constructor(address _ep) payable {
+        entryPoint = IEntryPoint(_ep);
         if (_ep != address(0)) {
             (bool req,) = address(_ep).call{value : msg.value}("");
             require(req);
@@ -72,4 +74,8 @@ contract TestRulesPaymaster is IPaymaster {
     }
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
+
+    receive() external payable {
+        entryPoint.depositTo{value: msg.value}(address(this));
+    }
 }
