@@ -344,14 +344,21 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
-        "eth_value_transfer",
+        "eth_value_transfer_forbidden",
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
         assert_error,
     ),
     StorageTestCase(
-        "eth_value_transfer_depositTo",
+        "eth_value_transfer_entryPoint",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "eth_value_transfer_entryPoint_depositTo",
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
