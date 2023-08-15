@@ -30,6 +30,9 @@ banned_opcodes = [
     "CREATE",
     "CREATE2",
     "SELFDESTRUCT",
+    "EXTCODELENGTH",
+    "EXTCODEHASH",
+    "EXTCODECOPY"
 ]
 
 
