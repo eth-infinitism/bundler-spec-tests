@@ -336,6 +336,34 @@ cases = [
     StorageTestCase(
         "external_storage", STAKED, SENDER, build_userop_for_sender, assert_error
     ),
+    StorageTestCase(
+        "entryPoint_call_balanceOf",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "eth_value_transfer_forbidden",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "eth_value_transfer_entryPoint",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "eth_value_transfer_entryPoint_depositTo",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_ok,
+    ),
 ]
 
 

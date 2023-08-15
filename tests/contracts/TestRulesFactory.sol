@@ -18,6 +18,8 @@ contract TestRulesFactory is Stakable {
         entryPoint = _entryPoint;
     }
 
+    receive() external payable {}
+
     event Address(address);
     event Uint(uint);
 
