@@ -70,7 +70,7 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
     )
 
 
-@pytest.mark.parametrize("banned_op", banned_opcodes)
+@pytest.mark.parametrize("banned_op", banned_opcodes + banned_opcodes_for_undeployed)
 def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned_op):
     initcode = (
         factory_contract.address
