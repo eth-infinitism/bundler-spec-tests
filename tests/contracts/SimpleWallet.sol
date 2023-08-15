@@ -7,11 +7,11 @@ import "./State.sol";
 
 contract SimpleWallet is IAccount {
 
-    address ep;
+    IEntryPoint ep;
     uint256 public state;
 
     constructor(address _ep) payable {
-        ep = _ep;
+        ep = IEntryPoint(_ep);
         (bool req,) = address(ep).call{value : msg.value}("");
         require(req);
     }
@@ -40,5 +40,9 @@ contract SimpleWallet is IAccount {
         bytes2 sig = bytes2(userOp.signature);
         require(sig != 0xdead, "testWallet: dead signature");
         return sig == 0xdeaf ? 1 : 0;
+    }
+
+    receive() external payable {
+        ep.depositTo{value: msg.value}(address(this));
     }
 }

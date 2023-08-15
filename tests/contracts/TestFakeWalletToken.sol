@@ -2,6 +2,7 @@
 pragma solidity ^0.8.12;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
+import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 /// @dev A test contract that represents a potential attack where a wallet entity is also
 /// used as an associated storage by a different UserOperation.
@@ -10,10 +11,10 @@ contract TestFakeWalletToken is IAccount {
 
     mapping(address => uint256) private balances;
     TestFakeWalletToken public anotherWallet;
-    address ep;
+    IEntryPoint ep;
 
     constructor(address _ep) payable {
-        ep = _ep;
+        ep = IEntryPoint(_ep);
     }
 
     function balanceOf(address _owner) public view returns (uint256 balance) {
@@ -39,6 +40,10 @@ contract TestFakeWalletToken is IAccount {
             require(anotherWallet.balanceOf(address(this)) > 0, "no balance");
         }
         return 0;
+    }
+
+    receive() external payable {
+        ep.depositTo{value: msg.value}(address(this));
     }
 
     fallback() external {

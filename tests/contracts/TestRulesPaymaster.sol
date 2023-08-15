@@ -44,7 +44,7 @@ contract TestRulesPaymaster is IPaymaster {
             return ("", coin.getInfo(address(this)).c);
         }
         if (rule.eq("account_storage")) {
-            return ("", SimpleWallet(userOp.sender).state());
+            return ("", SimpleWallet(payable(userOp.sender)).state());
         }
         if (rule.eq("account_reference_storage")) {
             require(userOp.initCode.length == 0, "iniCode not allowed");

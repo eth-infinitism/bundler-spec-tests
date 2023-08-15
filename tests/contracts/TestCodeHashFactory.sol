@@ -22,6 +22,8 @@ contract TestCodeHashAccount is IAccount {
         }
 //        require(num == userOp.nonce, "Reverting second simulation");
     }
+
+    receive() external payable {}
 }
 
 
