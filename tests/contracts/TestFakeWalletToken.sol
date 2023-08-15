@@ -29,8 +29,11 @@ contract TestFakeWalletToken is IAccount {
         anotherWallet = _anotherWallet;
     }
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256)
+    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override returns (uint256 validationData) {
+        if (missingWalletFunds>0) {
+            msg.sender.call{value:missingWalletFunds}("");
+        }
         if (userOp.callData.length == 20) {
             // the first UserOperation sets the second sender's "associated" balance to 0
             address senderToDrain = address(bytes20(userOp.callData[:20]));
@@ -43,7 +46,6 @@ contract TestFakeWalletToken is IAccount {
     }
 
     receive() external payable {
-        ep.depositTo{value: msg.value}(address(this));
     }
 
     fallback() external {

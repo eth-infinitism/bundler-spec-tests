@@ -43,6 +43,5 @@ contract SimpleWallet is IAccount {
     }
 
     receive() external payable {
-        ep.depositTo{value: msg.value}(address(this));
     }
 }
