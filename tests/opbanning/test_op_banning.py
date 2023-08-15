@@ -30,9 +30,12 @@ banned_opcodes = [
     "CREATE",
     "CREATE2",
     "SELFDESTRUCT",
+]
+
+banned_opcodes_for_undeployed = [
     "EXTCODELENGTH",
     "EXTCODEHASH",
-    "EXTCODECOPY"
+    "EXTCODECOPY",
 ]
 
 
@@ -45,6 +48,14 @@ def test_account_banned_opcode(rules_account_contract, banned_op):
         response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
     )
 
+@pytest.mark.parametrize("banned_opcodes_for_undeployed", banned_opcodes_for_undeployed)
+def test_account_banned_opcode_for_undeployed_target(rules_account_contract, banned_opcodes_for_undeployed):
+    response = UserOperation(
+        sender=rules_account_contract.address, signature=to_prefixed_hex(banned_opcodes_for_undeployed)
+    ).send()
+    assert_rpc_error(
+        response, "account accesses un-deployed contract", RPCErrorCode.BANNED_OPCODE
+    )
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):

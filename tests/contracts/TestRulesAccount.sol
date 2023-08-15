@@ -107,10 +107,10 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
-        else if (eq(rule, "EXTCODELENGTH")) return address(5).code.length;
-        else if (eq(rule, "EXTCODEHASH")) return uint256(address(6).codehash);
+        else if (eq(rule, "EXTCODELENGTH")) return address(100500).code.length;
+        else if (eq(rule, "EXTCODEHASH")) return uint256(address(100600).codehash);
         else if (eq(rule, "EXTCODECOPY")) {
-            bytes memory code = address(7).code;
+            bytes memory code = address(100700).code;
             return 0;
         }
         else if (eq(rule, "SELFDESTRUCT")) {
