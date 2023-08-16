@@ -33,9 +33,12 @@ banned_opcodes = [
 ]
 
 banned_opcodes_for_undeployed = [
-    "EXTCODELENGTH",
+    "EXTCODESIZE",
     "EXTCODEHASH",
     "EXTCODECOPY",
+    "EXTCODESIZE_CREATE2",
+    "EXTCODEHASH_CREATE2",
+    "EXTCODECOPY_CREATE2",
 ]
 
 
@@ -85,6 +88,7 @@ def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned
         "factory",
         RPCErrorCode.BANNED_OPCODE,
     )
+    banned_op = banned_op.replace('_CREATE2', '')  # TODO: change how error message is asserted on here
     assert_rpc_error(
         response,
         banned_op,
