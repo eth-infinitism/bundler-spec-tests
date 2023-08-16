@@ -4,6 +4,7 @@ import re
 import pytest
 from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
+    assert_ok,
     assert_rpc_error,
     deploy_wallet_contract,
     deploy_state_contract,
@@ -15,11 +16,6 @@ from tests.utils import (
 )
 
 
-def assert_ok(response):
-    try:
-        assert response.result
-    except AttributeError as exc:
-        raise Exception(f"expected result object, got:\n{response}") from exc
 
 
 def assert_error(response):

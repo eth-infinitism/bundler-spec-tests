@@ -7,6 +7,7 @@ import pytest
 
 from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
+    assert_ok,
     assert_rpc_error,
     deposit_to_undeployed_sender,
     to_hex,
@@ -36,6 +37,10 @@ banned_opcodes_for_undeployed = [
     "EXTCODESIZE",
     "EXTCODEHASH",
     "EXTCODECOPY",
+]
+
+
+allowed_opcodes_for_undeployed = [
     "EXTCODESIZE_CREATE2",
     "EXTCODEHASH_CREATE2",
     "EXTCODECOPY_CREATE2",
@@ -94,3 +99,16 @@ def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned
         banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )
+
+
+@pytest.mark.parametrize("allowed_op", allowed_opcodes_for_undeployed)
+def test_factory_allowed_opcode(w3, factory_contract, entrypoint_contract, allowed_op):
+    initcode = (
+            factory_contract.address
+            + factory_contract.functions.create(
+        123, allowed_op, entrypoint_contract.address
+    ).build_transaction()["data"][2:]
+    )
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+    response = UserOperation(sender=sender, initCode=initcode).send()
+    assert_ok(response)

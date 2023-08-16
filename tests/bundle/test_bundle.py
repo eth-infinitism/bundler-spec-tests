@@ -3,6 +3,7 @@ import collections
 import pytest
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
+    assert_ok,
     assert_rpc_error,
     dump_mempool,
     deploy_wallet_contract,
@@ -21,8 +22,6 @@ def bump_fee_by(fee, factor):
     return round((fee * (100 + factor) / 100))
 
 
-def assert_ok(response):
-    assert response.result
 
 
 def assert_error(response):
