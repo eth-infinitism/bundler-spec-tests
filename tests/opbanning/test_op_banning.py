@@ -88,7 +88,7 @@ def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned
         "factory",
         RPCErrorCode.BANNED_OPCODE,
     )
-    banned_op = banned_op.replace('_CREATE2', '')  # TODO: change how error message is asserted on here
+    banned_op = banned_op.replace('_CREATE2', '')
     assert_rpc_error(
         response,
         banned_op,
