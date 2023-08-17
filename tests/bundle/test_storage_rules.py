@@ -4,6 +4,7 @@ import re
 import pytest
 from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
+    assert_ok,
     assert_rpc_error,
     deploy_wallet_contract,
     deploy_state_contract,
@@ -15,11 +16,6 @@ from tests.utils import (
 )
 
 
-def assert_ok(response):
-    try:
-        assert response.result
-    except AttributeError as exc:
-        raise Exception(f"expected result object, got:\n{response}") from exc
 
 
 def assert_error(response):
@@ -244,6 +240,62 @@ cases = [
     StorageTestCase(
         "external_storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_error
     ),
+    StorageTestCase(
+        "EXTCODEx_CALLx_undeployed_sender",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "EXTCODESIZE_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODEHASH_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODECOPY_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "CALL_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "CALLCODE_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "DELEGATECALL_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "STATICCALL_undeployed_contract",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
     # staked factory
     StorageTestCase("no_storage", STAKED, FACTORY, build_userop_for_factory, assert_ok),
     StorageTestCase("storage", STAKED, FACTORY, build_userop_for_factory, assert_ok),
@@ -363,6 +415,55 @@ cases = [
         SENDER,
         build_userop_for_sender,
         assert_ok,
+    ),
+    StorageTestCase(
+        "EXTCODESIZE_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODEHASH_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODECOPY_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "CALL_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "CALLCODE_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "DELEGATECALL_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "STATICCALL_undeployed_contract",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
     ),
 ]
 
