@@ -43,11 +43,9 @@ contract TestRulesFactory is Stakable {
             // EXTCODEHASH
             emit Uint(uint256(create2address.codehash));
             // EXTCODECOPY
-            bytes memory o_code;
             assembly {
                 extcodecopy(create2address, 0, 0, 2)
             }
-            emit Uint(o_code.length);
         }
 
         account = new SimpleWallet{salt : bytes32(nonce)}(_entryPoint);
@@ -101,11 +99,9 @@ contract TestRulesFactory is Stakable {
             emit Uint(uint256(address(100600).codehash));
         }
         else if (rule.eq("EXTCODECOPY_undeployed_contract")) {
-            bytes memory o_code;
             assembly {
                 extcodecopy(100700, 0, 0, 2)
             }
-            emit Uint(o_code.length);
         }
         // do not revert on rules checked before account creation
         else if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {}

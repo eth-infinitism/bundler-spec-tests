@@ -119,11 +119,10 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "EXTCODESIZE_undeployed_contract")) return address(100500).code.length;
         else if (eq(rule, "EXTCODEHASH_undeployed_contract")) return uint256(address(100600).codehash);
         else if (eq(rule, "EXTCODECOPY_undeployed_contract")) {
-            bytes memory o_code;
             assembly {
                 extcodecopy(100700, 0, 0, 2)
             }
-            return o_code.length;
+            return 0;
         }
         else if (eq(rule, "SELFDESTRUCT")) {
             coin.destruct();
