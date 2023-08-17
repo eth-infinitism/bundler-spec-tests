@@ -241,7 +241,7 @@ cases = [
         "external_storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_error
     ),
     StorageTestCase(
-        "EXTCODEx_xCALL_undeployed_sender",
+        "EXTCODEx_CALLx_undeployed_sender",
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,

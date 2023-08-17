@@ -25,9 +25,9 @@ contract TestRulesFactory is Stakable {
     event Uint(uint);
 
     function create(uint nonce, string memory rule, address _entryPoint) public returns (SimpleWallet account) {
-        // note that the 'EXT*' opcodes are banned on the zero code address even if it is later deployed
+        // note that the 'EXT*'/'CALL*' opcodes are allowed on the zero code address if it is later deployed
         address create2address = getAddress(nonce, _entryPoint);
-        if (rule.eq("EXTCODEx_xCALL_undeployed_sender")) {
+        if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
             // CALL
             create2address.call("");
             // CALLCODE
@@ -138,7 +138,7 @@ contract TestRulesFactory is Stakable {
             emit Uint(o_code.length);
         }
         // do not revert on rules checked before account creation
-        else if (rule.eq("EXTCODEx_xCALL_undeployed_sender")) {}
+        else if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {}
         else {
             require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         }
