@@ -7,7 +7,6 @@ import pytest
 
 from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
-    assert_ok,
     assert_rpc_error,
     deposit_to_undeployed_sender,
     to_hex,
