@@ -89,8 +89,23 @@ contract TestRulesFactory is Stakable {
             emit Uint(uint256(address(100600).codehash));
         }
         else if (rule.eq("EXTCODECOPY")) {
-            bytes memory code = address(100700).code;
-            emit Uint(code.length);
+
+            bytes memory o_code;
+            assembly {
+            // retrieve the size of the code, this needs assembly
+            // let size := extcodesize(_addr)
+                let size := 0
+            // allocate output byte array - this could also be done without assembly
+            // by using o_code = new bytes(size)
+                o_code := mload(0x40)
+            // new "memory end" including padding
+                mstore(0x40, add(o_code, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+            // store length in memory
+                mstore(o_code, size)
+            // actually retrieve the code, this needs assembly
+                extcodecopy(100700, add(o_code, 0x20), 0, size)
+            }
+            emit Uint(o_code.length);
         }
         // do not revert on rules checked before account creation
         else if (rule.eq("EXTCODESIZE_SENDER")) {}
