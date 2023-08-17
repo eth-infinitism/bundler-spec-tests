@@ -27,13 +27,13 @@ contract TestRulesFactory is Stakable {
     function create(uint nonce, string memory rule, address _entryPoint) public returns (SimpleWallet account) {
         // note that the 'EXT*' opcodes are banned on the zero code address even if it is later deployed
         address create2address = getAddress(nonce, _entryPoint);
-        if (rule.eq("EXTCODESIZE_CREATE2")) {
+        if (rule.eq("EXTCODESIZE_SENDER")) {
             emit Uint(create2address.code.length);
         }
-        else if (rule.eq("EXTCODEHASH_CREATE2")) {
+        else if (rule.eq("EXTCODEHASH_SENDER")) {
             emit Uint(uint256(create2address.codehash));
         }
-        else if (rule.eq("EXTCODECOPY_CREATE2")) {
+        else if (rule.eq("EXTCODECOPY_SENDER")) {
             bytes memory code = create2address.code;
             emit Uint(code.length);
         }
@@ -79,9 +79,9 @@ contract TestRulesFactory is Stakable {
             emit Uint(code.length);
         }
         // do not revert on rules checked before account creation
-        else if (rule.eq("EXTCODESIZE_CREATE2")) {}
-        else if (rule.eq("EXTCODEHASH_CREATE2")) {}
-        else if (rule.eq("EXTCODECOPY_CREATE2")) {}
+        else if (rule.eq("EXTCODESIZE_SENDER")) {}
+        else if (rule.eq("EXTCODEHASH_SENDER")) {}
+        else if (rule.eq("EXTCODECOPY_SENDER")) {}
         else {
             require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         }
