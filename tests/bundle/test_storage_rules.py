@@ -438,6 +438,27 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
+        "EXTCODESIZE_entrypoint",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODEHASH_entrypoint",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
+        "EXTCODECOPY_entrypoint",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
         "CALL_undeployed_contract",
         UNSTAKED,
         SENDER,
