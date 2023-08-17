@@ -107,9 +107,22 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
-        else if (eq(rule, "EXTCODESIZE")) return address(100500).code.length;
-        else if (eq(rule, "EXTCODEHASH")) return uint256(address(100600).codehash);
-        else if (eq(rule, "EXTCODECOPY")) {
+        else if (eq(rule, "CALL_undeployed_contract")) { address(100100).call(""); return 0; }
+        else if (eq(rule, "CALLCODE_undeployed_contract")) {
+            assembly {
+                let x := mload(0x40)
+                mstore(x, 0xffffffff)
+                mstore(add(x,0x04), 0)
+                mstore(add(x,0x24), 0)
+                let res := callcode(5000, 100200, 0, x, 0x44, add(x,0x80), 0)
+            }
+            return 0;
+        }
+        else if (eq(rule, "DELEGATECALL_undeployed_contract")) { address(100300).delegatecall(""); return 0; }
+        else if (eq(rule, "STATICCALL_undeployed_contract")) { address(100400).staticcall(""); return 0; }
+        else if (eq(rule, "EXTCODESIZE_undeployed_contract")) return address(100500).code.length;
+        else if (eq(rule, "EXTCODEHASH_undeployed_contract")) return uint256(address(100600).codehash);
+        else if (eq(rule, "EXTCODECOPY_undeployed_contract")) {
             bytes memory o_code;
             assembly {
                 // retrieve the size of the code, this needs assembly
