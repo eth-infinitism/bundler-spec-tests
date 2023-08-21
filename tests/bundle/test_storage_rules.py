@@ -465,6 +465,13 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
+    StorageTestCase(
+        "CALL_undeployed_contract_allowed_precompile",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_ok,
+    ),
 ]
 
 
