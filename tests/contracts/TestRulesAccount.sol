@@ -122,6 +122,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
             assembly {
                 extcodecopy(100700, 0, 0, 2)
             }
+            return 0;
         }
         else if (eq(rule, "EXTCODESIZE_entrypoint")) return address(entryPoint).code.length;
         else if (eq(rule, "EXTCODEHASH_entrypoint")) return uint256(address(entryPoint).codehash);
