@@ -108,6 +108,12 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
         else if (eq(rule, "CALL_undeployed_contract")) { address(100100).call(""); return 0; }
+        else if (eq(rule, "CALL_undeployed_contract_allowed_precompile")) {
+            for (uint160 i = 1; i < 10; i++){
+                address(i).call{gas: 1000}("");
+            }
+            return 0;
+        }
         else if (eq(rule, "CALLCODE_undeployed_contract")) {
             assembly {
                 let res := callcode(5000, 100200, 0, 0, 0, 0, 0)
