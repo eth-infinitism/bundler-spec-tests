@@ -130,6 +130,15 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
             }
             return 0;
         }
+        else if (eq(rule, "EXTCODESIZE_entrypoint")) return address(entryPoint).code.length;
+        else if (eq(rule, "EXTCODEHASH_entrypoint")) return uint256(address(entryPoint).codehash);
+        else if (eq(rule, "EXTCODECOPY_entrypoint")) {
+            address ep = address(entryPoint);
+            assembly {
+                extcodecopy(ep, 0, 0, 2)
+            }
+            return 0;
+        }
         else if (eq(rule, "SELFDESTRUCT")) {
             coin.destruct();
             return 0;
