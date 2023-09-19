@@ -12,7 +12,7 @@ contract TestRulesPaymaster is IPaymaster {
 
     IEntryPoint public entryPoint;
     TestCoin immutable coin = new TestCoin();
-    uint something;
+    uint state;
 
     constructor(address _ep) payable {
         entryPoint = IEntryPoint(_ep);
@@ -35,7 +35,7 @@ contract TestRulesPaymaster is IPaymaster {
             return ("", 0);
         }
         if (rule.eq("storage")) {
-            return ("", something);
+            return ("", state);
         }
         if (rule.eq("reference_storage")) {
             return ("", coin.balanceOf(address (this)));
@@ -69,11 +69,32 @@ contract TestRulesPaymaster is IPaymaster {
             coin.destruct();
             return ("", 0);
         }
+        else if (rule.eq("out_of_gas")) {
+            (bool success,) = address(this).call{gas:10000}(abi.encodeWithSelector(this.revertOOG.selector));
+            require(!success, "reverting oog");
+            return ("", 0);
+        }
+        else if (rule.eq("sstore_out_of_gas")) {
+            (bool success,) = address(this).call{gas:2299}(abi.encodeWithSelector(this.revertOOGSSTORE.selector));
+            require(!success, "reverting pseudo oog");
+            return ("", 0);
+        }
         require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         return ("", 0);
     }
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
+
+    function revertOOG() public {
+        uint256 i = 0;
+        while(true) {
+            keccak256(abi.encode(i++));
+        }
+    }
+
+    function revertOOGSSTORE() public {
+        state = state;
+    }
 
     receive() external payable {
         entryPoint.depositTo{value: msg.value}(address(this));

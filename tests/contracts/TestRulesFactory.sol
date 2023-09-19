@@ -14,6 +14,7 @@ contract TestRulesFactory is Stakable {
 
     TestCoin coin = new TestCoin();
     address entryPoint;
+    uint256 state;
 
     constructor(address _entryPoint) {
         entryPoint = _entryPoint;
@@ -103,12 +104,31 @@ contract TestRulesFactory is Stakable {
                 extcodecopy(100700, 0, 0, 2)
             }
         }
+        else if (rule.eq("out_of_gas")) {
+            (bool success,) = address(this).call{gas:10000}(abi.encodeWithSelector(this.revertOOG.selector));
+            require(!success, "reverting oog");
+        }
+        else if (rule.eq("sstore_out_of_gas")) {
+            (bool success,) = address(this).call{gas:2299}(abi.encodeWithSelector(this.revertOOGSSTORE.selector));
+            require(!success, "reverting pseudo oog");
+        }
         // do not revert on rules checked before account creation
         else if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {}
         else {
             require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
         }
         return account;
+    }
+
+    function revertOOG() public {
+        uint256 i = 0;
+        while(true) {
+            keccak256(abi.encode(i++));
+        }
+    }
+
+    function revertOOGSSTORE() public {
+        state = state;
     }
 
 

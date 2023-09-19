@@ -153,6 +153,16 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
+    StorageTestCase(
+        "out_of_gas", UNSTAKED, PAYMASTER, build_userop_for_paymaster, assert_error
+    ),
+    StorageTestCase(
+        "sstore_out_of_gas",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
     # staked paymaster
     StorageTestCase(
         "no_storage", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
@@ -199,6 +209,12 @@ cases = [
     ),
     StorageTestCase(
         "external_storage", STAKED, PAYMASTER, build_userop_for_paymaster, assert_error
+    ),
+    StorageTestCase(
+        "out_of_gas", STAKED, PAYMASTER, build_userop_for_paymaster, assert_error
+    ),
+    StorageTestCase(
+        "sstore_out_of_gas", STAKED, PAYMASTER, build_userop_for_paymaster, assert_error
     ),
     # unstaked factory
     StorageTestCase(
@@ -293,6 +309,20 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
+    StorageTestCase(
+        "out_of_gas",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "sstore_out_of_gas",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
     # staked factory
     StorageTestCase("no_storage", STAKED, FACTORY, build_userop_for_factory, assert_ok),
     StorageTestCase("storage", STAKED, FACTORY, build_userop_for_factory, assert_ok),
@@ -321,6 +351,20 @@ cases = [
     ),
     StorageTestCase(
         "external_storage", STAKED, FACTORY, build_userop_for_factory, assert_error
+    ),
+    StorageTestCase(
+        "out_of_gas",
+        STAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "sstore_out_of_gas",
+        STAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
     ),
     # unstaked sender
     StorageTestCase("no_storage", UNSTAKED, SENDER, build_userop_for_sender, assert_ok),
@@ -385,6 +429,12 @@ cases = [
         SENDER,
         build_userop_for_sender,
         assert_ok,
+    ),
+    StorageTestCase(
+        "out_of_gas", STAKED, SENDER, build_userop_for_sender, assert_error
+    ),
+    StorageTestCase(
+        "sstore_out_of_gas", STAKED, SENDER, build_userop_for_sender, assert_error
     ),
     StorageTestCase(
         "external_storage", STAKED, SENDER, build_userop_for_sender, assert_error
