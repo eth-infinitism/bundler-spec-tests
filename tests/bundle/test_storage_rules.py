@@ -98,17 +98,28 @@ SENDER = "TestRulesAccount"
 AGGREGATOR = "TestRulesAggregator"
 
 StorageTestCase = collections.namedtuple(
-    "StorageTestCase", ["rule", "staked", "entity", "userop_build_func", "assert_func"]
+    "StorageTestCase", ["ruleID", "rule", "staked", "entity", "userop_build_func", "assert_func"]
 )
 cases = [
     # unstaked paymaster
     StorageTestCase(
-        "no_storage", UNSTAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
+        "STO-000",
+        "no_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok
     ),
     StorageTestCase(
-        "storage", UNSTAKED, PAYMASTER, build_userop_for_paymaster, assert_error
+        "STO-031",
+        "storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error
     ),
     StorageTestCase(
+        "STO-032",
         "reference_storage",
         UNSTAKED,
         PAYMASTER,
@@ -116,6 +127,7 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
+        "STO-032",
         "reference_storage_struct",
         UNSTAKED,
         PAYMASTER,
@@ -123,9 +135,15 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
-        "account_storage", UNSTAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
+        "STO-010",
+        "account_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok
     ),
     StorageTestCase(
+        "STO-021",
         "account_reference_storage",
         UNSTAKED,
         PAYMASTER,
@@ -133,6 +151,7 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
+        "STO-021",
         "account_reference_storage_struct",
         UNSTAKED,
         PAYMASTER,
