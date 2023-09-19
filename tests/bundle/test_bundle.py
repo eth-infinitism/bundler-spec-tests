@@ -22,8 +22,6 @@ def bump_fee_by(fee, factor):
     return round((fee * (100 + factor) / 100))
 
 
-
-
 def assert_error(response):
     assert_rpc_error(response, response.message, RPCErrorCode.INVALID_FIELDS)
 
@@ -138,9 +136,13 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
 
 @pytest.mark.parametrize("mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_ban_user_op_access_other_ops_sender_in_bundle(w3, entrypoint_contract, helper_contract):
+def test_ban_user_op_access_other_ops_sender_in_bundle(
+    w3, entrypoint_contract, helper_contract
+):
     # wallet 2 will treat this wallet as a "token" and access associated storage
-    wallet1_token = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
+    wallet1_token = deploy_and_deposit(
+        w3, entrypoint_contract, "TestFakeWalletToken", False
+    )
     wallet2 = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
     wallet1_token.functions.sudoSetBalance(wallet1_token.address, 10**18).transact(
         {"from": w3.eth.accounts[0]}
