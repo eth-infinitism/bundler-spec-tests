@@ -161,7 +161,7 @@ contract TestRulesAccount is IAccount, IPaymaster, Stakable {
             return 888;
         }
         else if (eq(rule, "out_of_gas")) {
-            (bool success,) = address(this).call(abi.encodeWithSelector(this.revertOOG.selector));
+            (bool success,) = address(this).call{gas:10000}(abi.encodeWithSelector(this.revertOOG.selector));
             require(!success, "reverting oog");
             return 0;
         }
