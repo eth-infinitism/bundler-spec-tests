@@ -14,6 +14,7 @@ from tests.utils import (
 )
 
 
+# All opcodes are part of the OP-011 rule
 banned_opcodes = [
     "GAS",
     "NUMBER",
