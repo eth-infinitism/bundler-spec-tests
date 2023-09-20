@@ -52,7 +52,7 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
         sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
         userop.sender = sender
         userop.initCode = initcode
-        userop.verificationGasLimit = hex(3000000)
+        userop.verificationGasLimit = hex(5000000)
         return userop
 
     return _with_initcode

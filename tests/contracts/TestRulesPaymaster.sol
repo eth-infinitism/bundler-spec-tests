@@ -3,16 +3,14 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
-import "./OpcodeRules.sol";
+import "./ValidationRules.sol";
 import "./SimpleWallet.sol";
 
-contract TestRulesPaymaster is IPaymaster {
+contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
+    using ValidationRules for string;
 
-    using OpcodeRules for string;
-
-    IEntryPoint public entryPoint;
     TestCoin immutable coin = new TestCoin();
-    uint state;
+//    IEntryPoint public entryPoint;
 
     constructor(address _ep) payable {
         entryPoint = IEntryPoint(_ep);
@@ -31,70 +29,15 @@ contract TestRulesPaymaster is IPaymaster {
 
         //first byte after paymaster address.
         string memory rule = string(userOp.paymasterAndData[20:]);
-        if (rule.eq("no_storage")) {
-            return ("", 0);
-        }
-        if (rule.eq("storage")) {
-            return ("", state);
-        }
-        if (rule.eq("reference_storage")) {
-            return ("", coin.balanceOf(address (this)));
-        }
-        if (rule.eq("reference_storage_struct")) {
-            return ("", coin.getInfo(address(this)).c);
-        }
-        if (rule.eq("account_storage")) {
-            return ("", SimpleWallet(payable(userOp.sender)).state());
-        }
-        if (rule.eq("account_reference_storage")) {
-            require(userOp.initCode.length == 0, "iniCode not allowed");
-            return ("", coin.balanceOf(userOp.sender));
-        }
-        if (rule.eq("account_reference_storage_struct")) {
-            return ("", coin.getInfo(address(userOp.sender)).c);
-        }
-        if (rule.eq("account_reference_storage_init_code")) {
-            return ("", coin.balanceOf(userOp.sender));
-        }
-        if (rule.eq("expired")) {
-            return ("", 1);
-        }
         if (rule.eq("context")) {
             return ("this is a context", 0);
-        }
-        if (rule.eq("external_storage")) {
-            return ("", coin.balanceOf(address(0xdeadcafe)));
-        }
-        else if (rule.eq("SELFDESTRUCT")) {
-            coin.destruct();
+        } else {
+            ValidationRules.runRule(rule, ITestAccount(userOp.sender), coin, this);
             return ("", 0);
         }
-        else if (rule.eq("out_of_gas")) {
-            (bool success,) = address(this).call{gas:10000}(abi.encodeWithSelector(this.revertOOG.selector));
-            require(!success, "reverting oog");
-            return ("", 0);
-        }
-        else if (rule.eq("sstore_out_of_gas")) {
-            (bool success,) = address(this).call{gas:2299}(abi.encodeWithSelector(this.revertOOGSSTORE.selector));
-            require(!success, "reverting pseudo oog");
-            return ("", 0);
-        }
-        require(OpcodeRules.runRule(rule, coin) != OpcodeRules.UNKNOWN, string.concat("unknown rule: ", rule));
-        return ("", 0);
     }
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
-
-    function revertOOG() public {
-        uint256 i = 0;
-        while(true) {
-            keccak256(abi.encode(i++));
-        }
-    }
-
-    function revertOOGSSTORE() public {
-        state = state;
-    }
 
     receive() external payable {
         entryPoint.depositTo{value: msg.value}(address(this));
