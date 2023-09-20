@@ -27,7 +27,7 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=11 * 10**6):
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=7 * 10**6):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
