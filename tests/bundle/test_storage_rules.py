@@ -12,37 +12,34 @@ from tests.utils import (
     get_sender_address,
     deploy_and_deposit,
     deposit_to_undeployed_sender,
-    staked_contract
+    staked_contract,
 )
-
-
 
 
 def assert_error(response):
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
 
+
 def deploy_unstaked_factory(w3, entrypoint_contract):
     return deploy_contract(
-            w3,
-            "TestRulesFactory",
-            ctrparams=[entrypoint_contract.address],
-        )
+        w3,
+        "TestRulesFactory",
+        ctrparams=[entrypoint_contract.address],
+    )
+
 
 def deploy_staked_rule_factory(w3, entrypoint_contract):
     contract = deploy_contract(
-        w3,
-        "TestRulesAccountFactory",
-        ctrparams=[entrypoint_contract.address]
+        w3, "TestRulesAccountFactory", ctrparams=[entrypoint_contract.address]
     )
     return staked_contract(w3, entrypoint_contract, contract)
 
+
 def deploy_staked_factory(w3, entrypoint_contract):
-    return deploy_and_deposit(
-        w3, entrypoint_contract, "TestRulesFactory", True
-    )
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", True)
 
 
-def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_factory):
+def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory):
     def _with_initcode(w3, entrypoint_contract, contract, rule):
         factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
@@ -55,7 +52,7 @@ def with_initcode(build_userop_func, deploy_factory_func = deploy_unstaked_facto
         sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
         userop.sender = sender
         userop.initCode = initcode
-        userop.verificationGasLimit = hex(3000000)
+        userop.verificationGasLimit = hex(5000000)
         return userop
 
     return _with_initcode
@@ -98,7 +95,8 @@ SENDER = "TestRulesAccount"
 AGGREGATOR = "TestRulesAggregator"
 
 StorageTestCase = collections.namedtuple(
-    "StorageTestCase", ["ruleId", "rule", "staked", "entity", "userop_build_func", "assert_func"]
+    "StorageTestCase",
+    ["ruleId", "rule", "staked", "entity", "userop_build_func", "assert_func"],
 )
 cases = [
     # unstaked paymaster
@@ -108,7 +106,7 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-031",
@@ -116,7 +114,7 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_error
+        assert_error,
     ),
     StorageTestCase(
         "STO-032",
@@ -140,7 +138,7 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -172,11 +170,27 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_error
+        assert_error,
     ),
     StorageTestCase(
         "STO-032",
         "external_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "out_of_gas",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "sstore_out_of_gas",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -189,15 +203,10 @@ cases = [
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
-        "STO-031",
-        "storage",
-        STAKED,
-        PAYMASTER,
-        build_userop_for_paymaster,
-        assert_ok
+        "STO-031", "storage", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
     ),
     StorageTestCase(
         "STO-032",
@@ -205,7 +214,7 @@ cases = [
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-032",
@@ -221,7 +230,7 @@ cases = [
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -248,12 +257,7 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
-        "EREP-050",
-        "context",
-        STAKED,
-        PAYMASTER,
-        build_userop_for_paymaster,
-        assert_ok
+        "EREP-050", "context", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
     ),
     StorageTestCase(
         "STO-031",
@@ -261,24 +265,30 @@ cases = [
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_error
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "out_of_gas",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "sstore_out_of_gas",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
     ),
     # unstaked factory
     StorageTestCase(
-        "STO-000",
-        "no_storage",
-        UNSTAKED,
-        FACTORY,
-        build_userop_for_factory,
-        assert_ok
+        "STO-000", "no_storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
     StorageTestCase(
-        "STO-000",
-        "storage",
-        UNSTAKED,
-        FACTORY,
-        build_userop_for_factory,
-        assert_error
+        "STO-000", "storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_error
     ),
     StorageTestCase(
         "STO-000",
@@ -286,7 +296,7 @@ cases = [
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_error
+        assert_error,
     ),
     StorageTestCase(
         "STO-032",
@@ -302,7 +312,7 @@ cases = [
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -326,7 +336,7 @@ cases = [
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_error
+        assert_error,
     ),
     StorageTestCase(
         "OP-042",
@@ -392,22 +402,28 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    # staked factory
     StorageTestCase(
-        "STO-000",
-        "no_storage",
-        STAKED,
+        "OP-020",
+        "out_of_gas",
+        UNSTAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_error,
     ),
     StorageTestCase(
-        "STO-031",
-        "storage",
-        STAKED,
+        "OP-020",
+        "sstore_out_of_gas",
+        UNSTAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_error,
+    ),
+    # staked factory
+    StorageTestCase(
+        "STO-000", "no_storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
+    ),
+    StorageTestCase(
+        "STO-031", "storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
     StorageTestCase(
         "STO-032",
@@ -415,7 +431,7 @@ cases = [
         STAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-032",
@@ -423,7 +439,7 @@ cases = [
         STAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-010",
@@ -431,7 +447,7 @@ cases = [
         STAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -455,16 +471,27 @@ cases = [
         STAKED,
         FACTORY,
         build_userop_for_factory,
-        assert_error
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "out_of_gas",
+        STAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020",
+        "sstore_out_of_gas",
+        STAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
     ),
     # unstaked sender
     StorageTestCase(
-        "STO-000",
-        "no_storage",
-        UNSTAKED,
-        SENDER,
-        build_userop_for_sender,
-        assert_ok
+        "STO-000", "no_storage", UNSTAKED, SENDER, build_userop_for_sender, assert_ok
     ),
     StorageTestCase(
         "STO-010",
@@ -472,7 +499,7 @@ cases = [
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -490,7 +517,6 @@ cases = [
         with_initcode(build_userop_for_sender),
         assert_error,
     ),
-
     StorageTestCase(
         "STO-022",
         "account_reference_storage_init_code",
@@ -507,7 +533,6 @@ cases = [
         with_initcode(build_userop_for_paymaster, deploy_staked_rule_factory),
         assert_error,
     ),
-
     StorageTestCase(
         "STO-021",
         "account_reference_storage_struct",
@@ -522,24 +547,25 @@ cases = [
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
-        assert_error
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-020", "out_of_gas", UNSTAKED, SENDER, build_userop_for_sender, assert_error
+    ),
+    StorageTestCase(
+        "OP-020",
+        "sstore_out_of_gas",
+        UNSTAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
     ),
     # staked sender
     StorageTestCase(
-        "STO-000",
-        "no_storage",
-        STAKED,
-        SENDER,
-        build_userop_for_sender,
-        assert_ok
+        "STO-000", "no_storage", STAKED, SENDER, build_userop_for_sender, assert_ok
     ),
     StorageTestCase(
-        "STO-010",
-        "account_storage",
-        STAKED,
-        SENDER,
-        build_userop_for_sender,
-        assert_ok
+        "STO-010", "account_storage", STAKED, SENDER, build_userop_for_sender, assert_ok
     ),
     StorageTestCase(
         "STO-021",
@@ -547,7 +573,7 @@ cases = [
         STAKED,
         SENDER,
         build_userop_for_sender,
-        assert_ok
+        assert_ok,
     ),
     StorageTestCase(
         "STO-021",
@@ -558,12 +584,23 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
+        "OP-020", "out_of_gas", STAKED, SENDER, build_userop_for_sender, assert_error
+    ),
+    StorageTestCase(
+        "OP-020",
+        "sstore_out_of_gas",
+        STAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_error,
+    ),
+    StorageTestCase(
         "STO-000",
         "external_storage",
         STAKED,
         SENDER,
         build_userop_for_sender,
-        assert_error
+        assert_error,
     ),
     StorageTestCase(
         "OP-011",
