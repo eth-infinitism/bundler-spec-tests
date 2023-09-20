@@ -27,7 +27,7 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=4 * 10**6):
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=7 * 10**6):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
@@ -39,7 +39,9 @@ def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=4 * 10**6):
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
     # print(tx_receipt.contractAddress)
-    assert tx_receipt.status == 1, "deployment of " + contractname + " failed"
+    assert tx_receipt.status == 1, (
+        "deployment of " + contractname + " failed:" + str(tx_receipt)
+    )
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
@@ -49,11 +51,9 @@ def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
         contractname,
         ctrparams=[entrypoint_contract.address],
     )
-    tx_hash = w3.eth.send_transaction({
-        "from": w3.eth.accounts[0],
-        "to": contract.address,
-        "value": 10**18
-    })
+    tx_hash = w3.eth.send_transaction(
+        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
+    )
     w3.eth.wait_for_transaction_receipt(tx_hash)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)

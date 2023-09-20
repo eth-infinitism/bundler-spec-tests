@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "@account-abstraction/contracts/interfaces/IAccount.sol";
+//import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./State.sol";
+import "./ITestAccount.sol";
 
-contract SimpleWallet is IAccount {
+contract SimpleWallet is ITestAccount {
 
     IEntryPoint ep;
     uint256 public state;
