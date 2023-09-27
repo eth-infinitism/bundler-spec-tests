@@ -30,7 +30,7 @@ def create_account(w3, codehash_factory_contract, entrypoint_contract, num):
     return account, codehash
 
 
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_codehash_changed(w3, entrypoint_contract):
     codehash_factory_contract = deploy_contract(w3, "TestCodeHashFactory")

@@ -81,7 +81,7 @@ def test_bundle_replace_op(w3, case):
     ]
 
 
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     wallet = deploy_wallet_contract(w3)
@@ -108,7 +108,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     assert response.result["userOpHash"] == ophash
 
 
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
@@ -134,7 +134,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
     assert response.result["userOpHash"] == ophash
 
 
-@pytest.mark.parametrize("mode", ["manual"], ids=[""])
+@pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_ban_user_op_access_other_ops_sender_in_bundle(
     w3, entrypoint_contract, helper_contract
