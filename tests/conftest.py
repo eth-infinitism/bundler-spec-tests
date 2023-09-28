@@ -129,10 +129,3 @@ def set_reputation(reputations):
         method="debug_bundler_setReputation",
         params=[reputations, CommandLineArgs.entrypoint],
     ).send()
-
-
-@pytest.fixture
-def dump_reputation():
-    return RPCRequest(
-        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
-    ).send()

@@ -4,8 +4,9 @@ pragma solidity ^0.8.12;
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./State.sol";
 import "./ITestAccount.sol";
+import "./Stakable.sol";
 
-contract SimpleWallet is ITestAccount {
+contract TestReputationAccount is ITestAccount, Stakable {
 
     IEntryPoint ep;
     uint256 public state;
@@ -16,30 +17,17 @@ contract SimpleWallet is ITestAccount {
         require(req);
     }
 
-    function addStake(IEntryPoint _ep, uint32 delay) public payable {
-        _ep.addStake{value: msg.value}(delay);
-    }
-
     function setState(uint _state) external {
         state=_state;
     }
 
-    function fail() external {
-        revert("test fail");
-    }
-
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
-        if (userOp.callData.length == 20) {
-            State(address(bytes20(userOp.callData))).getState(address(this));
-        }
-
+        require(state != 0xdead, "No bundle for you");
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");
         }
-        bytes2 sig = bytes2(userOp.signature);
-        require(sig != 0xdead, "testWallet: dead signature");
-        return sig == 0xdeaf ? 1 : 0;
+        return 0;
     }
 
     receive() external payable {

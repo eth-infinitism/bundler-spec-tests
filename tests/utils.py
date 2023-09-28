@@ -154,6 +154,16 @@ def dump_mempool():
     return mempool
 
 
+def dump_reputation():
+    return (
+        RPCRequest(
+            method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
+        )
+        .send()
+        .result
+    )
+
+
 def set_throttled(address):
     assert (
         RPCRequest(
