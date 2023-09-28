@@ -111,7 +111,7 @@ cases = [
         'SREP-030', 'throttled-entity-allowed-a-little', 'throttled', 4
     ),
     ReputationTestCase(
-        'UREP-020/STO-050', 'unstaked-entity-allowed-function', 'unstaked', 11
+        'UREP-010 UREP-020', 'unstaked-entity-allowed-function', 'unstaked', 11
     ),
 ]
 
