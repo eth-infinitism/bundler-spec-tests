@@ -154,12 +154,12 @@ def dump_mempool():
     return mempool
 
 
-def set_throttled(address):
+def set_reputation(address, ops_seen=1, ops_included=2):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
             params=[
-                {"address": address, "opsSeen": 1, "opsIncluded": 2},
+                [{"address": address, "opsSeen": ops_seen, "opsIncluded": ops_included}],
                 CommandLineArgs.entrypoint,
             ],
         )

@@ -1,15 +1,24 @@
 import collections
-
+import operator
 import pytest
+
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
     assert_rpc_error,
     dump_mempool,
+    set_reputation,
+    deposit_to_undeployed_sender,
     deploy_wallet_contract,
     deploy_and_deposit,
     send_bundle_now,
     userop_hash,
+)
+from eth_typing import (
+    HexStr,
+)
+from eth_abi.packed import (
+    encode_packed
 )
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
@@ -81,9 +90,104 @@ def test_bundle_replace_op(w3, case):
     ]
 
 
+ReputationTestCase = collections.namedtuple(
+    "ReputationTestCase",
+    ["ruleId", "rule_description", "stake_status", "allowed_in_mempool"]
+)
+
+
+reputations = {
+    'banned': {'ops_seen': 100000, 'ops_included': 1},
+    'throttled': {'ops_seen': 70, 'ops_included': 1},  # numbers here and configuration in 'bundler.ts' are arbitrary
+    'unstaked': {'ops_seen': 0, 'ops_included': 0}
+}
+
+
+cases = [
+    ReputationTestCase(
+        'SREP-020', 'banned-entity-not-allowed', 'banned', 0
+    ),
+    ReputationTestCase(
+        'SREP-030', 'throttled-entity-allowed-a-little', 'throttled', 4
+    ),
+    ReputationTestCase(
+        # TODO: different allowed number for sender (SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT vs SAME_SENDER_MEMPOOL_COUNT)
+        'UREP-020', 'unstaked-entity-allowed-function', 'unstaked', 11
+    ),
+]
+
+
+def idfunction(case):
+    # entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
+    return f"{case.ruleId}-{case.rule_description}-{case.stake_status}"
+
+
+@pytest.mark.parametrize("bundling_mode", ["manual"])
+@pytest.mark.usefixtures("clear_state", "set_bundling_mode")
+@pytest.mark.parametrize("entry", ['sender', 'paymaster', 'factory'])
+@pytest.mark.parametrize("case", cases, ids=idfunction)
+def test_banned_entry_not_allowed_alexf(
+        w3,
+        entrypoint_contract,
+        paymaster_contract,
+        factory_contract,
+        helper_contract,
+        entry,
+        case
+):
+    wallet = deploy_wallet_contract(w3)
+    initcode = (
+            factory_contract.address
+            + factory_contract.functions.create(
+                123, "", entrypoint_contract.address
+            ).build_transaction()["data"][2:]
+    )
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    # it should not matter to the bundler whether sender is deployed or not
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+
+    # 'nothing' is a special string to pass validation
+    paymaster_and_data = '0x' + encode_packed(['address', 'string'], [paymaster_contract.address, 'nothing']).hex()
+
+    assert dump_mempool() == []
+    if entry == 'sender':
+        set_reputation(sender, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
+    elif entry == 'paymaster':
+        set_reputation(paymaster_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
+    elif entry == 'factory':
+        set_reputation(factory_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
+    # TODO: missing aggregator cases
+
+    wallet_ops = []
+    # fill the mempool with the allowed number of UserOps
+    for i in range(case.allowed_in_mempool):
+        user_op = UserOperation(
+            sender=sender,
+            nonce=hex(i << 64),
+            callData=calldata,
+            initCode=initcode,
+            paymasterAndData=paymaster_and_data
+        )
+        wallet_ops.append(user_op)
+        user_op.send()
+
+    assert dump_mempool() == wallet_ops
+    # create a UserOperation that will not fit the mempool
+    user_op = UserOperation(
+        sender=sender,
+        nonce=hex(case.allowed_in_mempool << 64),
+        callData=calldata,
+        initCode=initcode,
+        paymasterAndData=paymaster_and_data
+    )
+    response = user_op.send()
+    assert dump_mempool() == wallet_ops
+    assert operator.contains(response.message, case.stake_status)
+
+
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
+def test_max_allowed_ops_unstaked_sender(w3, helper_contract, state, entry):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
