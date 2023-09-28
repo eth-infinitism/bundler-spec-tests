@@ -99,7 +99,7 @@ ReputationTestCase = collections.namedtuple(
 reputations = {
     'banned': {'ops_seen': 100000, 'ops_included': 1},
     'throttled': {'ops_seen': 70, 'ops_included': 1},  # numbers here and configuration in 'bundler.ts' are arbitrary
-    'unstaked': {'ops_seen': 0, 'ops_included': 0}
+    'unstaked': {'ops_seen': 10, 'ops_included': 1}
 }
 
 
@@ -111,8 +111,7 @@ cases = [
         'SREP-030', 'throttled-entity-allowed-a-little', 'throttled', 4
     ),
     ReputationTestCase(
-        # TODO: different allowed number for sender (SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT vs SAME_SENDER_MEMPOOL_COUNT)
-        'UREP-020', 'unstaked-entity-allowed-function', 'unstaked', 11
+        'UREP-020/STO-050', 'unstaked-entity-allowed-function', 'unstaked', 11
     ),
 ]
 
@@ -142,9 +141,9 @@ def test_banned_entry_not_allowed_alexf(
                 123, "", entrypoint_contract.address
             ).build_transaction()["data"][2:]
     )
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
     # it should not matter to the bundler whether sender is deployed or not
     sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
     # 'nothing' is a special string to pass validation
     paymaster_and_data = '0x' + encode_packed(['address', 'string'], [paymaster_contract.address, 'nothing']).hex()
@@ -158,9 +157,35 @@ def test_banned_entry_not_allowed_alexf(
         set_reputation(factory_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
     # TODO: missing aggregator cases
 
+    allowed_in_mempool = case.allowed_in_mempool
+
+    # 'unstaked sender' has a unique reputation rule
+    if entry == 'sender' and case.stake_status == 'unstaked':
+        allowed_in_mempool = 4
+
     wallet_ops = []
     # fill the mempool with the allowed number of UserOps
-    for i in range(case.allowed_in_mempool):
+    for i in range(allowed_in_mempool):
+
+        if entry != 'factory':
+            factory_contract = deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
+
+        if entry != 'sender':
+            # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
+            initcode = (
+                    factory_contract.address
+                    + factory_contract.functions.create(
+                        i + 123, "", entrypoint_contract.address
+                    ).build_transaction()["data"][2:]
+                )
+            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+
+        if entry != 'paymaster':
+            # differentiate 'paymaster' address unless checking it
+            paymaster_contract = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
+            # 'nothing' is a special string to pass validation
+            paymaster_and_data = '0x' + encode_packed(['address', 'string'], [paymaster_contract.address, 'nothing']).hex()
+
         user_op = UserOperation(
             sender=sender,
             nonce=hex(i << 64),
@@ -187,7 +212,7 @@ def test_banned_entry_not_allowed_alexf(
 
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-def test_max_allowed_ops_unstaked_sender(w3, helper_contract, state, entry):
+def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
