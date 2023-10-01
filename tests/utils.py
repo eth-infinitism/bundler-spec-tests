@@ -113,7 +113,7 @@ def assert_ok(response):
 def assert_rpc_error(response, message, code):
     try:
         assert response.code == code
-        assert message in response.message
+        assert message.lower() in response.message.lower()
     except AttributeError as exc:
         raise Exception(f"expected error object, got:\n{response}") from exc
 
