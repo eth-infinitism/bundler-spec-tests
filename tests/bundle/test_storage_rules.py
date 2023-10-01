@@ -9,7 +9,6 @@ from tests.utils import (
     deploy_wallet_contract,
     deploy_state_contract,
     deploy_contract,
-    get_sender_address,
     deploy_and_deposit,
     deposit_to_undeployed_sender,
     staked_contract,

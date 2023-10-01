@@ -116,9 +116,17 @@ def clear_state():
 
 
 @pytest.fixture
-def set_bundling_mode(bundling_mode):
+def manual_bundling_mode():
     response = RPCRequest(
-        method="debug_bundler_setBundlingMode", params=[bundling_mode]
+        method="debug_bundler_setBundlingMode", params=["manual"]
+    ).send()
+    return response
+
+
+@pytest.fixture
+def auto_bundling_mode():
+    response = RPCRequest(
+        method="debug_bundler_setBundlingMode", params=["auto"]
     ).send()
     return response
 

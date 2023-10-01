@@ -154,6 +154,10 @@ def dump_mempool():
     return mempool
 
 
+def clear_mempool():
+    return RPCRequest(method="debug_bundler_clearMempool").send()
+
+
 def dump_reputation():
     return (
         RPCRequest(
@@ -162,6 +166,10 @@ def dump_reputation():
         .send()
         .result
     )
+
+
+def clear_reputation():
+    return RPCRequest(method="debug_bundler_clearReputation").send()
 
 
 def set_throttled(address):
