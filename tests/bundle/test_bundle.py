@@ -1,5 +1,4 @@
 import collections
-import operator
 import pytest
 
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
@@ -14,16 +13,14 @@ from tests.utils import (
     send_bundle_now,
     userop_hash,
 )
-from eth_typing import (
-    HexStr,
-)
+
 from eth_abi.packed import (
     encode_packed
 )
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
-DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
-DEFAULT_MAX_FEE_PER_GAS = 5 * 10**9
+DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10 ** 9
+DEFAULT_MAX_FEE_PER_GAS = 5 * 10 ** 9
 MIN_PRICE_BUMP = 10
 
 
@@ -95,13 +92,11 @@ ReputationTestCase = collections.namedtuple(
     ["ruleId", "rule_description", "stake_status", "allowed_in_mempool", "errorCode"]
 )
 
-
 reputations = {
     'banned': {'ops_seen': 100000, 'ops_included': 1},
     'throttled': {'ops_seen': 70, 'ops_included': 1},  # numbers here and configuration in 'bundler.ts' are arbitrary
     'unstaked': {'ops_seen': 10, 'ops_included': 1}
 }
-
 
 cases = [
     ReputationTestCase(
@@ -130,7 +125,6 @@ def test_banned_entry_not_allowed_alexf(
         entrypoint_contract,
         paymaster_contract,
         factory_contract,
-        helper_contract,
         entry,
         case
 ):
@@ -138,8 +132,8 @@ def test_banned_entry_not_allowed_alexf(
     initcode = (
             factory_contract.address
             + factory_contract.functions.create(
-                123, "", entrypoint_contract.address
-            ).build_transaction()["data"][2:]
+        123, "", entrypoint_contract.address
+    ).build_transaction()["data"][2:]
     )
     # it should not matter to the bundler whether sender is deployed or not
     sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
@@ -150,12 +144,17 @@ def test_banned_entry_not_allowed_alexf(
 
     assert dump_mempool() == []
     if entry == 'sender':
-        set_reputation(sender, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
+        set_reputation(sender,
+                       ops_seen=reputations[case.stake_status]['ops_seen'],
+                       ops_included=reputations[case.stake_status]['ops_included']
+                       )
     elif entry == 'paymaster':
-        set_reputation(paymaster_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
+        set_reputation(paymaster_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'],
+                       ops_included=reputations[case.stake_status]['ops_included'])
     elif entry == 'factory':
-        set_reputation(factory_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'], ops_included=reputations[case.stake_status]['ops_included'])
-    # TODO: missing aggregator cases
+        set_reputation(factory_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'],
+                       ops_included=reputations[case.stake_status]['ops_included'])
+    # add missing aggregator cases
 
     allowed_in_mempool = case.allowed_in_mempool
 
@@ -175,16 +174,17 @@ def test_banned_entry_not_allowed_alexf(
             initcode = (
                     factory_contract.address
                     + factory_contract.functions.create(
-                        i + 123, "", entrypoint_contract.address
-                    ).build_transaction()["data"][2:]
-                )
+                i + 123, "", entrypoint_contract.address
+            ).build_transaction()["data"][2:]
+            )
             sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
 
         if entry != 'paymaster':
             # differentiate 'paymaster' address unless checking it
             paymaster_contract = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
             # 'nothing' is a special string to pass validation
-            paymaster_and_data = '0x' + encode_packed(['address', 'string'], [paymaster_contract.address, 'nothing']).hex()
+            paymaster_and_data = '0x' + encode_packed(['address', 'string'],
+                                                      [paymaster_contract.address, 'nothing']).hex()
 
         user_op = UserOperation(
             sender=sender,
@@ -207,7 +207,7 @@ def test_banned_entry_not_allowed_alexf(
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
-    assert operator.contains(response.message, case.stake_status)
+    assert case.stake_status in response.message
     assert response.code == case.errorCode
     entity_address = ''
     if entry == 'sender':
@@ -216,7 +216,7 @@ def test_banned_entry_not_allowed_alexf(
         entity_address = user_op.paymasterAndData[:42]
     elif entry == 'factory':
         entity_address = user_op.initCode[:42]
-    assert operator.contains(response.message.lower(), entity_address.lower())
+    assert entity_address.lower() in response.message.lower()
 
 
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
@@ -275,17 +275,17 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 def test_ban_user_op_access_other_ops_sender_in_bundle(
-    w3, entrypoint_contract, helper_contract
+        w3, entrypoint_contract, helper_contract
 ):
     # wallet 2 will treat this wallet as a "token" and access associated storage
     wallet1_token = deploy_and_deposit(
         w3, entrypoint_contract, "TestFakeWalletToken", False
     )
     wallet2 = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
-    wallet1_token.functions.sudoSetBalance(wallet1_token.address, 10**18).transact(
+    wallet1_token.functions.sudoSetBalance(wallet1_token.address, 10 ** 18).transact(
         {"from": w3.eth.accounts[0]}
     )
-    wallet1_token.functions.sudoSetBalance(wallet2.address, 10**18).transact(
+    wallet1_token.functions.sudoSetBalance(wallet2.address, 10 ** 18).transact(
         {"from": w3.eth.accounts[0]}
     )
     wallet1_token.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
