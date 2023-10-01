@@ -79,11 +79,7 @@ def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
             123, rule, entrypoint_contract.address
         ).build_transaction()["data"][2:]
     )
-    sender = get_sender_address(w3, initcode)
-    tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
     return UserOperation(sender=sender, initCode=initcode)
 
 
