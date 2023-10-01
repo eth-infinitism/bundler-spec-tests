@@ -119,7 +119,7 @@ def idfunction(case):
 
 @pytest.mark.parametrize("bundling_mode", ["manual"])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-@pytest.mark.parametrize("entities", ['sender', 'paymaster', 'factory'])
+@pytest.mark.parametrize("entity", ['sender', 'paymaster', 'factory'])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 # pylint: disable-next=too-many-arguments too-many-locals
 def test_mempool_reputation_rules_all_entities(
