@@ -1,6 +1,10 @@
 import collections
 import pytest
 
+from eth_abi.packed import (
+    encode_packed
+)
+
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
@@ -14,9 +18,6 @@ from tests.utils import (
     userop_hash,
 )
 
-from eth_abi.packed import (
-    encode_packed
-)
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
 DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10 ** 9
@@ -120,7 +121,8 @@ def idfunction(case):
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 @pytest.mark.parametrize("entry", ['sender', 'paymaster', 'factory'])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
-def test_mempool_reputation_rules_all_entries(
+# pylint: disable-next=too-many-arguments too-many-locals
+def test_mempool_reputation_rules_all_entries_alexf(
         w3,
         entrypoint_contract,
         paymaster_contract,
@@ -132,7 +134,7 @@ def test_mempool_reputation_rules_all_entries(
     initcode = (
             factory_contract.address
             + factory_contract.functions.create(
-        123, "", entrypoint_contract.address
+        456, "", entrypoint_contract.address
     ).build_transaction()["data"][2:]
     )
     # it should not matter to the bundler whether sender is deployed or not
@@ -207,8 +209,6 @@ def test_mempool_reputation_rules_all_entries(
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
-    assert case.stake_status in response.message
-    assert response.code == case.errorCode
     entity_address = ''
     if entry == 'sender':
         entity_address = user_op.sender
@@ -216,7 +216,12 @@ def test_mempool_reputation_rules_all_entries(
         entity_address = user_op.paymasterAndData[:42]
     elif entry == 'factory':
         entity_address = user_op.initCode[:42]
-    assert entity_address.lower() in response.message.lower()
+    assert_rpc_error(
+        response, case.stake_status, case.errorCode
+    )
+    assert_rpc_error(
+        response, entity_address, case.errorCode
+    )
 
 
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
