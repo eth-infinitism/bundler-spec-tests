@@ -120,7 +120,7 @@ def idfunction(case):
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
 @pytest.mark.parametrize("entry", ['sender', 'paymaster', 'factory'])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
-def test_banned_entry_not_allowed_alexf(
+def test_mempool_reputation_rules_all_entries(
         w3,
         entrypoint_contract,
         paymaster_contract,
