@@ -119,15 +119,15 @@ def idfunction(case):
 
 @pytest.mark.parametrize("bundling_mode", ["manual"])
 @pytest.mark.usefixtures("clear_state", "set_bundling_mode")
-@pytest.mark.parametrize("entry", ['sender', 'paymaster', 'factory'])
+@pytest.mark.parametrize("entities", ['sender', 'paymaster', 'factory'])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 # pylint: disable-next=too-many-arguments too-many-locals
-def test_mempool_reputation_rules_all_entries(
+def test_mempool_reputation_rules_all_entities(
         w3,
         entrypoint_contract,
         paymaster_contract,
         factory_contract,
-        entry,
+        entity,
         case
 ):
     wallet = deploy_wallet_contract(w3)
@@ -145,15 +145,15 @@ def test_mempool_reputation_rules_all_entries(
     paymaster_and_data = '0x' + encode_packed(['address', 'string'], [paymaster_contract.address, 'nothing']).hex()
 
     assert dump_mempool() == []
-    if entry == 'sender':
+    if entity == 'sender':
         set_reputation(sender,
                        ops_seen=reputations[case.stake_status]['ops_seen'],
                        ops_included=reputations[case.stake_status]['ops_included']
                        )
-    elif entry == 'paymaster':
+    elif entity == 'paymaster':
         set_reputation(paymaster_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'],
                        ops_included=reputations[case.stake_status]['ops_included'])
-    elif entry == 'factory':
+    elif entity == 'factory':
         set_reputation(factory_contract.address, ops_seen=reputations[case.stake_status]['ops_seen'],
                        ops_included=reputations[case.stake_status]['ops_included'])
     # add missing aggregator cases
@@ -161,17 +161,17 @@ def test_mempool_reputation_rules_all_entries(
     allowed_in_mempool = case.allowed_in_mempool
 
     # 'unstaked sender' has a unique reputation rule
-    if entry == 'sender' and case.stake_status == 'unstaked':
+    if entity == 'sender' and case.stake_status == 'unstaked':
         allowed_in_mempool = 4
 
     wallet_ops = []
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
-        if entry != 'factory':
+        if entity != 'factory':
             factory_contract = deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
 
-        if entry != 'sender':
+        if entity != 'sender':
             # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
             initcode = (
                     factory_contract.address
@@ -181,7 +181,7 @@ def test_mempool_reputation_rules_all_entries(
             )
             sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
 
-        if entry != 'paymaster':
+        if entity != 'paymaster':
             # differentiate 'paymaster' address unless checking it
             paymaster_contract = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
             # 'nothing' is a special string to pass validation
@@ -210,11 +210,11 @@ def test_mempool_reputation_rules_all_entries(
     response = user_op.send()
     assert dump_mempool() == wallet_ops
     entity_address = ''
-    if entry == 'sender':
+    if entity == 'sender':
         entity_address = user_op.sender
-    elif entry == 'paymaster':
+    elif entity == 'paymaster':
         entity_address = user_op.paymasterAndData[:42]
-    elif entry == 'factory':
+    elif entity == 'factory':
         entity_address = user_op.initCode[:42]
     assert_rpc_error(
         response, case.stake_status, case.errorCode
