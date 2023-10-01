@@ -31,6 +31,8 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         string memory rule = string(userOp.paymasterAndData[20:]);
         if (rule.eq("context")) {
             return ("this is a context", 0);
+        } else if (rule.eq("nothing")) {
+            return ("", 0);
         } else {
             ValidationRules.runRule(rule, ITestAccount(userOp.sender), coin, this);
             return ("", 0);
