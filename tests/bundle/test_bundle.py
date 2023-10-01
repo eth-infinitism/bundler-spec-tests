@@ -92,7 +92,7 @@ def test_bundle_replace_op(w3, case):
 
 ReputationTestCase = collections.namedtuple(
     "ReputationTestCase",
-    ["ruleId", "rule_description", "stake_status", "allowed_in_mempool"]
+    ["ruleId", "rule_description", "stake_status", "allowed_in_mempool", "errorCode"]
 )
 
 
@@ -105,13 +105,13 @@ reputations = {
 
 cases = [
     ReputationTestCase(
-        'SREP-020', 'banned-entity-not-allowed', 'banned', 0
+        'SREP-020', 'banned-entity-not-allowed', 'banned', 0, -32504
     ),
     ReputationTestCase(
-        'SREP-030', 'throttled-entity-allowed-a-little', 'throttled', 4
+        'SREP-030', 'throttled-entity-allowed-a-little', 'throttled', 4, -32504
     ),
     ReputationTestCase(
-        'UREP-010 UREP-020', 'unstaked-entity-allowed-function', 'unstaked', 11
+        'UREP-010 UREP-020', 'unstaked-entity-allowed-function', 'unstaked', 11, -32505
     ),
 ]
 
@@ -197,7 +197,7 @@ def test_banned_entry_not_allowed_alexf(
         user_op.send()
 
     assert dump_mempool() == wallet_ops
-    # create a UserOperation that will not fit the mempool
+    # create a UserOperation that exceeds the mempool limit
     user_op = UserOperation(
         sender=sender,
         nonce=hex(case.allowed_in_mempool << 64),
@@ -208,6 +208,15 @@ def test_banned_entry_not_allowed_alexf(
     response = user_op.send()
     assert dump_mempool() == wallet_ops
     assert operator.contains(response.message, case.stake_status)
+    assert response.code == case.errorCode
+    entity_address = ''
+    if entry == 'sender':
+        entity_address = user_op.sender
+    elif entry == 'paymaster':
+        entity_address = user_op.paymasterAndData[:42]
+    elif entry == 'factory':
+        entity_address = user_op.initCode[:42]
+    assert operator.contains(response.message.lower(), entity_address.lower())
 
 
 @pytest.mark.parametrize("bundling_mode", ["manual"], ids=[""])
