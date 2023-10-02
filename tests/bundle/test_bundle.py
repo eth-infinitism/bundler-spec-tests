@@ -1,16 +1,21 @@
 import collections
-
 import pytest
+
+from eth_abi.packed import encode_packed
+
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
     assert_rpc_error,
     dump_mempool,
+    set_reputation,
+    deposit_to_undeployed_sender,
     deploy_wallet_contract,
     deploy_and_deposit,
     send_bundle_now,
     userop_hash,
 )
+
 
 ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
 DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
@@ -79,6 +84,153 @@ def test_bundle_replace_op(w3, case):
     assert dump_mempool() == [
         replacement_op if case.assert_func.__name__ == assert_ok.__name__ else new_op
     ]
+
+
+ReputationTestCase = collections.namedtuple(
+    "ReputationTestCase",
+    ["ruleId", "rule_description", "stake_status", "allowed_in_mempool", "errorCode"],
+)
+
+reputations = {
+    "banned": {"ops_seen": 100000, "ops_included": 1},
+    "throttled": {
+        "ops_seen": 120,
+        "ops_included": 1,
+    },  # numbers here and configuration in 'bundler.ts' are arbitrary
+    "unstaked": {"ops_seen": 10, "ops_included": 1},
+}
+
+cases = [
+    ReputationTestCase("SREP-020", "banned-entity-not-allowed", "banned", 0, -32504),
+    ReputationTestCase(
+        "SREP-030", "throttled-entity-allowed-a-little", "throttled", 4, -32504
+    ),
+    ReputationTestCase(
+        "UREP-010 UREP-020", "unstaked-entity-allowed-function", "unstaked", 11, -32505
+    ),
+]
+
+
+def idfunction(case):
+    # entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
+    return f"{case.ruleId}-{case.rule_description}-{case.stake_status}"
+
+
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.parametrize("entity", ["sender", "paymaster", "factory"])
+@pytest.mark.parametrize("case", cases, ids=idfunction)
+# pylint: disable-next=too-many-arguments too-many-locals
+def test_mempool_reputation_rules_all_entities(
+    w3, entrypoint_contract, paymaster_contract, factory_contract, entity, case
+):
+    wallet = deploy_wallet_contract(w3)
+    initcode = (
+        factory_contract.address
+        + factory_contract.functions.create(
+            456, "", entrypoint_contract.address
+        ).build_transaction()["data"][2:]
+    )
+    # it should not matter to the bundler whether sender is deployed or not
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+
+    # 'nothing' is a special string to pass validation
+    paymaster_and_data = (
+        "0x"
+        + encode_packed(
+            ["address", "string"], [paymaster_contract.address, "nothing"]
+        ).hex()
+    )
+
+    assert dump_mempool() == []
+    if entity == "sender":
+        set_reputation(
+            sender,
+            ops_seen=reputations[case.stake_status]["ops_seen"],
+            ops_included=reputations[case.stake_status]["ops_included"],
+        )
+    elif entity == "paymaster":
+        set_reputation(
+            paymaster_contract.address,
+            ops_seen=reputations[case.stake_status]["ops_seen"],
+            ops_included=reputations[case.stake_status]["ops_included"],
+        )
+    elif entity == "factory":
+        set_reputation(
+            factory_contract.address,
+            ops_seen=reputations[case.stake_status]["ops_seen"],
+            ops_included=reputations[case.stake_status]["ops_included"],
+        )
+    # add missing aggregator cases
+
+    allowed_in_mempool = case.allowed_in_mempool
+
+    # 'unstaked sender' has a unique reputation rule
+    if entity == "sender" and case.stake_status == "unstaked":
+        allowed_in_mempool = 4
+
+    wallet_ops = []
+    # fill the mempool with the allowed number of UserOps
+    for i in range(allowed_in_mempool):
+
+        if entity != "factory":
+            factory_contract = deploy_and_deposit(
+                w3, entrypoint_contract, "TestRulesFactory", False
+            )
+
+        if entity != "sender":
+            # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
+            initcode = (
+                factory_contract.address
+                + factory_contract.functions.create(
+                    i + 123, "", entrypoint_contract.address
+                ).build_transaction()["data"][2:]
+            )
+            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+
+        if entity != "paymaster":
+            # differentiate 'paymaster' address unless checking it
+            paymaster_contract = deploy_and_deposit(
+                w3, entrypoint_contract, "TestRulesPaymaster", False
+            )
+            # 'nothing' is a special string to pass validation
+            paymaster_and_data = (
+                "0x"
+                + encode_packed(
+                    ["address", "string"], [paymaster_contract.address, "nothing"]
+                ).hex()
+            )
+
+        user_op = UserOperation(
+            sender=sender,
+            nonce=hex(i << 64),
+            callData=calldata,
+            initCode=initcode,
+            paymasterAndData=paymaster_and_data,
+        )
+        wallet_ops.append(user_op)
+        user_op.send()
+
+    assert dump_mempool() == wallet_ops
+    # create a UserOperation that exceeds the mempool limit
+    user_op = UserOperation(
+        sender=sender,
+        nonce=hex(case.allowed_in_mempool << 64),
+        callData=calldata,
+        initCode=initcode,
+        paymasterAndData=paymaster_and_data,
+    )
+    response = user_op.send()
+    assert dump_mempool() == wallet_ops
+    entity_address = ""
+    if entity == "sender":
+        entity_address = user_op.sender
+    elif entity == "paymaster":
+        entity_address = user_op.paymasterAndData[:42]
+    elif entity == "factory":
+        entity_address = user_op.initCode[:42]
+    assert_rpc_error(response, case.stake_status, case.errorCode)
+    assert_rpc_error(response, entity_address, case.errorCode)
 
 
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
