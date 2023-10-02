@@ -339,7 +339,7 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
 # STO-040
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 def test_ban_user_sender_double_role_in_bundle(
-        w3, entrypoint_contract, helper_contract
+        w3, entrypoint_contract
 ):
     wallet1_and_paymaster = deploy_and_deposit(
         w3, entrypoint_contract, "TestFakeWalletPaymaster", False
@@ -367,3 +367,25 @@ def test_ban_user_sender_double_role_in_bundle(
     assert_rpc_error(response1,
                      "is used as a different entity in another UserOperation currently in mempool",
                      RPCErrorCode.BANNED_OPCODE)
+
+
+# SREP-010
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+def test_stake_check_in_bundler(w3, paymaster_contract, entrypoint_contract):
+    response = RPCRequest(
+        method="debug_bundler_getAddressStakeStatus",
+        params=[paymaster_contract.address, entrypoint_contract.address]
+    ).send()
+    assert response.result['stakeInfo']['addr'] == paymaster_contract.address
+    assert response.result['stakeInfo']['stake'] == '0'
+    assert response.result['stakeInfo']['unstakeDelaySec'] == '0'
+    assert response.result['isStaked'] is False
+    staked_paymaster = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", True)
+    response = RPCRequest(
+        method="debug_bundler_getAddressStakeStatus",
+        params=[staked_paymaster.address, entrypoint_contract.address]
+    ).send()
+    assert response.result['stakeInfo']['addr'] == staked_paymaster.address
+    assert response.result['stakeInfo']['stake'] == '1000000000000000000'
+    assert response.result['stakeInfo']['unstakeDelaySec'] == '2'
+    assert response.result['isStaked'] is True
