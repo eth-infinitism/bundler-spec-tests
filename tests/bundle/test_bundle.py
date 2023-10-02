@@ -284,6 +284,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
     assert response.result["userOpHash"] == ophash
 
 
+# STO-041
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 def test_ban_user_op_access_other_ops_sender_in_bundle(
     w3, entrypoint_contract, helper_contract
@@ -331,3 +332,38 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
         params=[ophash2],
     ).send()
     assert response2.result is None
+
+
+# this condition is extremely similar to STO-041 but the access is in the entity and not in a 3rd contract
+# which allows us to filter out such violations on their entry into the mempool
+# STO-040
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+def test_ban_user_sender_double_role_in_bundle(
+        w3, entrypoint_contract, helper_contract
+):
+    wallet1_and_paymaster = deploy_and_deposit(
+        w3, entrypoint_contract, "TestFakeWalletPaymaster", False
+    )
+    wallet2 = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
+    user_op1 = UserOperation(sender=wallet1_and_paymaster.address, callData="0x")
+    paymaster_and_data = ("0x" + encode_packed(["address"], [wallet1_and_paymaster.address]).hex())
+    user_op2 = UserOperation(sender=wallet2.address, callData="0x", paymasterAndData=paymaster_and_data)
+
+    # mempool addition order check: sender becomes paymaster
+    response1 = user_op1.send()
+    response2 = user_op2.send()
+    assert_ok(response1)
+    assert_rpc_error(response2,
+                     "is used as a sender entity in another UserOperation currently in mempool",
+                     RPCErrorCode.BANNED_OPCODE)
+
+    RPCRequest(method="debug_bundler_clearState").send()
+
+    # mempool addition order check: paymaster becomes sender
+    response2 = user_op2.send()
+    response1 = user_op1.send()
+
+    assert_ok(response2)
+    assert_rpc_error(response1,
+                     "is used as a different entity in another UserOperation currently in mempool",
+                     RPCErrorCode.BANNED_OPCODE)
