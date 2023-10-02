@@ -116,9 +116,17 @@ def clear_state():
 
 
 @pytest.fixture
-def set_bundling_mode(bundling_mode):
+def manual_bundling_mode():
     response = RPCRequest(
-        method="debug_bundler_setBundlingMode", params=[bundling_mode]
+        method="debug_bundler_setBundlingMode", params=["manual"]
+    ).send()
+    return response
+
+
+@pytest.fixture
+def auto_bundling_mode():
+    response = RPCRequest(
+        method="debug_bundler_setBundlingMode", params=["auto"]
     ).send()
     return response
 
@@ -128,11 +136,4 @@ def set_reputation(reputations):
     return RPCRequest(
         method="debug_bundler_setReputation",
         params=[reputations, CommandLineArgs.entrypoint],
-    ).send()
-
-
-@pytest.fixture
-def dump_reputation():
-    return RPCRequest(
-        method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
     ).send()

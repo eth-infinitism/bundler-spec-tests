@@ -154,12 +154,36 @@ def dump_mempool():
     return mempool
 
 
+def clear_mempool():
+    return RPCRequest(method="debug_bundler_clearMempool").send()
+
+
+def dump_reputation():
+    return (
+        RPCRequest(
+            method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
+        )
+        .send()
+        .result
+    )
+
+
+def clear_reputation():
+    return RPCRequest(method="debug_bundler_clearReputation").send()
+
+
 def set_reputation(address, ops_seen=1, ops_included=2):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
             params=[
-                [{"address": address, "opsSeen": ops_seen, "opsIncluded": ops_included}],
+                [
+                    {
+                        "address": address,
+                        "opsSeen": ops_seen,
+                        "opsIncluded": ops_included,
+                    }
+                ],
                 CommandLineArgs.entrypoint,
             ],
         )

@@ -18,6 +18,7 @@ ignored-classes = ["Error"]
 good-names = ["w3", "id", "i", "s"]
 good-names-rgxs = ["test_.*"]
 max-line-length=120
+max-branches=15
 
 [tool.pdm]
 [tool.pdm.build]
