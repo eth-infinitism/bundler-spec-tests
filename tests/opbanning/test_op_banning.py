@@ -35,10 +35,8 @@ banned_opcodes = [
 ]
 
 # the "OP-052" tested elsewhere
-allowed_opcode_sequences = [
-    "GAS CALL",
-    "GAS DELEGATECALL"
-]
+allowed_opcode_sequences = ["GAS CALL", "GAS DELEGATECALL"]
+
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_banned_opcode(rules_account_contract, banned_op):
@@ -54,7 +52,8 @@ def test_account_banned_opcode(rules_account_contract, banned_op):
 @pytest.mark.parametrize("allowed_op_sequence", allowed_opcode_sequences)
 def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequence):
     response = UserOperation(
-        sender=rules_account_contract.address, signature=to_prefixed_hex(allowed_op_sequence)
+        sender=rules_account_contract.address,
+        signature=to_prefixed_hex(allowed_op_sequence),
     ).send()
     assert_ok(response)
 

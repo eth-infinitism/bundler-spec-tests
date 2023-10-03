@@ -159,10 +159,11 @@ def clear_mempool():
 
 
 def get_stake_status(address, entry_point):
-    return RPCRequest(
-        method="debug_bundler_getStakeStatus",
-        params=[address, entry_point]
-    ).send()
+    return (
+        RPCRequest(method="debug_bundler_getStakeStatus", params=[address, entry_point])
+        .send()
+        .result
+    )
 
 
 def dump_reputation():
