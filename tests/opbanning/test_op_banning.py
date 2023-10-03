@@ -7,6 +7,7 @@ import pytest
 
 from tests.types import UserOperation, RPCErrorCode
 from tests.utils import (
+    assert_ok,
     assert_rpc_error,
     deposit_to_undeployed_sender,
     to_hex,
@@ -33,6 +34,9 @@ banned_opcodes = [
     "SELFDESTRUCT",
 ]
 
+# the "OP-052" tested elsewhere
+allowed_opcode_sequences = ["GAS CALL", "GAS DELEGATECALL"]
+
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_banned_opcode(rules_account_contract, banned_op):
@@ -42,6 +46,16 @@ def test_account_banned_opcode(rules_account_contract, banned_op):
     assert_rpc_error(
         response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
     )
+
+
+# OP-012
+@pytest.mark.parametrize("allowed_op_sequence", allowed_opcode_sequences)
+def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequence):
+    response = UserOperation(
+        sender=rules_account_contract.address,
+        signature=to_prefixed_hex(allowed_op_sequence),
+    ).send()
+    assert_ok(response)
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)

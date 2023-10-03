@@ -7,6 +7,7 @@ from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
     assert_rpc_error,
+    get_stake_status,
     dump_mempool,
     set_reputation,
     deposit_to_undeployed_sender,
@@ -284,6 +285,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
     assert response.result["userOpHash"] == ophash
 
 
+# STO-041
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 def test_ban_user_op_access_other_ops_sender_in_bundle(
     w3, entrypoint_contract, helper_contract
@@ -331,3 +333,62 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
         params=[ophash2],
     ).send()
     assert response2.result is None
+
+
+# this condition is extremely similar to STO-041 but the access is in the entity and not in a 3rd contract
+# which allows us to filter out such violations on their entry into the mempool
+# STO-040
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
+    wallet1_and_paymaster = deploy_and_deposit(
+        w3, entrypoint_contract, "TestFakeWalletPaymaster", False
+    )
+    wallet2 = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
+    user_op1 = UserOperation(sender=wallet1_and_paymaster.address, callData="0x")
+    paymaster_and_data = (
+        "0x" + encode_packed(["address"], [wallet1_and_paymaster.address]).hex()
+    )
+    user_op2 = UserOperation(
+        sender=wallet2.address, callData="0x", paymasterAndData=paymaster_and_data
+    )
+
+    # mempool addition order check: sender becomes paymaster
+    response1 = user_op1.send()
+    response2 = user_op2.send()
+    assert_ok(response1)
+    assert_rpc_error(
+        response2,
+        "is used as a sender entity in another UserOperation currently in mempool",
+        RPCErrorCode.BANNED_OPCODE,
+    )
+
+    RPCRequest(method="debug_bundler_clearState").send()
+
+    # mempool addition order check: paymaster becomes sender
+    response2 = user_op2.send()
+    response1 = user_op1.send()
+
+    assert_ok(response2)
+    assert_rpc_error(
+        response1,
+        "is used as a different entity in another UserOperation currently in mempool",
+        RPCErrorCode.BANNED_OPCODE,
+    )
+
+
+# SREP-010
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+def test_stake_check_in_bundler(w3, paymaster_contract, entrypoint_contract):
+    response = get_stake_status(paymaster_contract.address, entrypoint_contract.address)
+    assert response["stakeInfo"]["addr"] == paymaster_contract.address
+    assert response["stakeInfo"]["stake"] == "0"
+    assert response["stakeInfo"]["unstakeDelaySec"] == "0"
+    assert response["isStaked"] is False
+    staked_paymaster = deploy_and_deposit(
+        w3, entrypoint_contract, "TestRulesPaymaster", True
+    )
+    response = get_stake_status(staked_paymaster.address, entrypoint_contract.address)
+    assert response["stakeInfo"]["addr"] == staked_paymaster.address
+    assert response["stakeInfo"]["stake"] == "1000000000000000000"
+    assert response["stakeInfo"]["unstakeDelaySec"] == "2"
+    assert response["isStaked"] is True

@@ -100,6 +100,43 @@ library ValidationRules {
             }
             return 0;
         }
+        else if (eq(rule, "GAS CALL")) {
+            // 'GAS CALL' sequence is what solidity does anyway
+            // this test makes it explicit so we know for sure nothing changes here
+            address addr = address(coin);
+            bytes4 sig = coin.balanceOf.selector;
+            assembly {
+                    let x := mload(0x40)
+                    mstore(x, sig)
+                    mstore(add(x, 0x04), address())
+                    let success := call(
+                        gas(), // GAS opcode
+                        addr,
+                        0,
+                        x,
+                        0x44,
+                        x,
+                        0x20)
+            }
+            return 0;
+        }
+        else if (eq(rule, "GAS DELEGATECALL")) {
+            address addr = address(coin);
+            bytes4 sig = coin.balanceOf.selector;
+            assembly {
+                let x := mload(0x40)
+                mstore(x, sig)
+                mstore(add(x, 0x04), address())
+                let success := delegatecall(
+                    gas(), // GAS opcode
+                    addr,
+                    x,
+                    0x44,
+                    x,
+                    0x20)
+            }
+            return 0;
+        }
 
         else if (eq(rule, "no_storage")) return 0;
         else if (eq(rule, "storage")) return self.state();
