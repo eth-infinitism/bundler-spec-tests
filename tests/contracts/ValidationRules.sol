@@ -140,15 +140,16 @@ library ValidationRules {
 
         else if (eq(rule, "no_storage")) return 0;
         else if (eq(rule, "storage")) return self.state();
-        else if (eq(rule, "reference_storage")) return coin.balanceOf(address (this));
-        else if (eq(rule, "reference_storage_struct")) return coin.getInfo(address(this)).c;
+        else if (eq(rule, "reference_storage")) return coin.mint(address (this));
+        else if (eq(rule, "reference_storage_struct")) return coin.setStructMember(address(this));
         else if (eq(rule, "account_storage")) return account.state();
 
         else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(account));
 
-        else if (eq(rule, "account_reference_storage_struct")) return coin.getInfo(address(account)).c;
+        else if (eq(rule, "account_reference_storage_struct")) return coin.setStructMember(address(account));
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(account));
-        else if (eq(rule, "external_storage")) return coin.balanceOf(address(0xdeadcafe));
+        else if (eq(rule, "external_storage_read")) return coin.balanceOf(address(0xdeadcafe));
+        else if (eq(rule, "external_storage_write")) return coin.mint(address(0xdeadcafe));
         else if (eq(rule, "entryPoint_call_balanceOf")) return self.entryPoint().balanceOf(address(account));
         else if (eq(rule, "eth_value_transfer_forbidden")) return coin.receiveValue{value: 666}();
         else if (eq(rule, "eth_value_transfer_entryPoint")) {

@@ -169,7 +169,7 @@ cases = [
     ),
     StorageTestCase(
         "STO-032",
-        "external_storage",
+        "external_storage_read",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -220,6 +220,14 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
+        "STO-033",
+        "reference_storage_struct",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
+    ),
+    StorageTestCase(
         "STO-010",
         "account_storage",
         STAKED,
@@ -255,12 +263,20 @@ cases = [
         "EREP-050", "context", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
     ),
     StorageTestCase(
-        "STO-031",
-        "external_storage",
+        "STO-033",
+        "external_storage_write",
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
         assert_error,
+    ),
+    StorageTestCase(
+        "STO-033",
+        "external_storage_read",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
     ),
     StorageTestCase(
         "OP-020",
@@ -327,7 +343,7 @@ cases = [
     ),
     StorageTestCase(
         "STO-000",
-        "external_storage",
+        "external_storage_read",
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
@@ -461,12 +477,20 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
-        "STO-000",
-        "external_storage",
+        "STO-033",
+        "external_storage_write",
         STAKED,
         FACTORY,
         build_userop_for_factory,
         assert_error,
+    ),
+    StorageTestCase(
+        "STO-033",
+        "external_storage_read",
+        STAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_ok,
     ),
     StorageTestCase(
         "OP-020",
@@ -538,7 +562,7 @@ cases = [
     ),
     StorageTestCase(
         "STO-000",
-        "external_storage",
+        "external_storage_read",
         UNSTAKED,
         SENDER,
         build_userop_for_sender,
@@ -590,12 +614,20 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
-        "STO-000",
-        "external_storage",
+        "STO-033",
+        "external_storage_write",
         STAKED,
         SENDER,
         build_userop_for_sender,
         assert_error,
+    ),
+    StorageTestCase(
+        "STO-033",
+        "external_storage_read",
+        STAKED,
+        SENDER,
+        build_userop_for_sender,
+        assert_ok,
     ),
     StorageTestCase(
         "OP-011",
