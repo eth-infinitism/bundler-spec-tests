@@ -134,19 +134,19 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
     return sender
 
 
-def send_bundle_now():
+def send_bundle_now(url=None):
     try:
-        RPCRequest(method="debug_bundler_sendBundleNow").send()
+        RPCRequest(method="debug_bundler_sendBundleNow").send(url)
     except KeyError:
         pass
 
 
-def dump_mempool():
+def dump_mempool(url=None):
     mempool = (
         RPCRequest(
             method="debug_bundler_dumpMempool", params=[CommandLineArgs.entrypoint]
         )
-        .send()
+        .send(url)
         .result
     )
     for i, entry in enumerate(mempool):
@@ -154,8 +154,8 @@ def dump_mempool():
     return mempool
 
 
-def clear_mempool():
-    return RPCRequest(method="debug_bundler_clearMempool").send()
+def clear_mempool(url=None):
+    return RPCRequest(method="debug_bundler_clearState").send(url)
 
 
 def get_stake_status(address, entry_point):
@@ -166,21 +166,21 @@ def get_stake_status(address, entry_point):
     )
 
 
-def dump_reputation():
+def dump_reputation(url=None):
     return (
         RPCRequest(
             method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
         )
-        .send()
+        .send(url)
         .result
     )
 
 
-def clear_reputation():
-    return RPCRequest(method="debug_bundler_clearReputation").send()
+def clear_reputation(url=None):
+    return RPCRequest(method="debug_bundler_clearReputation").send(url)
 
 
-def set_reputation(address, ops_seen=1, ops_included=2):
+def set_reputation(address, ops_seen=1, ops_included=2, url=None):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
@@ -195,7 +195,7 @@ def set_reputation(address, ops_seen=1, ops_included=2):
                 CommandLineArgs.entrypoint,
             ],
         )
-        .send()
+        .send(url)
         .result
     )
 

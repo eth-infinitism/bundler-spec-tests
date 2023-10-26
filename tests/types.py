@@ -64,7 +64,7 @@ class RPCRequest:
             url = CommandLineArgs.url
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
-            print(">>", json.dumps(asdict(self)))
+            print(">>", url, json.dumps(asdict(self)))
         res = jsonrpcclient.responses.to_result(
             requests.post(url, json=asdict(self), timeout=10).json()
         )
