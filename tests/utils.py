@@ -140,6 +140,11 @@ def send_bundle_now(url=None):
     except KeyError:
         pass
 
+def set_manual_bundling_mode(url=None):
+    return RPCRequest(
+        method="debug_bundler_setBundlingMode", params=["manual"]
+    ).send(url)
+
 
 def dump_mempool(url=None):
     mempool = (
@@ -152,6 +157,21 @@ def dump_mempool(url=None):
     for i, entry in enumerate(mempool):
         mempool[i] = UserOperation(**entry)
     return mempool
+
+
+#wait for mempool propagation.
+# refDump - a "dump_mempool" taken from that bundler before the tested operation.
+# wait for the `dump_mempool(url)` to change before returning it.
+def p2p_mempool(refDump, url=None, timeout=5):
+    count=timeout*2
+    while True:
+        newDump = dump_mempool(url)
+        if refDump != newDump:
+            return newDump
+        count=count-1
+        if count<=0:
+            raise  Exception("timed-out waiting mempool change propagate to {0}".format(url))
+        time.sleep(0.5)
 
 
 def clear_mempool(url=None):

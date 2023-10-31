@@ -12,6 +12,7 @@ from .utils import (
     deploy_and_deposit,
     deploy_contract,
     send_bundle_now,
+    set_manual_bundling_mode
 )
 
 
@@ -117,10 +118,7 @@ def clear_state():
 
 @pytest.fixture
 def manual_bundling_mode():
-    response = RPCRequest(
-        method="debug_bundler_setBundlingMode", params=["manual"]
-    ).send()
-    return response
+    return set_manual_bundling_mode()
 
 
 @pytest.fixture

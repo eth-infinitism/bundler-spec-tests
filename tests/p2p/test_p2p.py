@@ -6,8 +6,10 @@ import time
 from tests.types import UserOperation
 from tests.utils import (
     clear_mempool,
+    deploy_and_deposit,
     dump_mempool,
-    deploy_and_deposit
+    p2p_mempool,
+    set_manual_bundling_mode
 )
 
 
@@ -18,27 +20,12 @@ BUNDLER2 = "http://localhost:3001/rpc"
 # However, it can only work if the script runs inside the docker-compose environment.
 # BUNDLER2 = "http://bundler2:3000/rpc"
 
-#read mempool from the given bundler, after mempool propagation.
-# refDump - a "dump_mempool" taken from that bundler before the tested operation.
-# wait for the mempool to change before returning anything.
-def p2p_mempool(refDump, url=None):
-    count=5
-    print("ref=", refDump)
-    while True:
-        newDump = dump_mempool(url)
-        if refDump != newDump:
-            return newDump
-        count=count-1
-        if count<=0:
-            raise  Exception("timed-out waiting mempool change propagate to {0}".format(url))
-        time.sleep(1)
-
-
-
+# Sanity test: make sure a simple userop is propagated
 def test_simple_p2p(w3, entrypoint_contract, manual_bundling_mode):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", False)
     op = UserOperation(sender=wallet.address)
 
+    set_manual_bundling_mode(BUNDLER2)
     clear_mempool()
     clear_mempool(BUNDLER2)
 
