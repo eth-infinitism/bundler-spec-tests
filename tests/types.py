@@ -9,6 +9,7 @@ import requests
 from eth_typing import (
     HexStr,
 )
+from eth_utils import to_checksum_address
 
 
 @dataclass()
@@ -40,9 +41,13 @@ class UserOperation:
     verificationGasLimit: HexStr = hex(10**6)
     preVerificationGas: HexStr = hex(3 * 10**5)
     maxFeePerGas: HexStr = hex(4 * 10**9)
-    maxPriorityFeePerGas: HexStr = hex(1 * 10**9)
+    maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
     paymasterAndData: HexStr = "0x"
     signature: HexStr = "0x"
+
+    def __post_init__(self):
+        self.sender = to_checksum_address(self.sender)
+
 
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:
