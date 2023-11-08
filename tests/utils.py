@@ -161,14 +161,14 @@ def dump_mempool(url=None):
 
 
 #wait for mempool propagation.
-# refDump - a "dump_mempool" taken from that bundler before the tested operation.
+# ref_dump - a "dump_mempool" taken from that bundler before the tested operation.
 # wait for the `dump_mempool(url)` to change before returning it.
-def p2p_mempool(refDump, url=None, timeout=5):
+def p2p_mempool(ref_dump, url=None, timeout=5):
     count=timeout*2
     while True:
-        newDump = dump_mempool(url)
-        if refDump != newDump:
-            return newDump
+        new_dump = dump_mempool(url)
+        if ref_dump != new_dump:
+            return new_dump
         count=count-1
         if count<=0:
             raise  Exception("timed-out waiting mempool change propagate to {0}".format(url))
