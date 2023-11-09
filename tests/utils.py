@@ -171,7 +171,7 @@ def p2p_mempool(ref_dump, url=None, timeout=5):
             return new_dump
         count=count-1
         if count<=0:
-            raise  Exception("timed-out waiting mempool change propagate to {0}".format(url))
+            raise  Exception(f"timed-out waiting mempool change propagate to {url}")
         time.sleep(0.5)
 
 
