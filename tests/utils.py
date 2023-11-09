@@ -176,7 +176,7 @@ def p2p_mempool(ref_dump, url=None, timeout=5):
 
 
 def clear_mempool(url=None):
-    return RPCRequest(method="debug_bundler_clearState").send(url)
+    return RPCRequest(method="debug_bundler_clearMempool").send(url)
 
 
 def get_stake_status(address, entry_point):
