@@ -70,7 +70,6 @@ jobs:
           name: "deploy entry point"
           working_directory: "./bundler"
           command: yarn hardhat-deploy --network localhost
-          background: true
       - run:
           name: "run bundler"
           working_directory: "./bundler"
@@ -81,7 +80,7 @@ jobs:
           working_directory: "./bundler"
           shell: /bin/sh
           command: |
-            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 10 http://localhost:3000/rpc
+            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
       - run:
           name: "pytest"
           command: "pdm run test"

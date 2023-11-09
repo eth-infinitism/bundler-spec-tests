@@ -11,8 +11,8 @@ contract TestCoin {
     }
     mapping(address=>Struct) public structInfo;
 
-    function getInfo(address addr) public returns (Struct memory) {
-        return structInfo[addr];
+    function setStructMember(address addr) public returns (uint){
+        return structInfo[addr].c = 3;
     }
 
     function balanceOf(address addr) public returns (uint) {
