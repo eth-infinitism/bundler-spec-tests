@@ -1,4 +1,5 @@
 import os
+import time
 
 from functools import cache
 from solcx import compile_source
@@ -134,19 +135,24 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
     return sender
 
 
-def send_bundle_now():
+def send_bundle_now(url=None):
     try:
-        RPCRequest(method="debug_bundler_sendBundleNow").send()
+        RPCRequest(method="debug_bundler_sendBundleNow").send(url)
     except KeyError:
         pass
 
+def set_manual_bundling_mode(url=None):
+    return RPCRequest(
+        method="debug_bundler_setBundlingMode", params=["manual"]
+    ).send(url)
 
-def dump_mempool():
+
+def dump_mempool(url=None):
     mempool = (
         RPCRequest(
             method="debug_bundler_dumpMempool", params=[CommandLineArgs.entrypoint]
         )
-        .send()
+        .send(url)
         .result
     )
     for i, entry in enumerate(mempool):
@@ -154,8 +160,23 @@ def dump_mempool():
     return mempool
 
 
-def clear_mempool():
-    return RPCRequest(method="debug_bundler_clearMempool").send()
+#wait for mempool propagation.
+# ref_dump - a "dump_mempool" taken from that bundler before the tested operation.
+# wait for the `dump_mempool(url)` to change before returning it.
+def p2p_mempool(ref_dump, url=None, timeout=5):
+    count=timeout*2
+    while True:
+        new_dump = dump_mempool(url)
+        if ref_dump != new_dump:
+            return new_dump
+        count=count-1
+        if count<=0:
+            raise  Exception(f"timed-out waiting mempool change propagate to {url}")
+        time.sleep(0.5)
+
+
+def clear_mempool(url=None):
+    return RPCRequest(method="debug_bundler_clearMempool").send(url)
 
 
 def get_stake_status(address, entry_point):
@@ -166,21 +187,21 @@ def get_stake_status(address, entry_point):
     )
 
 
-def dump_reputation():
+def dump_reputation(url=None):
     return (
         RPCRequest(
             method="debug_bundler_dumpReputation", params=[CommandLineArgs.entrypoint]
         )
-        .send()
+        .send(url)
         .result
     )
 
 
-def clear_reputation():
-    return RPCRequest(method="debug_bundler_clearReputation").send()
+def clear_reputation(url=None):
+    return RPCRequest(method="debug_bundler_clearReputation").send(url)
 
 
-def set_reputation(address, ops_seen=1, ops_included=2):
+def set_reputation(address, ops_seen=1, ops_included=2, url=None):
     assert (
         RPCRequest(
             method="debug_bundler_setReputation",
@@ -195,7 +216,7 @@ def set_reputation(address, ops_seen=1, ops_included=2):
                 CommandLineArgs.entrypoint,
             ],
         )
-        .send()
+        .send(url)
         .result
     )
 

@@ -27,7 +27,7 @@ def invalid_sig_userop(wallet_contract):
 def openrpcschema():
     current_dirname = os.path.dirname(__file__)
     spec_filename = "openrpc.json"
-    spec_path = os.path.realpath(current_dirname + "/../../spec/")
+    spec_path = os.path.realpath(current_dirname + "/../../../spec/")
     with open(os.path.join(spec_path, spec_filename), encoding="utf-8") as contractfile:
         return json.load(contractfile)
 
