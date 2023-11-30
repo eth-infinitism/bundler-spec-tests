@@ -110,6 +110,11 @@ def assert_ok(response):
     except AttributeError as exc:
         raise Exception(f"expected result object, got:\n{response}") from exc
 
+def assert_rpc_code(response, code):
+    try:
+        assert response.code == code
+    except AttributeError as exc:
+        raise Exception(f"expected error object, got:\n{response}") from exc
 
 def assert_rpc_error(response, message, code):
     try:
