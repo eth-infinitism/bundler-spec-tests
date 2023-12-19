@@ -207,23 +207,21 @@ def clear_reputation(url=None):
 
 
 def set_reputation(address, ops_seen=1, ops_included=2, url=None):
-    assert (
-        RPCRequest(
-            method="debug_bundler_setReputation",
-            params=[
-                [
-                    {
-                        "address": address,
-                        "opsSeen": ops_seen,
-                        "opsIncluded": ops_included,
-                    }
-                ],
-                CommandLineArgs.entrypoint,
+    res = RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[
+            [
+                {
+                    "address": address,
+                    "opsSeen": hex(ops_seen),
+                    "opsIncluded": hex(ops_included),
+                }
             ],
-        )
-        .send(url)
-        .result
-    )
+            CommandLineArgs.entrypoint,
+        ],
+    ).send(url)
+
+    assert res.result
 
 
 def to_prefixed_hex(s):
