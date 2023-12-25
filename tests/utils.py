@@ -1,8 +1,11 @@
 import os
 
 from functools import cache
+from collections import namedtuple
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
+
+MIN_UNSTAKE_DELAY = 86400
 
 
 @cache
@@ -61,9 +64,9 @@ def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
 
 
 def staked_contract(w3, entrypoint_contract, contract):
-    tx_hash = contract.functions.addStake(entrypoint_contract.address, 2).transact(
-        {"from": w3.eth.accounts[0], "value": 1 * 10**18}
-    )
+    tx_hash = contract.functions.addStake(
+        entrypoint_contract.address, MIN_UNSTAKE_DELAY
+    ).transact({"from": w3.eth.accounts[0], "value": 1 * 10**18})
     assert int(tx_hash.hex(), 16), "could not stake contract"
     w3.eth.wait_for_transaction_receipt(tx_hash)
     info = entrypoint_contract.functions.deposits(contract.address).call()
@@ -198,6 +201,35 @@ def set_reputation(address, ops_seen=1, ops_included=2):
         .send()
         .result
     )
+
+
+def get_configuration():
+    response = RPCRequest(method="debug_bundler_getConfiguration").send()
+    assert response.result, "debug_bundler_getConfiguration not supported by bundler"
+    intdict = dict(map(lambda x: (x[0], int(x[1])), response.result.items()))
+    bundler_config = namedtuple("BundlerConfig", intdict.keys())(*intdict.values())
+    print("wtf is bundler_config", bundler_config)
+    return bundler_config
+
+
+def get_throttling_threshold(ops_included, bundler_config):
+    throttling_threshold = (
+        (ops_included + bundler_config.THROTTLING_SLACK)
+        * bundler_config.MIN_INCLUSION_RATE_DENOMINATOR
+        + bundler_config.MIN_INCLUSION_RATE_DENOMINATOR
+        - 1
+    )
+    return throttling_threshold
+
+
+def get_banning_threshold(ops_included, bundler_config):
+    banning_threshold = (
+        (ops_included + bundler_config.BAN_SLACK)
+        * bundler_config.MIN_INCLUSION_RATE_DENOMINATOR
+        + bundler_config.MIN_INCLUSION_RATE_DENOMINATOR
+        - 1
+    )
+    return banning_threshold
 
 
 def to_prefixed_hex(s):

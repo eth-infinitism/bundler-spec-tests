@@ -12,6 +12,7 @@ from .utils import (
     deploy_and_deposit,
     deploy_contract,
     send_bundle_now,
+    get_configuration,
 )
 
 
@@ -90,6 +91,11 @@ def rules_account_contract(w3, entrypoint_contract):
 @pytest.fixture(scope="session")
 def helper_contract(w3):
     return deploy_contract(w3, "Helper")
+
+
+@pytest.fixture(scope="session")
+def bundler_config():
+    return get_configuration()
 
 
 @pytest.fixture

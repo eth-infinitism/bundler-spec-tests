@@ -15,6 +15,9 @@ from tests.utils import (
     deploy_and_deposit,
     send_bundle_now,
     userop_hash,
+    MIN_UNSTAKE_DELAY,
+    get_throttling_threshold,
+    get_banning_threshold,
 )
 
 
@@ -92,22 +95,13 @@ ReputationTestCase = collections.namedtuple(
     ["ruleId", "rule_description", "stake_status", "allowed_in_mempool", "errorCode"],
 )
 
-reputations = {
-    "banned": {"ops_seen": 100000, "ops_included": 1},
-    "throttled": {
-        "ops_seen": 120,
-        "ops_included": 1,
-    },  # numbers here and configuration in 'bundler.ts' are arbitrary
-    "unstaked": {"ops_seen": 10, "ops_included": 1},
-}
-
 cases = [
     ReputationTestCase("SREP-020", "banned-entity-not-allowed", "banned", 0, -32504),
     ReputationTestCase(
         "SREP-030", "throttled-entity-allowed-a-little", "throttled", 4, -32504
     ),
     ReputationTestCase(
-        "UREP-010 UREP-020", "unstaked-entity-allowed-function", "unstaked", 11, -32505
+        "UREP-010 UREP-020", "unstaked-entity-allowed-function", "unstaked", -1, -32505
     ),
 ]
 
@@ -122,8 +116,30 @@ def idfunction(case):
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 # pylint: disable-next=too-many-arguments too-many-locals
 def test_mempool_reputation_rules_all_entities(
-    w3, entrypoint_contract, paymaster_contract, factory_contract, entity, case
+    w3,
+    bundler_config,
+    entrypoint_contract,
+    paymaster_contract,
+    factory_contract,
+    entity,
+    case,
 ):
+    ops_included = 1
+    print("wtf is case", case)
+    if case.stake_status == "throttled":
+        ops_seen = get_throttling_threshold(ops_included, bundler_config) + 1
+    elif case.stake_status == "banned":
+        ops_seen = get_banning_threshold(ops_included, bundler_config) + 1
+    else:
+        # allowed_in_mempool = this.params.sameUnstakedEntityMempoolCount + Math.floor(inclusionRate * this.params.inclusionRateFactor) + (Math.min(entry.opsIncluded, 10000))
+        # allowed_in_mempool - bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT - ops_included =  Math.floor(ops_included/ops_seen) * bundler_config.INCLUSION_RATE_FACTOR
+        # (allowed_in_mempool - bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT - ops_included) / bundler_config.INCLUSION_RATE_FACTOR = ops_included / ops_seen
+        # (allowed_in_mempool - bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT - ops_included) = ops_included * bundler_config.INCLUSION_RATE_FACTOR / ops_seen
+
+        ops_seen = 0
+        # ops_seen = int(ops_included * bundler_config.INCLUSION_RATE_FACTOR / (case.allowed_in_mempool - bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT - ops_included))
+        print("ops_seen for unstaked " + entity, ops_seen)
+
     wallet = deploy_wallet_contract(w3)
     initcode = (
         factory_contract.address
@@ -145,23 +161,11 @@ def test_mempool_reputation_rules_all_entities(
 
     assert dump_mempool() == []
     if entity == "sender":
-        set_reputation(
-            sender,
-            ops_seen=reputations[case.stake_status]["ops_seen"],
-            ops_included=reputations[case.stake_status]["ops_included"],
-        )
+        set_reputation(sender, ops_seen, ops_included)
     elif entity == "paymaster":
-        set_reputation(
-            paymaster_contract.address,
-            ops_seen=reputations[case.stake_status]["ops_seen"],
-            ops_included=reputations[case.stake_status]["ops_included"],
-        )
+        set_reputation(paymaster_contract.address, ops_seen, ops_included)
     elif entity == "factory":
-        set_reputation(
-            factory_contract.address,
-            ops_seen=reputations[case.stake_status]["ops_seen"],
-            ops_included=reputations[case.stake_status]["ops_included"],
-        )
+        set_reputation(factory_contract.address, ops_seen, ops_included)
     # add missing aggregator cases
 
     allowed_in_mempool = case.allowed_in_mempool
@@ -169,11 +173,21 @@ def test_mempool_reputation_rules_all_entities(
     # 'unstaked sender' has a unique reputation rule
     if entity == "sender" and case.stake_status == "unstaked":
         allowed_in_mempool = 4
+    elif case.stake_status == "unstaked":
+        if ops_seen == 0:
+            inclusion_rate = 0
+        else:
+            inclusion_rate = ops_included / ops_seen
+        allowed_in_mempool = (
+            bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT
+            + int(inclusion_rate * bundler_config.INCLUSION_RATE_FACTOR)
+            + ops_included
+        )
 
     wallet_ops = []
     # fill the mempool with the allowed number of UserOps
-    for i in range(allowed_in_mempool):
-
+    i = 0
+    while i < allowed_in_mempool:
         if entity != "factory":
             factory_contract = deploy_and_deposit(
                 w3, entrypoint_contract, "TestRulesFactory", False
@@ -210,13 +224,22 @@ def test_mempool_reputation_rules_all_entities(
             paymasterAndData=paymaster_and_data,
         )
         wallet_ops.append(user_op)
-        user_op.send()
+        assert_ok(user_op.send())
+        i += 1
+        if case.stake_status == "unstaked":
+            ops_seen += 1
+            allowed_in_mempool = (
+                bundler_config.SAME_UNSTAKED_ENTITY_MEMPOOL_COUNT
+                + int(ops_included / ops_seen * bundler_config.INCLUSION_RATE_FACTOR)
+                + ops_included
+            )
+            print("what is i, allowed, ops_seen", i, allowed_in_mempool, ops_seen)
 
     assert dump_mempool() == wallet_ops
     # create a UserOperation that exceeds the mempool limit
     user_op = UserOperation(
         sender=sender,
-        nonce=hex(case.allowed_in_mempool << 64),
+        nonce=hex(allowed_in_mempool << 64),
         callData=calldata,
         initCode=initcode,
         paymasterAndData=paymaster_and_data,
@@ -232,6 +255,18 @@ def test_mempool_reputation_rules_all_entities(
         entity_address = user_op.initCode[:42]
     assert_rpc_error(response, case.stake_status, case.errorCode)
     assert_rpc_error(response, entity_address, case.errorCode)
+
+
+# @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+# def test_staked_factory_accountable_for_unstaked_account():
+#     # First
+#
+#
+#
+# @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+# def test_staked_account_always_accountable():
+#
+#
 
 
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
@@ -390,5 +425,5 @@ def test_stake_check_in_bundler(w3, paymaster_contract, entrypoint_contract):
     response = get_stake_status(staked_paymaster.address, entrypoint_contract.address)
     assert response["stakeInfo"]["addr"] == staked_paymaster.address
     assert response["stakeInfo"]["stake"] == "1000000000000000000"
-    assert response["stakeInfo"]["unstakeDelaySec"] == "2"
+    assert response["stakeInfo"]["unstakeDelaySec"] == str(MIN_UNSTAKE_DELAY)
     assert response["isStaked"] is True

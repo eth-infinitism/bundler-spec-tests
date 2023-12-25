@@ -7,13 +7,15 @@ from tests.utils import (
     deploy_and_deposit,
     dump_reputation,
     deposit_to_undeployed_sender,
+    get_throttling_threshold,
+    get_banning_threshold,
 )
 
-MIN_INCLUSION_RATE_DENOMINATOR = 10
-THROTTLING_SLACK = 10
-BAN_SLACK = 50
-
-THROTTLED_ENTITY_MEMPOOL_COUNT = 4
+# MIN_INCLUSION_RATE_DENOMINATOR = 10
+# THROTTLING_SLACK = 10
+# BAN_SLACK = 50
+#
+# THROTTLED_ENTITY_MEMPOOL_COUNT = 4
 
 
 @dataclass()
@@ -23,16 +25,16 @@ class ReputationStatus:
     BANNED = 2
 
 
-def get_max_seen(ops_seen):
-    return ops_seen / MIN_INCLUSION_RATE_DENOMINATOR
-
-
-def is_banned(max_seen, ops_included):
-    return max_seen > ops_included + BAN_SLACK
-
-
-def is_throttled(max_seen, ops_included):
-    return max_seen > ops_included + THROTTLING_SLACK
+# def get_max_seen(ops_seen):
+#     return ops_seen / MIN_INCLUSION_RATE_DENOMINATOR
+#
+#
+# def is_banned(max_seen, ops_included):
+#     return max_seen > ops_included + BAN_SLACK
+#
+#
+# def is_throttled(max_seen, ops_included):
+#     return max_seen > ops_included + THROTTLING_SLACK
 
 
 def assert_reputation_status(address, status, ops_seen=None, ops_included=None):
@@ -59,7 +61,9 @@ def assert_reputation_status(address, status, ops_seen=None, ops_included=None):
 
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 @pytest.mark.parametrize("case", ["with_factory", "without_factory"])
-def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
+def test_staked_entity_reputation_threshold(
+    w3, entrypoint_contract, bundler_config, case
+):
     if case == "with_factory":
         factory_contract = deploy_and_deposit(
             w3, entrypoint_contract, "TestRulesFactory", True
@@ -71,16 +75,8 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
     ops_included = next(
         (rep for rep in reputations if rep.address == paymaster_contract.address), {}
     ).get("opsIncluded", 0)
-    throttling_threshold = (
-        (ops_included + THROTTLING_SLACK) * MIN_INCLUSION_RATE_DENOMINATOR
-        + MIN_INCLUSION_RATE_DENOMINATOR
-        - 1
-    )
-    banning_threshold = (
-        (ops_included + BAN_SLACK) * MIN_INCLUSION_RATE_DENOMINATOR
-        + MIN_INCLUSION_RATE_DENOMINATOR
-        - 1
-    )
+    throttling_threshold = get_throttling_threshold(ops_included, bundler_config)
+    banning_threshold = get_banning_threshold(ops_included, bundler_config)
 
     if case == "with_factory":
         initcodes = [
@@ -119,7 +115,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
 
     # Sending ops until the throttling threshold
     for i, userop in enumerate(wallet_ops[:throttling_threshold]):
-        if i % THROTTLED_ENTITY_MEMPOOL_COUNT == 0:
+        if i % bundler_config.THROTTLED_ENTITY_MEMPOOL_COUNT == 0:
             clear_mempool()
         assert_ok(userop.send())
 
@@ -172,7 +168,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
     for i, userop in enumerate(
         wallet_ops[throttling_threshold + 1 : banning_threshold]
     ):
-        if i % THROTTLED_ENTITY_MEMPOOL_COUNT == 0:
+        if i % bundler_config.THROTTLED_ENTITY_MEMPOOL_COUNT == 0:
             clear_mempool()
         assert_ok(userop.send())
 
