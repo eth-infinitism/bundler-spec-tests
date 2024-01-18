@@ -28,7 +28,7 @@ requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
-update-deps = {shell = "git submodule update --remote --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build"}
+update-deps = {shell = "git submodule update --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build"}
 test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 --ethereum-node http://127.0.0.1:8545/ tests/single"
 p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
 lint = "pylint tests"
