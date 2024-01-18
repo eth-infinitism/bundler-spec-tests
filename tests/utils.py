@@ -119,6 +119,13 @@ def assert_rpc_error(response, message, code):
         raise Exception(f"expected error object, got:\n{response}") from exc
 
 
+def assert_rpc_code(response, code):
+    try:
+        assert response.code == code
+    except AttributeError as exc:
+        raise Exception(f"expected error object, got:\n{response}") from exc
+
+
 def get_sender_address(w3, initcode):
     helper = deploy_contract(w3, "Helper")
     return helper.functions.getSenderAddress(CommandLineArgs.entrypoint, initcode).call(
