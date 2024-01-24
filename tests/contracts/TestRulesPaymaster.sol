@@ -24,7 +24,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         ep.addStake{value: msg.value}(delay);
     }
 
-    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
+    function validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
 
         //first byte after paymaster address.
@@ -39,7 +39,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         }
     }
 
-    function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
+    function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost, uint) external {}
 
     receive() external payable {
         entryPoint.depositTo{value: msg.value}(address(this));
