@@ -21,7 +21,7 @@ contract TestReputationAccount is ITestAccount, Stakable {
         state=_state;
     }
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
         require(state != 0xdead, "No bundle for you");
         if (missingWalletFunds>0) {

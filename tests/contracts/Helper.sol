@@ -22,7 +22,7 @@ contract Helper {
         return sender;
     }
 
-    function getUserOpHash(IEntryPoint ep, UserOperation calldata userOp) public view returns (bytes32) {
+    function getUserOpHash(IEntryPoint ep, PackedUserOperation calldata userOp) public view returns (bytes32) {
         return IEntryPoint(ep).getUserOpHash(userOp);
     }
 }
