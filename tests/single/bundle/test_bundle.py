@@ -167,7 +167,6 @@ def test_mempool_reputation_rules_all_entities(
 
         paymaster=None
         paymasterData=None
-        paymasterVerificationGasLimit=None
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -187,7 +186,6 @@ def test_mempool_reputation_rules_all_entities(
                 w3, entrypoint_contract, "TestRulesPaymaster", False
             )
             paymaster = paymaster_contract.address
-            paymasterVerificationGasLimit="0x10000"
             # 'nothing' is a special string to pass validation
             paymasterData = to_hex(text="nothing")
 
@@ -199,7 +197,7 @@ def test_mempool_reputation_rules_all_entities(
             factoryData=factoryData,
             paymaster=paymaster,
             paymasterData=paymasterData,
-            paymasterVerificationGasLimit=paymasterVerificationGasLimit,
+            paymasterVerificationGasLimit='0x10000',
             paymasterPostOpGasLimit='0x10000'
         )
         wallet_ops.append(user_op)
@@ -216,7 +214,7 @@ def test_mempool_reputation_rules_all_entities(
         factoryData=factoryData,
         paymaster=paymaster_contract.address,
         paymasterData=to_hex(text="nothing"),
-        paymasterVerificationGasLimit=paymasterVerificationGasLimit,
+        paymasterVerificationGasLimit='0x10000',
         paymasterPostOpGasLimit='0x10000'
     )
     response = user_op.send()
