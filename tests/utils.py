@@ -1,6 +1,9 @@
 import os
 import time
 from eth_abi.packed import encode_packed
+from eth_abi import decode_abi
+from eth_utils import to_checksum_address
+
 
 from functools import cache
 from solcx import compile_source
@@ -135,15 +138,13 @@ def assert_rpc_error(response, message, code):
         raise Exception(f"expected error object, got:\n{response}") from exc
 
 
-def get_sender_address(w3, initcode):
+def get_sender_address(w3, factory,factoryData):
     helper = deploy_contract(w3, "Helper")
-    return helper.functions.getSenderAddress(CommandLineArgs.entrypoint, initcode).call(
-        {"gas": 10000000}
-    )
+    ret = w3.eth.call(dict(to=factory, data=factoryData))
+    return to_checksum_address(decode_abi(['address'], ret)[0])
 
-
-def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
-    sender = get_sender_address(w3, initcode)
+def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factoryData):
+    sender = get_sender_address(w3, factory, factoryData)
     tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )

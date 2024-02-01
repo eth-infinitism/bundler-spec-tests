@@ -126,14 +126,12 @@ def test_mempool_reputation_rules_all_entities(
     w3, entrypoint_contract, paymaster_contract, factory_contract, entity, case
 ):
     wallet = deploy_wallet_contract(w3)
-    initcode = (
-        factory_contract.address
-        + factory_contract.functions.create(
+    factory=factory_contract.address
+    factoryData = factory_contract.functions.create(
             456, "", entrypoint_contract.address
-        ).build_transaction()["data"][2:]
-    )
+        ).build_transaction()["data"]
     # it should not matter to the bundler whether sender is deployed or not
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
     assert dump_mempool() == []
@@ -167,8 +165,9 @@ def test_mempool_reputation_rules_all_entities(
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
-        paymaser=None
+        paymaster=None
         paymasterData=None
+        paymasterVerificationGasLimit=None
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -177,13 +176,10 @@ def test_mempool_reputation_rules_all_entities(
 
         if entity != "sender":
             # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
-            initcode = (
-                factory_contract.address
-                + factory_contract.functions.create(
+            factoryData = factory_contract.functions.create(
                     i + 123, "", entrypoint_contract.address
-                ).build_transaction()["data"][2:]
-            )
-            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+                ).build_transaction()["data"]
+            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
 
         if entity != "paymaster":
             # differentiate 'paymaster' address unless checking it
@@ -191,7 +187,7 @@ def test_mempool_reputation_rules_all_entities(
                 w3, entrypoint_contract, "TestRulesPaymaster", False
             )
             paymaster = paymaster_contract.address
-            paymasterValidationGasLimit="0x10000"
+            paymasterVerificationGasLimit="0x10000"
             # 'nothing' is a special string to pass validation
             paymasterData = to_hex(text="nothing")
 
@@ -199,9 +195,12 @@ def test_mempool_reputation_rules_all_entities(
             sender=sender,
             nonce=hex(i << 64),
             callData=calldata,
-            initCode=initcode,
+            factory=factory,
+            factoryData=factoryData,
             paymaster=paymaster,
-            paymasterData=paymasterData
+            paymasterData=paymasterData,
+            paymasterVerificationGasLimit=paymasterVerificationGasLimit,
+            paymasterPostOpGasLimit='0x10000'
         )
         wallet_ops.append(user_op)
         user_op.send()
@@ -213,9 +212,12 @@ def test_mempool_reputation_rules_all_entities(
         sender=sender,
         nonce=hex(case.allowed_in_mempool << 64),
         callData=calldata,
-        initCode=initcode,
+        factory=factory,
+        factoryData=factoryData,
         paymaster=paymaster_contract.address,
-        paymasterData=to_hex(text="nothing")
+        paymasterData=to_hex(text="nothing"),
+        paymasterVerificationGasLimit=paymasterVerificationGasLimit,
+        paymasterPostOpGasLimit='0x10000'
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
@@ -225,7 +227,7 @@ def test_mempool_reputation_rules_all_entities(
     elif entity == "paymaster":
         entity_address = user_op.paymaster
     elif entity == "factory":
-        entity_address = user_op.initCode[:42]
+        entity_address = user_op.factory
     assert_rpc_error(response, case.stake_status, case.errorCode)
     assert_rpc_error(response, entity_address, case.errorCode)
 
