@@ -3,6 +3,7 @@ import pytest
 
 from eth_abi.packed import encode_packed
 
+from eth_utils import to_hex
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
@@ -135,14 +136,6 @@ def test_mempool_reputation_rules_all_entities(
     sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
-    # 'nothing' is a special string to pass validation
-    paymaster_and_data = (
-        "0x"
-        + encode_packed(
-            ["address", "string"], [paymaster_contract.address, "nothing"]
-        ).hex()
-    )
-
     assert dump_mempool() == []
     if entity == "sender":
         set_reputation(
@@ -174,6 +167,9 @@ def test_mempool_reputation_rules_all_entities(
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
+        paymaser=None
+        paymasterData=None
+
         if entity != "factory":
             factory_contract = deploy_and_deposit(
                 w3, entrypoint_contract, "TestRulesFactory", False
@@ -194,23 +190,22 @@ def test_mempool_reputation_rules_all_entities(
             paymaster_contract = deploy_and_deposit(
                 w3, entrypoint_contract, "TestRulesPaymaster", False
             )
+            paymaster = paymaster_contract.address
+            paymasterValidationGasLimit="0x10000"
             # 'nothing' is a special string to pass validation
-            paymaster_and_data = (
-                "0x"
-                + encode_packed(
-                    ["address", "string"], [paymaster_contract.address, "nothing"]
-                ).hex()
-            )
+            paymasterData = to_hex(text="nothing")
 
         user_op = UserOperation(
             sender=sender,
             nonce=hex(i << 64),
             callData=calldata,
             initCode=initcode,
-            paymasterAndData=paymaster_and_data,
+            paymaster=paymaster,
+            paymasterData=paymasterData
         )
         wallet_ops.append(user_op)
         user_op.send()
+
 
     assert dump_mempool() == wallet_ops
     # create a UserOperation that exceeds the mempool limit
@@ -219,7 +214,8 @@ def test_mempool_reputation_rules_all_entities(
         nonce=hex(case.allowed_in_mempool << 64),
         callData=calldata,
         initCode=initcode,
-        paymasterAndData=paymaster_and_data,
+        paymaster=paymaster_contract.address,
+        paymasterData=to_hex(text="nothing")
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
@@ -227,7 +223,7 @@ def test_mempool_reputation_rules_all_entities(
     if entity == "sender":
         entity_address = user_op.sender
     elif entity == "paymaster":
-        entity_address = user_op.paymasterAndData[:42]
+        entity_address = user_op.paymaster
     elif entity == "factory":
         entity_address = user_op.initCode[:42]
     assert_rpc_error(response, case.stake_status, case.errorCode)
@@ -345,11 +341,8 @@ def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
     )
     wallet2 = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     user_op1 = UserOperation(sender=wallet1_and_paymaster.address, callData="0x")
-    paymaster_and_data = (
-        "0x" + encode_packed(["address"], [wallet1_and_paymaster.address]).hex()
-    )
     user_op2 = UserOperation(
-        sender=wallet2.address, callData="0x", paymasterAndData=paymaster_and_data
+        sender=wallet2.address, callData="0x", paymaster=wallet1_and_paymaster.address
     )
 
     # mempool addition order check: sender becomes paymaster

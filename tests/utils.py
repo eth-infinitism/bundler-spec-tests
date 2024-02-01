@@ -1,5 +1,6 @@
 import os
 import time
+from eth_abi.packed import encode_packed
 
 from functools import cache
 from solcx import compile_source
@@ -23,12 +24,13 @@ def compile_contract(contract):
             allow_paths=aa_relpath,
             import_remappings=remap,
             output_values=["abi", "bin"],
-            solc_version="0.8.15",
+            solc_version="0.8.23",
+            evm_version="paris"
         )
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=7 * 10**6):
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
@@ -81,19 +83,33 @@ def deploy_wallet_contract(w3):
 def deploy_state_contract(w3):
     return deploy_contract(w3, "State")
 
+def pack_factory(factory, factoryData):
+    if factory is None:
+        return "0x"
+    return to_prefixed_hex(factory)+to_hex(factoryData)
+
+def pack_uints(high128, low128):
+    print( "pack_uints", high128, low128)
+    return (int(str(high128),16) <<128) + int(str(low128),16)
+
+def pack_paymaster(paymaster, paymasterVerificationGasLimit, paymasterPostOpGasLimit, paymasterData):
+    if paymaster is None:
+        return "0x"
+    if paymasterData is None:
+        paymasterData = ""
+    return encode_packed(['address', 'uint256', 'string'], [paymaster, pack_uints(paymasterVerificationGasLimit, paymasterPostOpGasLimit), paymasterData])
+
 
 def userop_hash(helper_contract, userop):
     payload = (
         userop.sender,
         int(userop.nonce, 16),
-        userop.initCode,
+        pack_factory(userop.factory, userop.factoryData),
         userop.callData,
-        int(userop.callGasLimit, 16),
-        int(userop.verificationGasLimit, 16),
+        pack_uints(userop.verificationGasLimit, userop.callGasLimit),
         int(userop.preVerificationGas, 16),
-        int(userop.maxFeePerGas, 16),
-        int(userop.maxPriorityFeePerGas, 16),
-        userop.paymasterAndData,
+        pack_uints(userop.maxPriorityFeePerGas, userop.maxFeePerGas),
+        pack_paymaster(userop.paymaster, userop.paymasterVerificationGasLimit, userop.paymasterPostOpGasLimit, userop.paymasterData),
         userop.signature,
     )
     return (

@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "@account-abstraction/contracts/core/UserOperationLib.sol";
 import "./ValidationRules.sol";
 import "./SimpleWallet.sol";
 
@@ -28,7 +29,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
     external returns (bytes memory context, uint256 deadline) {
 
         //first byte after paymaster address.
-        string memory rule = string(userOp.paymasterAndData[20:]);
+        string memory rule = string(userOp.paymasterAndData[UserOperationLib.PAYMASTER_DATA_OFFSET:]);
         if (rule.eq("context")) {
             return ("this is a context", 0);
         } else if (rule.eq("nothing")) {
