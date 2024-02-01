@@ -24,7 +24,7 @@ def pytest_configure(config):
         launcher_script=config.getoption("--launcher-script"),
         log_rpc=config.getoption("--log-rpc"),
     )
-    install_solc(version="0.8.15")
+    install_solc(version="0.8.23")
 
 
 def pytest_sessionstart():

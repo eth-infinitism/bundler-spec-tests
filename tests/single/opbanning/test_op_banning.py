@@ -62,7 +62,8 @@ def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequ
 def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):
     response = UserOperation(
         sender=wallet_contract.address,
-        paymasterAndData=paymaster_contract.address + to_hex(banned_op),
+        paymaster=paymaster_contract.address,
+        paymasterData="0x" + to_hex(banned_op),
     ).send()
     assert_rpc_error(
         response,

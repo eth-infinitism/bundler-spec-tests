@@ -59,8 +59,7 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
 
 def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rule):
     wallet = deploy_wallet_contract(w3)
-    paymaster_and_data = paymaster_contract.address + rule.encode().hex()
-    return UserOperation(sender=wallet.address, paymasterAndData=paymaster_and_data)
+    return UserOperation(sender=wallet.address, paymaster=paymaster_contract.address, paymasterData="0x"+rule.encode().hex())
 
 
 def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
