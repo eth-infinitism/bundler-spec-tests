@@ -42,15 +42,13 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
     def _with_initcode(w3, entrypoint_contract, contract, rule):
         factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
-        initcode = (
-            factory_contract.address
-            + factory_contract.functions.create(
+        factoryData = factory_contract.functions.create(
                 123, "", entrypoint_contract.address
-            ).build_transaction()["data"][2:]
-        )
-        sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
+            ).build_transaction()["data"]
+        sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
         userop.sender = sender
-        userop.initCode = initcode
+        userop.factory = factory_contract.address
+        userop.factoryData = factoryData
         userop.verificationGasLimit = hex(5000000)
         return userop
 
@@ -71,14 +69,12 @@ def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, ru
 
 
 def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
-    initcode = (
-        factory_contract.address
-        + factory_contract.functions.create(
+    factoryData = factory_contract.functions.create(
             123, rule, entrypoint_contract.address
-        ).build_transaction()["data"][2:]
-    )
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
-    return UserOperation(sender=sender, initCode=initcode)
+        ).build_transaction()["data"]
+
+    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
+    return UserOperation(sender=sender, factory=factory_contract.address, factoryData=factoryData)
 
 
 STAKED = True
