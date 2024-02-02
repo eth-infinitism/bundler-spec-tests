@@ -47,6 +47,10 @@ class UserOperation:
 
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)
+        self.initCode = self.initCode.lower()
+        self.callData = self.callData.lower()
+        self.paymasterAndData = self.paymasterAndData.lower()
+        self.signature = self.signature.lower()
 
 
     def send(self, entrypoint=None, url=None):
