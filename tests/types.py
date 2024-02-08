@@ -48,13 +48,28 @@ class UserOperation:
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)
 
-
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:
             entrypoint = CommandLineArgs.entrypoint
         return RPCRequest(
             method="eth_sendUserOperation", params=[asdict(self), entrypoint]
         ).send(url)
+
+    def to_tuple(self):
+        payload = (
+            self.sender,
+            int(self.nonce, 16),
+            self.initCode,
+            self.callData,
+            int(self.callGasLimit, 16),
+            int(self.verificationGasLimit, 16),
+            int(self.preVerificationGas, 16),
+            int(self.maxFeePerGas, 16),
+            int(self.maxPriorityFeePerGas, 16),
+            self.paymasterAndData,
+            self.signature,
+        )
+        return payload
 
 
 @dataclass

@@ -83,22 +83,11 @@ def deploy_state_contract(w3):
 
 
 def userop_hash(helper_contract, userop):
-    payload = (
-        userop.sender,
-        int(userop.nonce, 16),
-        userop.initCode,
-        userop.callData,
-        int(userop.callGasLimit, 16),
-        int(userop.verificationGasLimit, 16),
-        int(userop.preVerificationGas, 16),
-        int(userop.maxFeePerGas, 16),
-        int(userop.maxPriorityFeePerGas, 16),
-        userop.paymasterAndData,
-        userop.signature,
-    )
     return (
         "0x"
-        + helper_contract.functions.getUserOpHash(CommandLineArgs.entrypoint, payload)
+        + helper_contract.functions.getUserOpHash(
+            CommandLineArgs.entrypoint, userop.to_tuple()
+        )
         .call()
         .hex()
     )
@@ -141,10 +130,11 @@ def send_bundle_now(url=None):
     except KeyError:
         pass
 
+
 def set_manual_bundling_mode(url=None):
-    return RPCRequest(
-        method="debug_bundler_setBundlingMode", params=["manual"]
-    ).send(url)
+    return RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
+        url
+    )
 
 
 def dump_mempool(url=None):
@@ -160,18 +150,18 @@ def dump_mempool(url=None):
     return mempool
 
 
-#wait for mempool propagation.
+# wait for mempool propagation.
 # ref_dump - a "dump_mempool" taken from that bundler before the tested operation.
 # wait for the `dump_mempool(url)` to change before returning it.
 def p2p_mempool(ref_dump, url=None, timeout=5):
-    count=timeout*2
+    count = timeout * 2
     while True:
         new_dump = dump_mempool(url)
         if ref_dump != new_dump:
             return new_dump
-        count=count-1
-        if count<=0:
-            raise  Exception(f"timed-out waiting mempool change propagate to {url}")
+        count = count - 1
+        if count <= 0:
+            raise Exception(f"timed-out waiting mempool change propagate to {url}")
         time.sleep(0.5)
 
 

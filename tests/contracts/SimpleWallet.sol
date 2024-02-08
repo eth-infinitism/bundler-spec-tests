@@ -28,6 +28,8 @@ contract SimpleWallet is ITestAccount {
         revert("test fail");
     }
 
+    function nop() external {}
+
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
         if (userOp.callData.length == 20) {

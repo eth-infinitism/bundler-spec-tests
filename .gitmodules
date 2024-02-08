@@ -1,8 +1,8 @@
 [submodule "account-abstraction"]
 	path = @account-abstraction
 	url = https://github.com/eth-infinitism/account-abstraction.git
-	branch = develop
+	branch = releases/v0.6
 [submodule "spec"]
 	path = spec
 	url = https://github.com/eth-infinitism/bundler-spec.git
-	branch = main
+	branch = releases/v0.6
