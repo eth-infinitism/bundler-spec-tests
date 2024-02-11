@@ -12,7 +12,7 @@ from .utils import (
     deploy_and_deposit,
     deploy_contract,
     send_bundle_now,
-    set_manual_bundling_mode
+    set_manual_bundling_mode,
 )
 
 

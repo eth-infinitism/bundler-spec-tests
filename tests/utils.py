@@ -28,7 +28,7 @@ def compile_contract(contract):
             import_remappings=remap,
             output_values=["abi", "bin"],
             solc_version="0.8.23",
-            evm_version="paris"
+            evm_version="paris",
         )
         return compiled_sol["<stdin>:" + contract]
 
@@ -86,21 +86,33 @@ def deploy_wallet_contract(w3):
 def deploy_state_contract(w3):
     return deploy_contract(w3, "State")
 
+
 def pack_factory(factory, factoryData):
     if factory is None:
         return "0x"
-    return to_prefixed_hex(factory)+to_hex(factoryData)
+    return to_prefixed_hex(factory) + to_hex(factoryData)
+
 
 def pack_uints(high128, low128):
-    print( "pack_uints", high128, low128)
-    return (int(str(high128),16) <<128) + int(str(low128),16)
+    print("pack_uints", high128, low128)
+    return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
 
-def pack_paymaster(paymaster, paymasterVerificationGasLimit, paymasterPostOpGasLimit, paymasterData):
+
+def pack_paymaster(
+    paymaster, paymasterVerificationGasLimit, paymasterPostOpGasLimit, paymasterData
+):
     if paymaster is None:
         return "0x"
     if paymasterData is None:
         paymasterData = ""
-    return encode_packed(['address', 'uint256', 'string'], [paymaster, pack_uints(paymasterVerificationGasLimit, paymasterPostOpGasLimit), paymasterData])
+    return encode_packed(
+        ["address", "uint256", "string"],
+        [
+            paymaster,
+            pack_uints(paymasterVerificationGasLimit, paymasterPostOpGasLimit),
+            paymasterData,
+        ],
+    )
 
 
 def userop_hash(helper_contract, userop):
@@ -112,7 +124,12 @@ def userop_hash(helper_contract, userop):
         pack_uints(userop.verificationGasLimit, userop.callGasLimit),
         int(userop.preVerificationGas, 16),
         pack_uints(userop.maxPriorityFeePerGas, userop.maxFeePerGas),
-        pack_paymaster(userop.paymaster, userop.paymasterVerificationGasLimit, userop.paymasterPostOpGasLimit, userop.paymasterData),
+        pack_paymaster(
+            userop.paymaster,
+            userop.paymasterVerificationGasLimit,
+            userop.paymasterPostOpGasLimit,
+            userop.paymasterData,
+        ),
         userop.signature,
     )
     return (
@@ -138,10 +155,11 @@ def assert_rpc_error(response, message, code):
         raise Exception(f"expected error object, got:\n{response}") from exc
 
 
-def get_sender_address(w3, factory,factoryData):
+def get_sender_address(w3, factory, factoryData):
     helper = deploy_contract(w3, "Helper")
     ret = w3.eth.call(dict(to=factory, data=factoryData))
-    return to_checksum_address(decode_abi(['address'], ret)[0])
+    return to_checksum_address(decode_abi(["address"], ret)[0])
+
 
 def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factoryData):
     sender = get_sender_address(w3, factory, factoryData)
@@ -158,10 +176,11 @@ def send_bundle_now(url=None):
     except KeyError:
         pass
 
+
 def set_manual_bundling_mode(url=None):
-    return RPCRequest(
-        method="debug_bundler_setBundlingMode", params=["manual"]
-    ).send(url)
+    return RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
+        url
+    )
 
 
 def dump_mempool(url=None):
@@ -177,18 +196,18 @@ def dump_mempool(url=None):
     return mempool
 
 
-#wait for mempool propagation.
+# wait for mempool propagation.
 # ref_dump - a "dump_mempool" taken from that bundler before the tested operation.
 # wait for the `dump_mempool(url)` to change before returning it.
 def p2p_mempool(ref_dump, url=None, timeout=5):
-    count=timeout*2
+    count = timeout * 2
     while True:
         new_dump = dump_mempool(url)
         if ref_dump != new_dump:
             return new_dump
-        count=count-1
-        if count<=0:
-            raise  Exception(f"timed-out waiting mempool change propagate to {url}")
+        count = count - 1
+        if count <= 0:
+            raise Exception(f"timed-out waiting mempool change propagate to {url}")
         time.sleep(0.5)
 
 
