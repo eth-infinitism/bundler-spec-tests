@@ -43,9 +43,11 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
         factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
         factoryData = factory_contract.functions.create(
-                123, "", entrypoint_contract.address
-            ).build_transaction()["data"]
-        sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
+            123, "", entrypoint_contract.address
+        ).build_transaction()["data"]
+        sender = deposit_to_undeployed_sender(
+            w3, entrypoint_contract, factory_contract.address, factoryData
+        )
         userop.sender = sender
         userop.factory = factory_contract.address
         userop.factoryData = factoryData
@@ -57,7 +59,11 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
 
 def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rule):
     wallet = deploy_wallet_contract(w3)
-    return UserOperation(sender=wallet.address, paymaster=paymaster_contract.address, paymasterData="0x"+rule.encode().hex())
+    return UserOperation(
+        sender=wallet.address,
+        paymaster=paymaster_contract.address,
+        paymasterData="0x" + rule.encode().hex(),
+    )
 
 
 def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
@@ -70,11 +76,15 @@ def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, ru
 
 def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
     factoryData = factory_contract.functions.create(
-            123, rule, entrypoint_contract.address
-        ).build_transaction()["data"]
+        123, rule, entrypoint_contract.address
+    ).build_transaction()["data"]
 
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
-    return UserOperation(sender=sender, factory=factory_contract.address, factoryData=factoryData)
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factoryData
+    )
+    return UserOperation(
+        sender=sender, factory=factory_contract.address, factoryData=factoryData
+    )
 
 
 STAKED = True

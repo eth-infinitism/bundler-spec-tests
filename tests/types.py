@@ -49,14 +49,15 @@ class UserOperation:
     paymasterVerificationGasLimit: HexStr = None
     paymasterPostOpGasLimit: HexStr = None
 
-
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)
         if self.paymaster is not None:
-            if self.paymasterVerificationGasLimit is None: self.paymasterVerificationGasLimit = hex(10**5)
-            if self.paymasterPostOpGasLimit is None: self.paymasterPostOpGasLimit = hex(10**5)
-            if self.paymasterData is None: self.paymasterData = "0x"
-
+            if self.paymasterVerificationGasLimit is None:
+                self.paymasterVerificationGasLimit = hex(10**5)
+            if self.paymasterPostOpGasLimit is None:
+                self.paymasterPostOpGasLimit = hex(10**5)
+            if self.paymasterData is None:
+                self.paymasterData = "0x"
 
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:

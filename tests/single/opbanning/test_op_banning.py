@@ -74,11 +74,15 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned_op):
-    factoryData =  factory_contract.functions.create(
-            123, banned_op, entrypoint_contract.address
-        ).build_transaction()["data"]
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
-    response = UserOperation(sender=sender, factory=factory_contract.address, factoryData=factoryData).send()
+    factoryData = factory_contract.functions.create(
+        123, banned_op, entrypoint_contract.address
+    ).build_transaction()["data"]
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factoryData
+    )
+    response = UserOperation(
+        sender=sender, factory=factory_contract.address, factoryData=factoryData
+    ).send()
     assert_rpc_error(
         response,
         "factory",
