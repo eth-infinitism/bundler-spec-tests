@@ -784,8 +784,8 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
         callData=calldata,
         callGasLimit=hex(1),
         verificationGasLimit=hex(10**6),
-        maxPriorityFeePerGas=hex(1),
-        maxFeePerGas=hex(1),
+        maxPriorityFeePerGas=hex(10**10),
+        maxFeePerGas=hex(10**10),
         preVerificationGas=hex(10**6),
     )
     response = RPCRequest(
@@ -810,8 +810,8 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
             callData=calldata,
             callGasLimit=hex(1),
             verificationGasLimit=hex(mid_gas),
-            maxPriorityFeePerGas=hex(1),
-            maxFeePerGas=hex(1),
+            maxPriorityFeePerGas=hex(10**10),
+            maxFeePerGas=hex(10**10),
             preVerificationGas=pre_verification_gas,
         )
         handleops_method = entrypoint_contract.functions.handleOps(
@@ -834,8 +834,8 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
         callData=calldata,
         callGasLimit=hex(1),
         verificationGasLimit=hex(min_verification_gas - 1),
-        maxPriorityFeePerGas=hex(1),
-        maxFeePerGas=hex(1),
+        maxPriorityFeePerGas=hex(10**10),
+        maxFeePerGas=hex(10**10),
         preVerificationGas=pre_verification_gas,
     )
 
