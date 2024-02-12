@@ -845,7 +845,12 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
     assert nonce_before == nonce_after, "userop not reverted onchain"
     print(response)
-    assert_rpc_error(response, "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+    assert_rpc_error(
+        response,
+        "",
+        RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT,
+        "Bundler failed to detect AA51 revert",
+    )
     # sanity check, should succeed with enough gas that was returned by the bundler
     userop.verificationGasLimit = verification_gas
     response = userop.send()
