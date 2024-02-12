@@ -775,7 +775,7 @@ def test_rule(w3, entrypoint_contract, case):
 def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     beneficiary = w3.eth.accounts[0]
 
-    callGasLimit=hex(20000)
+    callGasLimit = hex(20000)
     calldata = wallet.encodeABI(fn_name="wasteGas")
 
     # Estimating gas for the op's gas limits
