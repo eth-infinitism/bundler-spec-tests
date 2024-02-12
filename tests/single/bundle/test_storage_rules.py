@@ -775,14 +775,16 @@ def test_rule(w3, entrypoint_contract, case):
 def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     beneficiary = w3.eth.accounts[0]
 
+    callGasLimit=hex(20000)
+    calldata = wallet.encodeABI(fn_name="wasteGas")
+
     # Estimating gas for the op's gas limits
     wallet = deploy_wallet_contract(w3)
-    calldata = wallet.encodeABI(fn_name="nop")
     userop = UserOperation(
         sender=wallet.address,
         nonce="0x0",
         callData=calldata,
-        callGasLimit=hex(1),
+        callGasLimit=callGasLimit,
         verificationGasLimit=hex(10**6),
         maxPriorityFeePerGas=hex(10**10),
         maxFeePerGas=hex(10**10),
@@ -801,13 +803,12 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     min_verification_gas = high_gas
     while low_gas <= high_gas:
         wallet = deploy_wallet_contract(w3)
-        calldata = wallet.encodeABI(fn_name="nop")
         mid_gas = (high_gas + low_gas) // 2
         userop = UserOperation(
             sender=wallet.address,
             nonce="0x0",
             callData=calldata,
-            callGasLimit=hex(1),
+            callGasLimit=callGasLimit,
             verificationGasLimit=hex(mid_gas),
             maxPriorityFeePerGas=hex(10**10),
             maxFeePerGas=hex(10**10),
@@ -831,7 +832,7 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
         sender=wallet.address,
         nonce="0x0",
         callData=calldata,
-        callGasLimit=hex(1),
+        callGasLimit=callGasLimit,
         verificationGasLimit=hex(min_verification_gas - 1),
         maxPriorityFeePerGas=hex(10**10),
         maxFeePerGas=hex(10**10),

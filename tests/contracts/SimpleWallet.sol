@@ -30,6 +30,13 @@ contract SimpleWallet is ITestAccount {
 
     function nop() external {}
 
+    function wasteGas() external returns (bytes32) {
+        bytes32 x = bytes32(0);
+        for (uint i=0; i<1000; i++) {
+            x = keccak256(abi.encode(x));
+        }
+    }
+
     function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
         if (userOp.callData.length == 20) {
