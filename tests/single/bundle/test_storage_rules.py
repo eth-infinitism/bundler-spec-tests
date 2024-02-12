@@ -772,20 +772,22 @@ def test_rule(w3, entrypoint_contract, case):
 
 
 @pytest.mark.usefixtures("clear_state", "auto_bundling_mode")
-def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
+def test_enough_verification_gas(w3, entrypoint_contract):
     beneficiary = w3.eth.accounts[0]
 
-    # Estimating gas for the op's gas limits
+    callGasLimit = hex(20000)
     wallet = deploy_wallet_contract(w3)
-    calldata = wallet.encodeABI(fn_name="nop")
+    calldata = wallet.encodeABI(fn_name="wasteGas")
+
+    # Estimating gas for the op's gas limits
     userop = UserOperation(
         sender=wallet.address,
         nonce="0x0",
         callData=calldata,
-        callGasLimit=hex(1),
+        callGasLimit=callGasLimit,
         verificationGasLimit=hex(10**6),
-        maxPriorityFeePerGas=hex(1),
-        maxFeePerGas=hex(1),
+        maxPriorityFeePerGas=hex(10**10),
+        maxFeePerGas=hex(10**10),
         preVerificationGas=hex(10**6),
     )
     response = RPCRequest(
@@ -798,20 +800,18 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     # Searching for the gas that gets us aa51 revert onchain
     low_gas = 0
     high_gas = 5 * 10**5
-    mid_gas = 0
     min_verification_gas = high_gas
     while low_gas <= high_gas:
         wallet = deploy_wallet_contract(w3)
-        calldata = wallet.encodeABI(fn_name="nop")
         mid_gas = (high_gas + low_gas) // 2
         userop = UserOperation(
             sender=wallet.address,
             nonce="0x0",
             callData=calldata,
-            callGasLimit=hex(1),
+            callGasLimit=callGasLimit,
             verificationGasLimit=hex(mid_gas),
-            maxPriorityFeePerGas=hex(1),
-            maxFeePerGas=hex(1),
+            maxPriorityFeePerGas=hex(10**10),
+            maxFeePerGas=hex(10**10),
             preVerificationGas=pre_verification_gas,
         )
         handleops_method = entrypoint_contract.functions.handleOps(
@@ -832,10 +832,10 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
         sender=wallet.address,
         nonce="0x0",
         callData=calldata,
-        callGasLimit=hex(1),
+        callGasLimit=callGasLimit,
         verificationGasLimit=hex(min_verification_gas - 1),
-        maxPriorityFeePerGas=hex(1),
-        maxFeePerGas=hex(1),
+        maxPriorityFeePerGas=hex(10**10),
+        maxFeePerGas=hex(10**10),
         preVerificationGas=pre_verification_gas,
     )
 
@@ -843,14 +843,21 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     nonce_before = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
     response = userop.send()
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
-    assert nonce_before == nonce_after, "userop not reverted onchain"
+    assert nonce_before == nonce_after, "handleoOps not reverted onchain"
     print(response)
-    assert_rpc_error(response, "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+    assert_rpc_error(
+        response,
+        "",
+        RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT,
+        "Bundler failed to detect AA51 revert",
+    )
     # sanity check, should succeed with enough gas that was returned by the bundler
     userop.verificationGasLimit = verification_gas
     response = userop.send()
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
-    assert nonce_before + 1 == nonce_after, "userop reverted onchain"
+    assert (
+        nonce_before + 1 == nonce_after
+    ), "userop reverted onchain with returned limits from estimateGas"
     assert_ok(response)
 
 
