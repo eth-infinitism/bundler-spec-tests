@@ -854,7 +854,9 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     userop.verificationGasLimit = verification_gas
     response = userop.send()
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
-    assert nonce_before + 1 == nonce_after, "userop reverted onchain"
+    assert (
+        nonce_before + 1 == nonce_after
+    ), "userop reverted onchain with returned limits from estimateGas"
     assert_ok(response)
 
 
