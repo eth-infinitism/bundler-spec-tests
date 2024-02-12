@@ -106,7 +106,7 @@ def assert_rpc_error(response, message, code, error_message=None):
         assert message.lower() in response.message.lower()
     except AttributeError as exc:
         if error_message is not None:
-            raise Exception(error_message)
+            raise Exception(error_message) from exc
         raise Exception(f"expected error object, got:\n{response}") from exc
 
 
