@@ -798,7 +798,6 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     # Searching for the gas that gets us aa51 revert onchain
     low_gas = 0
     high_gas = 5 * 10**5
-    mid_gas = 0
     min_verification_gas = high_gas
     while low_gas <= high_gas:
         wallet = deploy_wallet_contract(w3)
