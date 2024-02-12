@@ -842,7 +842,7 @@ def test_enough_verification_gas(w3, entrypoint_contract, helper_contract):
     nonce_before = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
     response = userop.send()
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
-    assert nonce_before == nonce_after, "userop not reverted onchain"
+    assert nonce_before == nonce_after, "handleoOps not reverted onchain"
     print(response)
     assert_rpc_error(
         response,
