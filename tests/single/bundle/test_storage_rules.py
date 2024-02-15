@@ -14,6 +14,7 @@ from tests.utils import (
     deposit_to_undeployed_sender,
     staked_contract,
     userop_hash,
+    send_bundle_now
 )
 
 
@@ -771,7 +772,7 @@ def test_rule(w3, entrypoint_contract, case):
     case.assert_func(response)
 
 
-@pytest.mark.usefixtures("clear_state", "auto_bundling_mode")
+@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 def test_enough_verification_gas(w3, entrypoint_contract):
     beneficiary = w3.eth.accounts[0]
 
@@ -854,6 +855,7 @@ def test_enough_verification_gas(w3, entrypoint_contract):
     # sanity check, should succeed with enough gas that was returned by the bundler
     userop.verificationGasLimit = verification_gas
     response = userop.send()
+    send_bundle_now()
     nonce_after = entrypoint_contract.functions.getNonce(wallet.address, 0).call()
     assert (
         nonce_before + 1 == nonce_after
