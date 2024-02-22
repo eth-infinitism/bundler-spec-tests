@@ -1,11 +1,10 @@
 import os
 import time
-from eth_abi.packed import encode_packed
-from eth_abi import decode_abi
-from eth_utils import to_checksum_address
-
-
 from functools import cache
+
+from eth_abi import decode
+from eth_abi.packed import encode_packed
+from eth_utils import to_checksum_address
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
@@ -87,10 +86,10 @@ def deploy_state_contract(w3):
     return deploy_contract(w3, "State")
 
 
-def pack_factory(factory, factoryData):
+def pack_factory(factory, factory_data):
     if factory is None:
         return "0x"
-    return to_prefixed_hex(factory) + to_hex(factoryData)
+    return to_prefixed_hex(factory) + to_hex(factory_data)
 
 
 def pack_uints(high128, low128):
@@ -99,18 +98,21 @@ def pack_uints(high128, low128):
 
 
 def pack_paymaster(
-    paymaster, paymasterVerificationGasLimit, paymasterPostOpGasLimit, paymasterData
+    paymaster,
+    paymaster_verification_gas_limit,
+    paymaster_post_op_gas_limit,
+    paymaster_data,
 ):
     if paymaster is None:
         return "0x"
-    if paymasterData is None:
-        paymasterData = ""
+    if paymaster_data is None:
+        paymaster_data = ""
     return encode_packed(
         ["address", "uint256", "string"],
         [
             paymaster,
-            pack_uints(paymasterVerificationGasLimit, paymasterPostOpGasLimit),
-            paymasterData,
+            pack_uints(paymaster_verification_gas_limit, paymaster_post_op_gas_limit),
+            paymaster_data,
         ],
     )
 
@@ -144,7 +146,7 @@ def assert_ok(response):
     try:
         assert response.result
     except AttributeError as exc:
-        raise Exception(f"expected result object, got:\n{response}") from exc
+        raise AttributeError(f"expected result object, got:\n{response}") from exc
 
 
 def assert_rpc_error(response, message, code):
@@ -152,17 +154,17 @@ def assert_rpc_error(response, message, code):
         assert response.code == code
         assert message.lower() in response.message.lower()
     except AttributeError as exc:
-        raise Exception(f"expected error object, got:\n{response}") from exc
+        raise AttributeError(f"expected error object, got:\n{response}") from exc
 
 
-def get_sender_address(w3, factory, factoryData):
-    helper = deploy_contract(w3, "Helper")
-    ret = w3.eth.call(dict(to=factory, data=factoryData))
-    return to_checksum_address(decode_abi(["address"], ret)[0])
+def get_sender_address(w3, factory, factory_data):
+    ret = w3.eth.call({"to": factory, "data": factory_data})
+    # pylint: disable=unsubscriptable-object
+    return to_checksum_address(decode(["address"], ret)[0])
 
 
-def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factoryData):
-    sender = get_sender_address(w3, factory, factoryData)
+def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factory_data):
+    sender = get_sender_address(w3, factory, factory_data)
     tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
@@ -207,7 +209,7 @@ def p2p_mempool(ref_dump, url=None, timeout=5):
             return new_dump
         count = count - 1
         if count <= 0:
-            raise Exception(f"timed-out waiting mempool change propagate to {url}")
+            raise TimeoutError(f"timed-out waiting mempool change propagate to {url}")
         time.sleep(0.5)
 
 
