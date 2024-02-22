@@ -64,6 +64,7 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
         sender=wallet_contract.address,
         paymaster=paymaster_contract.address,
         paymasterData="0x" + to_hex(banned_op),
+        paymasterVerificationGasLimit=hex(200000),
     ).send()
     assert_rpc_error(
         response,

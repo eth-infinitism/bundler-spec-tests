@@ -126,12 +126,14 @@ def test_mempool_reputation_rules_all_entities(
     w3, entrypoint_contract, paymaster_contract, factory_contract, entity, case
 ):
     wallet = deploy_wallet_contract(w3)
-    factory=factory_contract.address
+    factory = factory_contract.address
     factoryData = factory_contract.functions.create(
-            456, "", entrypoint_contract.address
-        ).build_transaction()["data"]
+        456, "", entrypoint_contract.address
+    ).build_transaction()["data"]
     # it should not matter to the bundler whether sender is deployed or not
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factoryData
+    )
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
     assert dump_mempool() == []
@@ -165,8 +167,8 @@ def test_mempool_reputation_rules_all_entities(
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
-        paymaster=None
-        paymasterData=None
+        paymaster = None
+        paymasterData = None
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -176,9 +178,11 @@ def test_mempool_reputation_rules_all_entities(
         if entity != "sender":
             # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
             factoryData = factory_contract.functions.create(
-                    i + 123, "", entrypoint_contract.address
-                ).build_transaction()["data"]
-            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, factory_contract.address, factoryData)
+                i + 123, "", entrypoint_contract.address
+            ).build_transaction()["data"]
+            sender = deposit_to_undeployed_sender(
+                w3, entrypoint_contract, factory_contract.address, factoryData
+            )
 
         if entity != "paymaster":
             # differentiate 'paymaster' address unless checking it
@@ -197,12 +201,11 @@ def test_mempool_reputation_rules_all_entities(
             factoryData=factoryData,
             paymaster=paymaster,
             paymasterData=paymasterData,
-            paymasterVerificationGasLimit='0x10000',
-            paymasterPostOpGasLimit='0x10000'
+            paymasterVerificationGasLimit="0x10000",
+            paymasterPostOpGasLimit="0x10000",
         )
         wallet_ops.append(user_op)
         user_op.send()
-
 
     assert dump_mempool() == wallet_ops
     # create a UserOperation that exceeds the mempool limit
@@ -214,8 +217,8 @@ def test_mempool_reputation_rules_all_entities(
         factoryData=factoryData,
         paymaster=paymaster_contract.address,
         paymasterData=to_hex(text="nothing"),
-        paymasterVerificationGasLimit='0x10000',
-        paymasterPostOpGasLimit='0x10000'
+        paymasterVerificationGasLimit="0x10000",
+        paymasterPostOpGasLimit="0x10000",
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
