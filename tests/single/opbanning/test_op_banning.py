@@ -62,7 +62,9 @@ def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequ
 def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):
     response = UserOperation(
         sender=wallet_contract.address,
-        paymasterAndData=paymaster_contract.address + to_hex(banned_op),
+        paymaster=paymaster_contract.address,
+        paymasterData="0x" + to_hex(banned_op),
+        paymasterVerificationGasLimit=hex(200000),
     ).send()
     assert_rpc_error(
         response,
@@ -73,14 +75,15 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned_op):
-    initcode = (
-        factory_contract.address
-        + factory_contract.functions.create(
-            123, banned_op, entrypoint_contract.address
-        ).build_transaction()["data"][2:]
+    factoryData = factory_contract.functions.create(
+        123, banned_op, entrypoint_contract.address
+    ).build_transaction()["data"]
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factoryData
     )
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
-    response = UserOperation(sender=sender, initCode=initcode).send()
+    response = UserOperation(
+        sender=sender, factory=factory_contract.address, factoryData=factoryData
+    ).send()
     assert_rpc_error(
         response,
         "factory",

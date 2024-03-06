@@ -28,7 +28,7 @@ contract SimpleWallet is ITestAccount {
         revert("test fail");
     }
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
         if (userOp.callData.length == 20) {
             State(address(bytes20(userOp.callData))).getState(address(this));

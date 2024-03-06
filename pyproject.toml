@@ -29,8 +29,8 @@ build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
 update-deps = {shell = "git submodule update --remote --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build"}
-test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 --ethereum-node http://127.0.0.1:8545/ tests/single"
-p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032  --ethereum-node http://127.0.0.1:8545/ tests/single"
+p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
 lint = "pylint tests"
 format = "black tests"
 
@@ -50,7 +50,7 @@ dependencies = [
     "eth-tester>=0.6.0b6",
     "web3>=5.31.1",
     "jsonrpcclient>=4.0.2",
-    "jsonschema>=4.17.3",
+    "jsonschema>=4.21.1",
     "black>=22.12.0",
     "pylint>=2.15.8",
 ]

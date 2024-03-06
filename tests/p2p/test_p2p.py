@@ -9,14 +9,14 @@ from tests.utils import (
     deploy_and_deposit,
     dump_mempool,
     p2p_mempool,
-    set_manual_bundling_mode
+    set_manual_bundling_mode,
 )
 
 
-#todo: relies on 'ports: [ "3001:3000" ]' for peer bundler.
+# todo: relies on 'ports: [ "3001:3000" ]' for peer bundler.
 BUNDLER2 = "http://localhost:3001/rpc"
 
-#todo: this is the "real" bundler2 definition. 
+# todo: this is the "real" bundler2 definition.
 # However, it can only work if the script runs inside the docker-compose environment.
 # BUNDLER2 = "http://bundler2:3000/rpc"
 
@@ -32,7 +32,6 @@ def test_simple_p2p(w3, entrypoint_contract, manual_bundling_mode):
     ref = dump_mempool(BUNDLER2)
     op.send()
     assert dump_mempool() == [op], "failed to appear in same mempool"
-    assert p2p_mempool(ref, url=BUNDLER2) == [op], "failed to propagate to remote mempool"
-
-
-
+    assert p2p_mempool(ref, url=BUNDLER2) == [
+        op
+    ], "failed to propagate to remote mempool"

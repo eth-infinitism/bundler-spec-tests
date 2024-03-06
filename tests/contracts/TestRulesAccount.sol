@@ -30,7 +30,7 @@ contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
 
     receive() external payable {}
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingAccountFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingAccountFunds)
     external override returns (uint256 deadline) {
         if (missingAccountFunds > 0) {
             /* solhint-disable-next-line avoid-low-level-calls */
