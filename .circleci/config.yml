@@ -21,6 +21,7 @@ jobs:
           --http.corsdomain '*' \
           --http.addr '0.0.0.0' \
           --dev \
+          --rpc.txfeecap 0 \
           --nodiscover --maxpeers 0 --mine \
           --verbosity 2"
     # Add steps to the job

@@ -127,12 +127,12 @@ def test_mempool_reputation_rules_all_entities(
 ):
     wallet = deploy_wallet_contract(w3)
     factory = factory_contract.address
-    factoryData = factory_contract.functions.create(
+    factory_data = factory_contract.functions.create(
         456, "", entrypoint_contract.address
     ).build_transaction()["data"]
     # it should not matter to the bundler whether sender is deployed or not
     sender = deposit_to_undeployed_sender(
-        w3, entrypoint_contract, factory_contract.address, factoryData
+        w3, entrypoint_contract, factory_contract.address, factory_data
     )
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
@@ -168,7 +168,7 @@ def test_mempool_reputation_rules_all_entities(
     for i in range(allowed_in_mempool):
 
         paymaster = None
-        paymasterData = None
+        paymaster_data = None
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -177,11 +177,11 @@ def test_mempool_reputation_rules_all_entities(
 
         if entity != "sender":
             # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
-            factoryData = factory_contract.functions.create(
+            factory_data = factory_contract.functions.create(
                 i + 123, "", entrypoint_contract.address
             ).build_transaction()["data"]
             sender = deposit_to_undeployed_sender(
-                w3, entrypoint_contract, factory_contract.address, factoryData
+                w3, entrypoint_contract, factory_contract.address, factory_data
             )
 
         if entity != "paymaster":
@@ -191,16 +191,16 @@ def test_mempool_reputation_rules_all_entities(
             )
             paymaster = paymaster_contract.address
             # 'nothing' is a special string to pass validation
-            paymasterData = to_hex(text="nothing")
+            paymaster_data = to_hex(text="nothing")
 
         user_op = UserOperation(
             sender=sender,
             nonce=hex(i << 64),
             callData=calldata,
             factory=factory,
-            factoryData=factoryData,
+            factoryData=factory_data,
             paymaster=paymaster,
-            paymasterData=paymasterData,
+            paymasterData=paymaster_data,
             paymasterVerificationGasLimit="0x10000",
             paymasterPostOpGasLimit="0x10000",
         )
@@ -214,7 +214,7 @@ def test_mempool_reputation_rules_all_entities(
         nonce=hex(case.allowed_in_mempool << 64),
         callData=calldata,
         factory=factory,
-        factoryData=factoryData,
+        factoryData=factory_data,
         paymaster=paymaster_contract.address,
         paymasterData=to_hex(text="nothing"),
         paymasterVerificationGasLimit="0x10000",
