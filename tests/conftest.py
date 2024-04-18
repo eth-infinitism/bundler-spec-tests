@@ -79,13 +79,28 @@ def paymaster_contract(w3, entrypoint_contract):
 
 
 @pytest.fixture
+def staked_paymaster_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", True)
+
+
+@pytest.fixture
 def factory_contract(w3, entrypoint_contract):
     return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
 
 
 @pytest.fixture
+def staked_factory_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", True)
+
+
+@pytest.fixture
 def rules_account_contract(w3, entrypoint_contract):
     return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", False)
+
+
+@pytest.fixture
+def rules_staked_account_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", True)
 
 
 @pytest.fixture(scope="session")
