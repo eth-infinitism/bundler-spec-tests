@@ -4,3 +4,4 @@ __pycache__/
 dist/
 /.pdm.toml
 .DS_Store
+.pdm-python
