@@ -167,8 +167,8 @@ def test_mempool_reputation_rules_all_entities(
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
-        paymaster = None
-        paymaster_data = None
+        paymaster = paymaster_contract.address
+        paymaster_data = to_hex(text="nothing")
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -180,6 +180,7 @@ def test_mempool_reputation_rules_all_entities(
             factory_data = factory_contract.functions.create(
                 i + 123, "", entrypoint_contract.address
             ).build_transaction()["data"]
+            factory = factory_contract.address
             sender = deposit_to_undeployed_sender(
                 w3, entrypoint_contract, factory_contract.address, factory_data
             )

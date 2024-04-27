@@ -85,8 +85,8 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
     if case == "with_factory":
         initcodes = [
             (
-                factory_contract.address
-                + factory_contract.functions.create(
+                factory_contract.address,
+                factory_contract.functions.create(
                     i, "", entrypoint_contract.address
                 ).build_transaction()["data"][2:]
             )
@@ -95,11 +95,12 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
         wallet_ops = [
             UserOperation(
                 sender=deposit_to_undeployed_sender(
-                    w3, entrypoint_contract, initcodes[i]
+                    w3, entrypoint_contract, initcodes[i][0], initcodes[i][1]
                 ),
                 nonce=hex(i << 64),
                 paymaster=paymaster_contract.address,
-                initCode=initcodes[i],
+                factory = initcodes[i][0],
+                factoryData=initcodes[i][1],
             )
             for i in range(banning_threshold + 1)
         ]
