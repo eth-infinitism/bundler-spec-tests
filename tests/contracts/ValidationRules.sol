@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./ITestAccount.sol";
@@ -12,6 +12,22 @@ contract Dummy {
 contract ValidationRulesStorage is IState {
     IEntryPoint public entryPoint;
     uint256 public state;
+
+    function funTSTORE() external returns(uint256) {
+        assembly {
+            tstore(0, 1)
+        }
+        return 0;
+    }
+
+    function funTLOAD() external returns(uint256) {
+        uint256 tval;
+        assembly {
+            tval := tload(0)
+        }
+        emit State(tval, tval);
+        return tval;
+    }
 
     event State(uint oldState, uint newState);
 
@@ -150,6 +166,10 @@ library ValidationRules {
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(account));
         else if (eq(rule, "external_storage_read")) return coin.balanceOf(address(0xdeadcafe));
         else if (eq(rule, "external_storage_write")) return coin.mint(address(0xdeadcafe));
+
+        else if (eq(rule, "transient_storage_tstore")) return self.funTSTORE();
+        else if (eq(rule, "transient_storage_tload")) return self.funTLOAD();
+
         else if (eq(rule, "entryPoint_call_balanceOf")) return self.entryPoint().balanceOf(address(account));
         else if (eq(rule, "eth_value_transfer_forbidden")) return coin.receiveValue{value: 666}();
         else if (eq(rule, "eth_value_transfer_entryPoint")) {
