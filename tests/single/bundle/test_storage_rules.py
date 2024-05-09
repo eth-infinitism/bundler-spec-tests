@@ -165,12 +165,12 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
-        "EREP-050",
+        "EREP-050-regression",
         "context",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_error,
+        assert_ok,
     ),
     StorageTestCase(
         "STO-032",
@@ -265,7 +265,12 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
-        "EREP-050", "context", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
+        "EREP-050-regression",
+        "context",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
     ),
     StorageTestCase(
         "STO-033",
