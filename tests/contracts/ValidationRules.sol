@@ -13,7 +13,7 @@ contract ValidationRulesStorage is IState {
     IEntryPoint public entryPoint;
     uint256 public state;
 
-    function funTSTORE() external returns(uint256) {
+    function funTSTORE() external override returns(uint256) {
         assembly {
             tstore(0, 1)
         }
@@ -169,6 +169,7 @@ library ValidationRules {
 
         else if (eq(rule, "transient_storage_tstore")) return self.funTSTORE();
         else if (eq(rule, "transient_storage_tload")) return self.funTLOAD();
+        else if (eq(rule, "account_transient_storage")) return account.funTSTORE();
 
         else if (eq(rule, "entryPoint_call_balanceOf")) return self.entryPoint().balanceOf(address(account));
         else if (eq(rule, "eth_value_transfer_forbidden")) return coin.receiveValue{value: 666}();

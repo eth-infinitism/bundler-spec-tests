@@ -157,6 +157,14 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
+        "OP-070",
+        "account_transient_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
+    ),
+    StorageTestCase(
         "STO-021",
         "account_reference_storage",
         UNSTAKED,
