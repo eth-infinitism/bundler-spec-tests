@@ -9,6 +9,7 @@ from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
+
 @cache
 def compile_contract(contract):
     current_dirname = os.path.dirname(__file__)
@@ -265,3 +266,5 @@ def to_prefixed_hex(s):
 
 def to_hex(s):
     return s.encode().hex()
+
+compile_contract( "SimpleWallet")
