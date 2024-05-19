@@ -160,7 +160,7 @@ jobs:
       - run:
           name: "run bundler"
           working_directory: "./bundler"
-          command: yarn bundler
+          command: yarn bundler-rip7560
           background: true
       - run:
           name: "await bundler"
