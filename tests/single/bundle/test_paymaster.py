@@ -1,0 +1,60 @@
+import collections
+import pytest
+
+from eth_utils import to_hex
+
+from tests.types import UserOperation, RPCErrorCode
+from tests.utils import (
+    assert_ok,
+    assert_rpc_error,
+    deploy_wallet_contract,
+    deploy_contract,
+)
+
+
+def to_number(x):
+    return x if isinstance(x, (int, float)) else int(x, 16)
+
+
+def sum_hex(*args):
+    return sum(to_number(i) for i in args if i is not None)
+
+
+def get_userop_verification_max_cost(userOp):
+    return sum_hex(userOp.preVerificationGas,
+                   userOp.verificationGasLimit,
+                   userOp.paymasterVerificationGasLimit) * to_number(userOp.maxFeePerGas)
+
+
+# EREP-010: paymaster should have deposit to cover all userops in mempool
+def test_paymaster_deposit(
+        w3, entrypoint_contract, paymaster_contract
+):
+    """
+    test paymaster has deposit to cover all userops in mempool.
+    make paymaster deposit enough for 2 userops.
+    send 2 userops.
+    see that the 3rd userop is dropped.
+    """
+    paymaster = deploy_contract(w3, "TestRulesPaymaster", [entrypoint_contract.address])
+    userops = []
+    for i in range(3):
+        sender = deploy_wallet_contract(w3).address
+        userop = UserOperation(
+            sender=sender,
+            paymaster=paymaster.address,
+            paymasterVerificationGasLimit=50000,
+            paymasterData=to_hex(text="nothing"))
+        userops.append(userop)
+
+    sums = [get_userop_verification_max_cost(userop) for userop in userops]
+    total_cost = sum(sums)
+
+    # deposit enough just below the total cost
+    entrypoint_contract.functions.depositTo(paymaster.address).transact({
+        "from": w3.eth.accounts[0], "value": total_cost - 1})
+    for u in userops[0:-1]:
+        assert_ok(u.send())
+
+    res = userops[-1].send()
+    assert_rpc_error(res, "too low", RPCErrorCode.BANNED_OR_THROTTLED_PAYMASTER)
