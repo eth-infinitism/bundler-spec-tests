@@ -94,9 +94,101 @@ jobs:
           paths:
             - ./bundler/node_modules
 
+
+###################################################
+  test-rip7560-bundler:
+    docker:
+      - image: cimg/python:3.10.12-node
+      - image: shahafn/rip7560-geth
+        command: "\
+          --miner.gaslimit 12000000 \
+          --http \
+          --http.api personal,eth,net,web3,debug \
+          --allow-insecure-unlock \
+          --rpc.allow-unprotected-txs \
+          --http.vhosts '*,localhost,host.docker.internal' \
+          --http.corsdomain '*' \
+          --http.addr '0.0.0.0' \
+          --dev \
+          --rpc.txfeecap 0 \
+          --nodiscover --maxpeers 0 --mine \
+          --verbosity 2"
+    steps:
+      - checkout
+      - run:
+          name: "Swap node versions"
+          command: |
+            set +e
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            nvm install v16.17.0
+            nvm alias default 16.17.0
+
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run:
+          name: "curl pdm"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - run:
+          name: "update-deps"
+          command: "pdm run update-deps"
+      - run:
+          name: "pdm install"
+          command: "pdm install"
+      - run:
+          name: "lint"
+          command: "pdm run lint"
+      - run:
+          name: "clone bundler"
+          command: git clone https://github.com/eth-infinitism/bundler.git -b rip7560_rev2
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+      - run:
+          name: "yarn install for bundler"
+          working_directory: "./bundler"
+          command: yarn install --ignore-engines && yarn preprocess
+      - run:
+          name: "deploy entry point"
+          working_directory: "./bundler"
+          command: yarn hardhat-deploy --network localhost
+      - run:
+          name: "run bundler"
+          working_directory: "./bundler"
+          command: yarn bundler
+          background: true
+      - run:
+          name: "await bundler"
+          working_directory: "./bundler"
+          shell: /bin/sh
+          command: |
+            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
+      - run:
+          name: "pytest"
+          command: "pdm run test-rip7560"
+      - save_cache:
+          key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
+          paths:
+            - .venv
+      - save_cache:
+          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+          paths:
+            - ./bundler/node_modules
+
+
+
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   test-bundler-workflow:
     jobs:
       - test-bundler
+  test-bundler-rip7560-workflow:
+    jobs:
+      - test-rip7560-bundler
