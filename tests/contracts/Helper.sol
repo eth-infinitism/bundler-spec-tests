@@ -1,4 +1,4 @@
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.25;
 //SPDX-License-Identifier: MIT
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
@@ -22,7 +22,7 @@ contract Helper {
         return sender;
     }
 
-    function getUserOpHash(IEntryPoint ep, UserOperation calldata userOp) public view returns (bytes32) {
+    function getUserOpHash(IEntryPoint ep, PackedUserOperation calldata userOp) public view returns (bytes32) {
         return IEntryPoint(ep).getUserOpHash(userOp);
     }
 }

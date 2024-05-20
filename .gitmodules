@@ -6,3 +6,5 @@
 	path = spec
 	url = https://github.com/eth-infinitism/bundler-spec.git
 	branch = main
+[submodule "./@account-abstraction/"]
+	branch = develop

@@ -1,6 +1,6 @@
 import pytest
 from jsonschema import validate, Validator
-from tests.types import RPCRequest, CommandLineArgs, UserOperation
+from tests.types import RPCRequest, CommandLineArgs, UserOperation, RPCErrorCode
 from tests.utils import userop_hash, assert_rpc_error
 
 
@@ -25,4 +25,6 @@ def test_eth_getUserOperationByHash(helper_contract, userop, schema):
 
 def test_eth_getUserOperationByHash_error():
     response = RPCRequest(method="eth_getUserOperationByHash", params=[""]).send()
-    assert_rpc_error(response, "Missing/invalid userOpHash", -32601)
+    assert_rpc_error(
+        response, "Missing/invalid userOpHash", RPCErrorCode.INVALID_FIELDS
+    )

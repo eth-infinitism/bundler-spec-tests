@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 
@@ -15,7 +15,7 @@ contract TestCodeHashAccount is IAccount {
     function destruct() public {
         selfdestruct(payable(msg.sender));
     }
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     external override returns (uint256 deadline) {
         if (missingWalletFunds>0) {
             msg.sender.call{value:missingWalletFunds}("");

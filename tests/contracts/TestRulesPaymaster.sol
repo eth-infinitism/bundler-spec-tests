@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "@account-abstraction/contracts/core/UserOperationLib.sol";
 import "./ValidationRules.sol";
 import "./SimpleWallet.sol";
 
@@ -24,11 +25,11 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         ep.addStake{value: msg.value}(delay);
     }
 
-    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
+    function validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
 
         //first byte after paymaster address.
-        string memory rule = string(userOp.paymasterAndData[20:]);
+        string memory rule = string(userOp.paymasterAndData[UserOperationLib.PAYMASTER_DATA_OFFSET:]);
         if (rule.eq("context")) {
             return ("this is a context", 0);
         } else if (rule.eq("nothing")) {
@@ -39,7 +40,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         }
     }
 
-    function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external {}
+    function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost, uint) external {}
 
     receive() external payable {
         entryPoint.depositTo{value: msg.value}(address(this));

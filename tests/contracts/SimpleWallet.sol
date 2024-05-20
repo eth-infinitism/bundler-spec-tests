@@ -10,6 +10,13 @@ contract SimpleWallet is ITestAccount {
     IEntryPoint ep;
     uint256 public state;
 
+    function funTSTORE() external returns(uint256) {
+        assembly {
+            tstore(0, 1)
+        }
+        return 0;
+    }
+
     constructor(address _ep) payable {
         ep = IEntryPoint(_ep);
         (bool req,) = address(ep).call{value : msg.value}("");
@@ -28,7 +35,7 @@ contract SimpleWallet is ITestAccount {
         revert("test fail");
     }
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingWalletFunds)
     public override virtual returns (uint256 validationData) {
         if (userOp.callData.length == 20) {
             State(address(bytes20(userOp.callData))).getState(address(this));
