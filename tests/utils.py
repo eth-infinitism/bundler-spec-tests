@@ -11,13 +11,16 @@ from .types import RPCRequest, UserOperation, CommandLineArgs
 
 @cache
 def compile_contract(contract):
+    contract_subdir = os.path.dirname(contract)
+    contract_name = os.path.basename(contract)
+
     current_dirname = os.path.dirname(__file__)
-    contracts_dirname = current_dirname + "/contracts/"
+    contracts_dirname = current_dirname + "/contracts/" + contract_subdir + "/"
     aa_path = os.path.realpath(current_dirname + "/../@account-abstraction")
     aa_relpath = os.path.relpath(aa_path, contracts_dirname)
     remap = "@account-abstraction=" + aa_relpath
     with open(
-        contracts_dirname + contract + ".sol", "r", encoding="utf-8"
+        contracts_dirname + contract_name + ".sol", "r", encoding="utf-8"
     ) as contractfile:
         test_source = contractfile.read()
         compiled_sol = compile_source(
@@ -29,7 +32,7 @@ def compile_contract(contract):
             solc_version="0.8.23",
             evm_version="paris",
         )
-        return compiled_sol["<stdin>:" + contract]
+        return compiled_sol["<stdin>:" + contract_name]
 
 
 def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
