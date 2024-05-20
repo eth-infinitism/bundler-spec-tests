@@ -44,10 +44,13 @@ def test_codehash_changed(w3, entrypoint_contract):
     assert response.result, "userop dropped by bundler"
     assert dump_mempool() == [userop]
     # Calling SELFDESTRUCT before constructing the account on the same address with different code hash
+
     tx_hash = codehash_factory_contract.functions.destroy(account0).transact(
         {"from": w3.eth.accounts[0]}
     )
     w3.eth.wait_for_transaction_receipt(tx_hash)
+    if len(w3.eth.get_code(account0)) != 0:
+        pytest.skip("no self destruct. can't check code change..")
     # Creating account with num == 1
     account1, codehash1 = create_account(
         w3, codehash_factory_contract, entrypoint_contract, 1
