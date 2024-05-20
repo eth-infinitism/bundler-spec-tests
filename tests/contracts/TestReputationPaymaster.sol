@@ -21,7 +21,7 @@ contract TestReputationPaymaster is IPaymaster, Stakable {
         state=_state;
     }
 
-    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256)
+    function validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32, uint256)
     external returns (bytes memory context, uint256 deadline) {
         require(state != 0xdead, "No bundle for you");
         return ("", 0);

@@ -98,7 +98,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
                     w3, entrypoint_contract, initcodes[i]
                 ),
                 nonce=hex(i << 64),
-                paymasterAndData=paymaster_contract.address,
+                paymaster=paymaster_contract.address,
                 initCode=initcodes[i],
             )
             for i in range(banning_threshold + 1)
@@ -112,7 +112,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
             UserOperation(
                 sender=wallet.address,
                 nonce=hex(i << 64),
-                paymasterAndData=paymaster_contract.address,
+                paymaster=paymaster_contract.address,
             )
             for i in range(banning_threshold + 1)
         ]

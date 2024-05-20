@@ -3,6 +3,7 @@ import pytest
 
 from eth_abi.packed import encode_packed
 
+from eth_utils import to_hex
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
@@ -102,9 +103,9 @@ reputations = {
 }
 
 cases = [
-    ReputationTestCase("SREP-020", "banned-entity-not-allowed", "banned", 0, -32504),
+    ReputationTestCase("GREP-010", "banned-entity-not-allowed", "banned", 0, -32504),
     ReputationTestCase(
-        "SREP-030", "throttled-entity-allowed-a-little", "throttled", 4, -32504
+        "GREP-020", "throttled-entity-allowed-limited-count", "throttled", 4, -32504
     ),
     ReputationTestCase(
         "UREP-010 UREP-020", "unstaked-entity-allowed-function", "unstaked", 11, -32505
@@ -125,23 +126,15 @@ def test_mempool_reputation_rules_all_entities(
     w3, entrypoint_contract, paymaster_contract, factory_contract, entity, case
 ):
     wallet = deploy_wallet_contract(w3)
-    initcode = (
-        factory_contract.address
-        + factory_contract.functions.create(
-            456, "", entrypoint_contract.address
-        ).build_transaction()["data"][2:]
-    )
+    factory = factory_contract.address
+    factory_data = factory_contract.functions.create(
+        456, "", entrypoint_contract.address
+    ).build_transaction()["data"]
     # it should not matter to the bundler whether sender is deployed or not
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
-
-    # 'nothing' is a special string to pass validation
-    paymaster_and_data = (
-        "0x"
-        + encode_packed(
-            ["address", "string"], [paymaster_contract.address, "nothing"]
-        ).hex()
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factory_data
     )
+    calldata = wallet.encodeABI(fn_name="setState", args=[1])
 
     assert dump_mempool() == []
     if entity == "sender":
@@ -174,6 +167,9 @@ def test_mempool_reputation_rules_all_entities(
     # fill the mempool with the allowed number of UserOps
     for i in range(allowed_in_mempool):
 
+        paymaster = None
+        paymaster_data = None
+
         if entity != "factory":
             factory_contract = deploy_and_deposit(
                 w3, entrypoint_contract, "TestRulesFactory", False
@@ -181,33 +177,32 @@ def test_mempool_reputation_rules_all_entities(
 
         if entity != "sender":
             # differentiate 'sender' address unless checking it to avoid hitting the 4 transactions limit :-(
-            initcode = (
-                factory_contract.address
-                + factory_contract.functions.create(
-                    i + 123, "", entrypoint_contract.address
-                ).build_transaction()["data"][2:]
+            factory_data = factory_contract.functions.create(
+                i + 123, "", entrypoint_contract.address
+            ).build_transaction()["data"]
+            sender = deposit_to_undeployed_sender(
+                w3, entrypoint_contract, factory_contract.address, factory_data
             )
-            sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
 
         if entity != "paymaster":
             # differentiate 'paymaster' address unless checking it
             paymaster_contract = deploy_and_deposit(
                 w3, entrypoint_contract, "TestRulesPaymaster", False
             )
+            paymaster = paymaster_contract.address
             # 'nothing' is a special string to pass validation
-            paymaster_and_data = (
-                "0x"
-                + encode_packed(
-                    ["address", "string"], [paymaster_contract.address, "nothing"]
-                ).hex()
-            )
+            paymaster_data = to_hex(text="nothing")
 
         user_op = UserOperation(
             sender=sender,
             nonce=hex(i << 64),
             callData=calldata,
-            initCode=initcode,
-            paymasterAndData=paymaster_and_data,
+            factory=factory,
+            factoryData=factory_data,
+            paymaster=paymaster,
+            paymasterData=paymaster_data,
+            paymasterVerificationGasLimit="0x10000",
+            paymasterPostOpGasLimit="0x10000",
         )
         wallet_ops.append(user_op)
         user_op.send()
@@ -218,8 +213,12 @@ def test_mempool_reputation_rules_all_entities(
         sender=sender,
         nonce=hex(case.allowed_in_mempool << 64),
         callData=calldata,
-        initCode=initcode,
-        paymasterAndData=paymaster_and_data,
+        factory=factory,
+        factoryData=factory_data,
+        paymaster=paymaster_contract.address,
+        paymasterData=to_hex(text="nothing"),
+        paymasterVerificationGasLimit="0x10000",
+        paymasterPostOpGasLimit="0x10000",
     )
     response = user_op.send()
     assert dump_mempool() == wallet_ops
@@ -227,9 +226,9 @@ def test_mempool_reputation_rules_all_entities(
     if entity == "sender":
         entity_address = user_op.sender
     elif entity == "paymaster":
-        entity_address = user_op.paymasterAndData[:42]
+        entity_address = user_op.paymaster
     elif entity == "factory":
-        entity_address = user_op.initCode[:42]
+        entity_address = user_op.factory
     assert_rpc_error(response, case.stake_status, case.errorCode)
     assert_rpc_error(response, entity_address, case.errorCode)
 
@@ -345,11 +344,8 @@ def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
     )
     wallet2 = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     user_op1 = UserOperation(sender=wallet1_and_paymaster.address, callData="0x")
-    paymaster_and_data = (
-        "0x" + encode_packed(["address"], [wallet1_and_paymaster.address]).hex()
-    )
     user_op2 = UserOperation(
-        sender=wallet2.address, callData="0x", paymasterAndData=paymaster_and_data
+        sender=wallet2.address, callData="0x", paymaster=wallet1_and_paymaster.address
     )
 
     # mempool addition order check: sender becomes paymaster
