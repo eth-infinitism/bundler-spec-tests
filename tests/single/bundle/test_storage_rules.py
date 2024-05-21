@@ -42,15 +42,15 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
     def _with_initcode(w3, entrypoint_contract, contract, rule):
         factory_contract = deploy_factory_func(w3, entrypoint_contract)
         userop = build_userop_func(w3, entrypoint_contract, contract, rule)
-        initcode = (
-            factory_contract.address
-            + factory_contract.functions.create(
-                123, "", entrypoint_contract.address
-            ).build_transaction()["data"][2:]
+        factoryData = factory_contract.functions.create(
+            123, "", entrypoint_contract.address
+        ).build_transaction()["data"]
+        sender = deposit_to_undeployed_sender(
+            w3, entrypoint_contract, factory_contract.address, factoryData
         )
-        sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
         userop.sender = sender
-        userop.initCode = initcode
+        userop.factory = factory_contract.address
+        userop.factoryData = factoryData
         userop.verificationGasLimit = hex(5000000)
         return userop
 
@@ -59,8 +59,11 @@ def with_initcode(build_userop_func, deploy_factory_func=deploy_unstaked_factory
 
 def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rule):
     wallet = deploy_wallet_contract(w3)
-    paymaster_and_data = paymaster_contract.address + rule.encode().hex()
-    return UserOperation(sender=wallet.address, paymasterAndData=paymaster_and_data)
+    return UserOperation(
+        sender=wallet.address,
+        paymaster=paymaster_contract.address,
+        paymasterData="0x" + rule.encode().hex(),
+    )
 
 
 def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
@@ -72,14 +75,16 @@ def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, ru
 
 
 def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
-    initcode = (
-        factory_contract.address
-        + factory_contract.functions.create(
-            123, rule, entrypoint_contract.address
-        ).build_transaction()["data"][2:]
+    factoryData = factory_contract.functions.create(
+        123, rule, entrypoint_contract.address
+    ).build_transaction()["data"]
+
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, factory_contract.address, factoryData
     )
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, initcode)
-    return UserOperation(sender=sender, initCode=initcode)
+    return UserOperation(
+        sender=sender, factory=factory_contract.address, factoryData=factoryData
+    )
 
 
 STAKED = True
@@ -112,6 +117,22 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
+        "OP-070(STO-031)",
+        "transient_storage_tstore",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-070(STO-031)",
+        "transient_storage_tload",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
         "STO-032",
         "reference_storage",
         UNSTAKED,
@@ -130,6 +151,14 @@ cases = [
     StorageTestCase(
         "STO-010",
         "account_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "OP-070(STO-010)",
+        "account_transient_storage",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -160,12 +189,12 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
-        "EREP-050",
+        "EREP-050-regression",
         "context",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_error,
+        assert_ok,
     ),
     StorageTestCase(
         "STO-032",
@@ -260,7 +289,12 @@ cases = [
         assert_ok,
     ),
     StorageTestCase(
-        "EREP-050", "context", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
+        "EREP-050-regression",
+        "context",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
     ),
     StorageTestCase(
         "STO-033",

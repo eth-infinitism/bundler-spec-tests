@@ -1,7 +1,10 @@
 import os
 import time
-
 from functools import cache
+
+from eth_abi import decode
+from eth_abi.packed import encode_packed
+from eth_utils import to_checksum_address
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
@@ -23,12 +26,13 @@ def compile_contract(contract):
             allow_paths=aa_relpath,
             import_remappings=remap,
             output_values=["abi", "bin"],
-            solc_version="0.8.15",
+            solc_version="0.8.25",
+            evm_version="cancun",
         )
         return compiled_sol["<stdin>:" + contract]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=7 * 10**6):
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
@@ -82,18 +86,52 @@ def deploy_state_contract(w3):
     return deploy_contract(w3, "State")
 
 
+def pack_factory(factory, factory_data):
+    if factory is None:
+        return "0x"
+    return to_prefixed_hex(factory) + to_hex(factory_data)
+
+
+def pack_uints(high128, low128):
+    print("pack_uints", high128, low128)
+    return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
+
+
+def pack_paymaster(
+    paymaster,
+    paymaster_verification_gas_limit,
+    paymaster_post_op_gas_limit,
+    paymaster_data,
+):
+    if paymaster is None:
+        return "0x"
+    if paymaster_data is None:
+        paymaster_data = ""
+    return encode_packed(
+        ["address", "uint256", "string"],
+        [
+            paymaster,
+            pack_uints(paymaster_verification_gas_limit, paymaster_post_op_gas_limit),
+            paymaster_data,
+        ],
+    )
+
+
 def userop_hash(helper_contract, userop):
     payload = (
         userop.sender,
         int(userop.nonce, 16),
-        userop.initCode,
+        pack_factory(userop.factory, userop.factoryData),
         userop.callData,
-        int(userop.callGasLimit, 16),
-        int(userop.verificationGasLimit, 16),
+        pack_uints(userop.verificationGasLimit, userop.callGasLimit),
         int(userop.preVerificationGas, 16),
-        int(userop.maxFeePerGas, 16),
-        int(userop.maxPriorityFeePerGas, 16),
-        userop.paymasterAndData,
+        pack_uints(userop.maxPriorityFeePerGas, userop.maxFeePerGas),
+        pack_paymaster(
+            userop.paymaster,
+            userop.paymasterVerificationGasLimit,
+            userop.paymasterPostOpGasLimit,
+            userop.paymasterData,
+        ),
         userop.signature,
     )
     return (
@@ -108,7 +146,7 @@ def assert_ok(response):
     try:
         assert response.result
     except AttributeError as exc:
-        raise Exception(f"expected result object, got:\n{response}") from exc
+        raise AttributeError(f"expected result object, got:\n{response}") from exc
 
 
 def assert_rpc_error(response, message, code):
@@ -116,18 +154,17 @@ def assert_rpc_error(response, message, code):
         assert response.code == code
         assert message.lower() in response.message.lower()
     except AttributeError as exc:
-        raise Exception(f"expected error object, got:\n{response}") from exc
+        raise AttributeError(f"expected error object, got:\n{response}") from exc
 
 
-def get_sender_address(w3, initcode):
-    helper = deploy_contract(w3, "Helper")
-    return helper.functions.getSenderAddress(CommandLineArgs.entrypoint, initcode).call(
-        {"gas": 10000000}
-    )
+def get_sender_address(w3, factory, factory_data):
+    ret = w3.eth.call({"to": factory, "data": factory_data})
+    # pylint: disable=unsubscriptable-object
+    return to_checksum_address(decode(["address"], ret)[0])
 
 
-def deposit_to_undeployed_sender(w3, entrypoint_contract, initcode):
-    sender = get_sender_address(w3, initcode)
+def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factory_data):
+    sender = get_sender_address(w3, factory, factory_data)
     tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
         {"value": 10**18, "from": w3.eth.accounts[0]}
     )
@@ -141,10 +178,11 @@ def send_bundle_now(url=None):
     except KeyError:
         pass
 
+
 def set_manual_bundling_mode(url=None):
-    return RPCRequest(
-        method="debug_bundler_setBundlingMode", params=["manual"]
-    ).send(url)
+    return RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
+        url
+    )
 
 
 def dump_mempool(url=None):
@@ -160,18 +198,18 @@ def dump_mempool(url=None):
     return mempool
 
 
-#wait for mempool propagation.
+# wait for mempool propagation.
 # ref_dump - a "dump_mempool" taken from that bundler before the tested operation.
 # wait for the `dump_mempool(url)` to change before returning it.
 def p2p_mempool(ref_dump, url=None, timeout=5):
-    count=timeout*2
+    count = timeout * 2
     while True:
         new_dump = dump_mempool(url)
         if ref_dump != new_dump:
             return new_dump
-        count=count-1
-        if count<=0:
-            raise  Exception(f"timed-out waiting mempool change propagate to {url}")
+        count = count - 1
+        if count <= 0:
+            raise TimeoutError(f"timed-out waiting mempool change propagate to {url}")
         time.sleep(0.5)
 
 
@@ -202,23 +240,21 @@ def clear_reputation(url=None):
 
 
 def set_reputation(address, ops_seen=1, ops_included=2, url=None):
-    assert (
-        RPCRequest(
-            method="debug_bundler_setReputation",
-            params=[
-                [
-                    {
-                        "address": address,
-                        "opsSeen": ops_seen,
-                        "opsIncluded": ops_included,
-                    }
-                ],
-                CommandLineArgs.entrypoint,
+    res = RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[
+            [
+                {
+                    "address": address,
+                    "opsSeen": hex(ops_seen),
+                    "opsIncluded": hex(ops_included),
+                }
             ],
-        )
-        .send(url)
-        .result
-    )
+            CommandLineArgs.entrypoint,
+        ],
+    ).send(url)
+
+    assert res.result
 
 
 def to_prefixed_hex(s):

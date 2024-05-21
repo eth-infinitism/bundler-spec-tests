@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./Stakable.sol";
@@ -30,7 +30,7 @@ contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
 
     receive() external payable {}
 
-    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 missingAccountFunds)
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32, uint256 missingAccountFunds)
     external override returns (uint256 deadline) {
         if (missingAccountFunds > 0) {
             /* solhint-disable-next-line avoid-low-level-calls */

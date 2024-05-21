@@ -12,7 +12,7 @@ from .utils import (
     deploy_and_deposit,
     deploy_contract,
     send_bundle_now,
-    set_manual_bundling_mode
+    set_manual_bundling_mode,
 )
 
 
@@ -24,7 +24,7 @@ def pytest_configure(config):
         launcher_script=config.getoption("--launcher-script"),
         log_rpc=config.getoption("--log-rpc"),
     )
-    install_solc(version="0.8.15")
+    install_solc(version="0.8.25")
 
 
 def pytest_sessionstart():
