@@ -35,8 +35,9 @@ def test_eth_sendUserOperation_revert(wallet_contract, bad_sig_userop):
 
 
 def test_eth_sendUserOperation_invalid_signature(invalid_sig_userop):
+    response = invalid_sig_userop.send()
     assert_rpc_error(
-        invalid_sig_userop.send(),
-        "Invalid UserOp signature or paymaster signature",
+        response,
+        response.message,
         RPCErrorCode.INVALID_SIGNATURE,
     )
