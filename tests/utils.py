@@ -263,3 +263,11 @@ def to_prefixed_hex(s):
 
 def to_hex(s):
     return s.encode().hex()
+
+
+def to_number(x):
+    return x if isinstance(x, (int, float)) else int(x, 16)
+
+
+def sum_hex(*args):
+    return sum(to_number(i) for i in args if i is not None)

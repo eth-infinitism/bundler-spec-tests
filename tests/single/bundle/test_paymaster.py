@@ -1,6 +1,5 @@
 import collections
 import pytest
-
 from eth_utils import to_hex
 
 from tests.types import UserOperation, RPCErrorCode
@@ -8,16 +7,8 @@ from tests.utils import (
     assert_ok,
     assert_rpc_error,
     deploy_wallet_contract,
-    deploy_contract,
+    deploy_contract, sum_hex, to_number,
 )
-
-
-def to_number(x):
-    return x if isinstance(x, (int, float)) else int(x, 16)
-
-
-def sum_hex(*args):
-    return sum(to_number(i) for i in args if i is not None)
 
 
 def get_userop_verification_max_cost(userOp):
