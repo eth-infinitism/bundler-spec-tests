@@ -57,4 +57,4 @@ def test_paymaster_deposit(
         assert_ok(u.send())
 
     res = userops[-1].send()
-    assert_rpc_error(res, "too low", RPCErrorCode.BANNED_OR_THROTTLED_PAYMASTER)
+    assert_rpc_error(res, "too low", RPCErrorCode.PAYMASTER_DEPOSIT_TOO_LOW)
