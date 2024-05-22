@@ -241,23 +241,21 @@ def clear_reputation(url=None):
 
 
 def set_reputation(address, ops_seen=1, ops_included=2, url=None):
-    assert (
-        RPCRequest(
-            method="debug_bundler_setReputation",
-            params=[
-                [
-                    {
-                        "address": address,
-                        "opsSeen": ops_seen,
-                        "opsIncluded": ops_included,
-                    }
-                ],
-                CommandLineArgs.entrypoint,
+    res = RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[
+            [
+                {
+                    "address": address,
+                    "opsSeen": hex(ops_seen),
+                    "opsIncluded": hex(ops_included),
+                }
             ],
-        )
-        .send(url)
-        .result
-    )
+            CommandLineArgs.entrypoint,
+        ],
+    ).send(url)
+
+    assert res.result
 
 
 def to_prefixed_hex(s):
@@ -268,8 +266,9 @@ def to_hex(s):
     return s.encode().hex()
 
 
-# convert a value (either numeric or hex) to a number
 def to_number(x):
-    if isinstance(x, (int,float)):
-        return x
-    return int(x, 16)
+    return x if isinstance(x, (int, float)) else int(x, 16)
+
+
+def sum_hex(*args):
+    return sum(to_number(i) for i in args if i is not None)
