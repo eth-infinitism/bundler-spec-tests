@@ -59,7 +59,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
 
 
 # EREP-020: A staked factory is "accountable" for account breaking the rules.
-def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundling_mode):
+def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundling_mode, clear_state):
     factory = deploy_and_deposit(w3, entrypoint_contract, "TestReputationAccountFactory", staked=True)
     factory_data = factory.functions.create(123).buildTransaction()['data']
     account = w3.eth.call({"to": factory.address, "data": factory_data})[12:]
