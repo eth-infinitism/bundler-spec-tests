@@ -4,6 +4,8 @@ import "./TestReputationAccount.sol";
 contract TestReputationAccountFactory is Stakable {
     address  public immutable entryPoint;
     uint256 public accountState;
+
+    uint counter;
     constructor(address _ep) {
         entryPoint = _ep;
     }
@@ -14,7 +16,10 @@ contract TestReputationAccountFactory is Stakable {
 
     function create(uint nonce) public returns (TestReputationAccount) {
         TestReputationAccount account = new TestReputationAccount{salt : bytes32(nonce)}(entryPoint);
-        account.setState(accountState);
+        //this test passes validation, and fails bundle creation
+        if (counter++ > 0) {
+            account.setState(accountState);
+        }
         return account;
     }
 
