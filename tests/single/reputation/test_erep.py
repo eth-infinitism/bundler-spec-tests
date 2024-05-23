@@ -16,7 +16,7 @@ class Reputation:
 
 
 def get_reputation(addr):
-    return Reputation(**[rep for rep in dump_reputation() if rep['address'] == addr][0])
+    return Reputation(**[rep for rep in dump_reputation() if rep['address'].lower() == addr.lower()][0])
 
 
 # EREP-015 A `paymaster` should not have its opsSeen incremented on failure of factory or account
@@ -39,7 +39,6 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
         paymasterVerificationGasLimit=50000,
         paymasterData=to_hex(text="nothing"),
     ).send())
-    print("== mempool=",dump_mempool())
     # userop in mempool opsSeen was advanced
     post_submit = get_reputation(paymaster.address)
     assert to_number(pre.opsSeen) == to_number(post_submit.opsSeen) - 1
@@ -49,9 +48,3 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
     send_bundle_now()
     post = get_reputation(paymaster.address)
     assert post == pre
-
-
-
-# xEREP-020 A staked factory is "accountable" for account breaking the rules. \
-# xEREP-030 A Staked Account is accountable for failures in other entities (`paymaster`, `aggregator`) even if they are staked.
-# xEREP-040 An `aggregator` must be staked, regardless of storage usage.

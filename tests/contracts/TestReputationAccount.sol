@@ -33,9 +33,6 @@ contract TestReputationAccount is ITestAccount, Stakable {
         }
         return 0;
     }
-    function funTSTORE() external returns(uint256) {
-        return 0;
-    }
 
     receive() external payable {
     }
