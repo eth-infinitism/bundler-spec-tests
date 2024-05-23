@@ -272,3 +272,10 @@ def to_number(x):
 
 def sum_hex(*args):
     return sum(to_number(i) for i in args if i is not None)
+
+
+def get_userop_verification_max_cost(userOp):
+    return sum_hex(userOp.preVerificationGas,
+                   userOp.verificationGasLimit,
+                   userOp.paymasterVerificationGasLimit) * to_number(userOp.maxFeePerGas)
+

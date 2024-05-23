@@ -7,14 +7,8 @@ from tests.utils import (
     assert_ok,
     assert_rpc_error,
     deploy_wallet_contract,
-    deploy_contract, sum_hex, to_number,
+    deploy_contract, get_userop_verification_max_cost,
 )
-
-
-def get_userop_verification_max_cost(userOp):
-    return sum_hex(userOp.preVerificationGas,
-                   userOp.verificationGasLimit,
-                   userOp.paymasterVerificationGasLimit) * to_number(userOp.maxFeePerGas)
 
 
 # EREP-010: paymaster should have deposit to cover all userops in mempool
