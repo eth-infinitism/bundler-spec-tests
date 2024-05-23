@@ -12,9 +12,14 @@ from eth_utils import to_hex
 @dataclass
 class Reputation:
     address: str
-    opsSeen: str
-    opsIncluded: str
+    opsSeen: int
+    opsIncluded: int
     status: str
+
+    def __post_init__(self):
+        self.address = self.address.lower()
+        self.opsSeen = to_number(self.opsSeen)
+        self.opsIncluded = to_number(self.opsIncluded)
 
 
 def get_reputation(addr):
@@ -59,14 +64,10 @@ def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundl
     factory_data = factory.functions.create(123).buildTransaction()['data']
     account = w3.eth.call({"to": factory.address, "data": factory_data})[12:]
 
-    interface = compile_contract("TestReputationAccount")
-    account_contract = w3.eth.contract(abi=interface["abi"], address=account)
-
     w3.eth.send_transaction({"from": w3.eth.accounts[0], "to": account, "value": 10 ** 18})
     clear_reputation()
     set_reputation(factory.address, ops_seen=5, ops_included=2)
     pre = get_reputation(factory.address)
-    account_contract.functions.setState(0xdead).transact({"from": w3.eth.accounts[0]})
 
     assert_ok(UserOperation(
         sender=account,
@@ -76,8 +77,10 @@ def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundl
         signature=to_prefixed_hex("revert"),
     ).send())
 
-    account_contract.functions.setState(0xdead).transact({"from": w3.eth.accounts[0]})
+    # cause account to revert its validation:
+    factory.functions.setAccountState(0xdead).transact({"from": w3.eth.accounts[0]})
     send_bundle_now()
     post = get_reputation(factory.address)
-    assert post == pre
+    assert post.opsSeen == pre.opsSeen+1
+    assert post.opsIncluded == pre.opsIncluded
 
