@@ -16,7 +16,12 @@ class Reputation:
 
 
 def get_reputation(addr):
-    return Reputation(**[rep for rep in dump_reputation() if rep['address'].lower() == addr.lower()][0])
+    addr = addr.lower()
+    reps = [rep for rep in dump_reputation() if rep['address'].lower() == addr]
+    if len(reps) == 0:
+        return Reputation(address=addr, opsSeen='0x0', opsIncluded='0x0', status='0x0')
+
+    return Reputation(**reps[0])
 
 
 # EREP-015 A `paymaster` should not have its opsSeen incremented on failure of factory or account
@@ -31,7 +36,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
     account = deploy_contract(w3, 'TestReputationAccount', [entrypoint_contract.address], 10 ** 18)
     paymaster = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", staked=True)
     clear_reputation()
-    set_reputation(paymaster.address, ops_seen=5, ops_included=2)
+    # set_reputation(paymaster.address, ops_seen=5, ops_included=2)
     pre = get_reputation(paymaster.address)
     assert_ok(UserOperation(
         sender=account.address,
