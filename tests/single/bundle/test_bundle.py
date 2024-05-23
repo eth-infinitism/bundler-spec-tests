@@ -19,7 +19,7 @@ from tests.utils import (
 )
 
 
-ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
+SAME_SENDER_MEMPOOL_COUNT = 4
 DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
 DEFAULT_MAX_FEE_PER_GAS = 5 * 10**9
 MIN_PRICE_BUMP = 10
@@ -239,11 +239,11 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
         UserOperation(sender=wallet.address, nonce=hex(i << 64), callData=calldata)
-        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
+        for i in range(SAME_SENDER_MEMPOOL_COUNT + 1)
     ]
     for i, userop in enumerate(wallet_ops):
         userop.send()
-        if i < ALLOWED_OPS_PER_UNSTAKED_SENDER:
+        if i < SAME_SENDER_MEMPOOL_COUNT:
             assert dump_mempool() == wallet_ops[: i + 1]
         else:
             mempool = dump_mempool()
@@ -267,7 +267,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
         UserOperation(
             sender=wallet.address, nonce=hex((i + 1) << 64), callData=calldata
         )
-        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
+        for i in range(SAME_SENDER_MEMPOOL_COUNT + 1)
     ]
     for i, userop in enumerate(wallet_ops):
         userop.send()
