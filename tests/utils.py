@@ -50,16 +50,17 @@ def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
-def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
+def deploy_and_deposit(w3, entrypoint_contract, contractname, staked=False, deposit=10**18):
     contract = deploy_contract(
         w3,
         contractname,
         ctrparams=[entrypoint_contract.address],
     )
-    tx_hash = w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
+    if deposit is not None and deposit > 0:
+        tx_hash = w3.eth.send_transaction(
+            {"from": w3.eth.accounts[0], "to": contract.address, "value": deposit}
+        )
+        w3.eth.wait_for_transaction_receipt(tx_hash)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)
     return contract
