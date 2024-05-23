@@ -235,6 +235,9 @@ def test_mempool_reputation_rules_all_entities(
 
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
+    """
+    UREP-010: An unstaked sender is only allowed to have SAME_SENDER_MEMPOOL_COUNT UserOperations in the mempool.
+    """
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
