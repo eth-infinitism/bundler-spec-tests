@@ -15,7 +15,7 @@ contract TestAccount {
 
     event AccountExecutionEvent(string state, uint256 counter, bytes data);
 
-    constructor() {
+    constructor() payable {
     }
 
     function validateTransaction(

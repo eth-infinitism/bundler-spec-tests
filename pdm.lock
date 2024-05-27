@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:892bda2b862f9a887ee5efcf3acc7edb3e3e427a72e0df0e229883378be672bc"
+content_hash = "sha256:a30aa083a90c12283f76498fae69ff004e51475f799613aca5764e9388a95289"
 
 [[package]]
 name = "aiohttp"
@@ -685,15 +685,12 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "21.3"
-requires_python = ">=3.6"
+version = "23.2"
+requires_python = ">=3.7"
 summary = "Core utilities for Python packages"
-dependencies = [
-    "pyparsing!=3.0.5,>=2.0.2",
-]
 files = [
-    {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
-    {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
+    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
+    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
 ]
 
 [[package]]
@@ -758,16 +755,16 @@ files = [
 
 [[package]]
 name = "py-solc-x"
-version = "1.1.1"
-requires_python = ">=3.6, <4"
+version = "2.0.3"
+requires_python = "<4,>=3.8"
 summary = "Python wrapper and version management tool for the solc Solidity compiler."
 dependencies = [
+    "packaging<24,>=23.1",
     "requests<3,>=2.19.0",
-    "semantic-version<3,>=2.8.1",
 ]
 files = [
-    {file = "py-solc-x-1.1.1.tar.gz", hash = "sha256:d8b0bd2b04f47cff6e92181739d9e94e41b2d62f056900761c797fa5babc76b6"},
-    {file = "py_solc_x-1.1.1-py3-none-any.whl", hash = "sha256:8f5caa4f54e227fc301e2e4c8aa868e869c2bc0c6636aa9e8115f8414bb891f9"},
+    {file = "py-solc-x-2.0.3.tar.gz", hash = "sha256:1b5fe26d5f4976b1fcc2b3276fb2fe182633bc35757a3abf3b9af5ac57ec2544"},
+    {file = "py_solc_x-2.0.3-py3-none-any.whl", hash = "sha256:ef131f2f0e708fcaf92068a38c7569920839d259fdaa9946af3393f1dc86c5b1"},
 ]
 
 [[package]]
@@ -815,16 +812,6 @@ dependencies = [
 files = [
     {file = "pylint-3.0.3-py3-none-any.whl", hash = "sha256:7a1585285aefc5165db81083c3e06363a27448f6b467b3b0f30dbd0ac1f73810"},
     {file = "pylint-3.0.3.tar.gz", hash = "sha256:58c2398b0301e049609a8429789ec6edf3aabe9b6c5fec916acd18639c16de8b"},
-]
-
-[[package]]
-name = "pyparsing"
-version = "3.0.9"
-requires_python = ">=3.6.8"
-summary = "pyparsing module - Classes and methods to define and execute parsing grammars"
-files = [
-    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
-    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 
 [[package]]
