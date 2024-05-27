@@ -5,7 +5,7 @@ from functools import cache
 from eth_abi import decode
 from eth_abi.packed import encode_packed
 from eth_utils import to_checksum_address
-from solcx import compile_source, compile_standard
+from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
@@ -23,28 +23,6 @@ def compile_contract(contract):
         contracts_dirname + contract_name + ".sol", "r", encoding="utf-8"
     ) as contractfile:
         test_source = contractfile.read()
-        # compiled_sol = compile_standard({
-        #     "language": "Solidity",
-        #     "sources": {
-        #         contractfile.name: {
-        #             "content": test_source
-        #         }
-        #     },
-        #     "settings": {
-        #         "optimizer": {
-        #             "enabled": True,
-        #             "runs": 200
-        #         },
-        #         "outputSelection": {
-        #             "*": {
-        #                 "*": ["abi", "bin"]
-        #             }
-        #         },
-        #         "viaIR": True,
-        #         "remappings": [remap],
-        #         "evmVersion": "paris"
-        #     }
-        # }, base_path=contracts_dirname, allow_paths=[contracts_dirname, aa_path + "/contracts/"], solc_version="0.8.23")
         compiled_sol = compile_source(
             test_source,
             base_path=contracts_dirname,
