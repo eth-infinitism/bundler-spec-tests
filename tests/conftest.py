@@ -126,9 +126,10 @@ def execute_user_operation(userop):
 # debug apis
 
 
-@pytest.fixture
-def clear_state():
-    return RPCRequest(method="debug_bundler_clearState").send()
+# applied to all tests: clear mempool, reputation before each test
+@pytest.fixture(autouse=True)
+def clear_state_before_each_test():
+    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
 
 
 @pytest.fixture
