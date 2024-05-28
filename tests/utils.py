@@ -266,9 +266,15 @@ def to_hex(s):
     return s.encode().hex()
 
 
-def to_number(x):
-    return x if isinstance(x, (int, float)) else int(x, 16)
+def to_number(num_or_hex):
+    return num_or_hex if isinstance(num_or_hex, (int, float)) else int(num_or_hex, 16)
 
 
 def sum_hex(*args):
     return sum(to_number(i) for i in args if i is not None)
+
+
+def get_userop_verification_max_cost(user_op):
+    return sum_hex(user_op.preVerificationGas,
+                   user_op.verificationGasLimit,
+                   user_op.paymasterVerificationGasLimit) * to_number(user_op.maxFeePerGas)
