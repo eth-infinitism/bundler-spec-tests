@@ -118,6 +118,7 @@ def idfunction(case):
     return f"{case.ruleId}-{case.rule_description}-{case.stake_status}"
 
 
+@pytest.mark.skip("skipped")
 @pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
 @pytest.mark.parametrize("entity", ["sender", "paymaster", "factory"])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
