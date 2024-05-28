@@ -792,7 +792,6 @@ def idfunction(case):
     return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{entity}][{case.rule}][{result}"
 
 
-@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 def test_rule(w3, entrypoint_contract, case):
     entity_contract = deploy_and_deposit(
