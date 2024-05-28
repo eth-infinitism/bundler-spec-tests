@@ -36,7 +36,7 @@ def get_reputation(addr):
 
 
 # EREP-015 A `paymaster` should not have its opsSeen incremented on failure of factory or account
-def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_mode, clear_state):
+def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_mode):
     """
     - paymaster with some reputation value (nonezero opsSeen/opsIncluded)
     - submit userop that passes validation
@@ -68,7 +68,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
 
 
 # EREP-020: A staked factory is "accountable" for account breaking the rules.
-def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundling_mode, clear_state):
+def test_staked_factory_on_account_failure(w3, entrypoint_contract, manual_bundling_mode):
     factory = deploy_and_deposit(w3, entrypoint_contract, "TestReputationAccountFactory", staked=True)
 
     clear_reputation()
