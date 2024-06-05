@@ -10,7 +10,7 @@ class TransactionRIP7560:
     # pylint: disable=too-many-instance-attributes, invalid-name
     sender: HexStr
     nonce: HexStr = hex(0)
-    factory: HexStr = "0x"
+    factory: HexStr = "0x0000000000000000000000000000000000000000"
     factoryData: HexStr = "0x"
     callData: HexStr = "0x"
     callGasLimit: HexStr = hex(3 * 10**5)
@@ -18,7 +18,7 @@ class TransactionRIP7560:
     maxFeePerGas: HexStr = hex(4 * 10**9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
     signature: HexStr = "0x"
-    paymaster: HexStr = "0x"
+    paymaster: HexStr = "0x0000000000000000000000000000000000000000"
     paymasterData: HexStr = "0x"
     paymasterVerificationGasLimit: HexStr = hex(0)
     paymasterPostOpGasLimit: HexStr = hex(0)

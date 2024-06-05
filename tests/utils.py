@@ -26,6 +26,8 @@ def compile_contract(contract):
         compiled_sol = compile_source(
             test_source,
             base_path=contracts_dirname,
+            # todo: only do it for 7560 folder
+            include_path=os.path.abspath(os.path.join(contracts_dirname, os.pardir)) + "/",
             allow_paths=aa_relpath,
             import_remappings=remap,
             output_values=["abi", "bin"],

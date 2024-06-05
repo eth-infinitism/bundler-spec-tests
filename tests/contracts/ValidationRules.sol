@@ -41,7 +41,7 @@ library ValidationRules {
     //return by runRule if string is unknown.
     uint constant public UNKNOWN = type(uint).max;
 
-    function runRule(string memory rule, ITestAccount account, TestCoin coin, ValidationRulesStorage self) internal returns (uint) {
+    function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self) internal returns (uint) {
         if (eq(rule, "")) return 0;
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;

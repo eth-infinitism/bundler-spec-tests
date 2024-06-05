@@ -80,13 +80,13 @@ class RPCRequest:
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
             print(">>", url, json.dumps(asdict(self)))
-        res = jsonrpcclient.responses.to_result(
+        res = jsonrpcclient.responses.to_response(
             requests.post(url, json=asdict(self), timeout=10).json()
         )
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res._asdict()))
+            print("<<", json.dumps(res.result._asdict()))
         return res
 
 

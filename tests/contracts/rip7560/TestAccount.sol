@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
+import "../ITestAccount.sol";
+
 import "./RIP7560TransactionType4.sol";
 import "./utils/RIP7560Utils.sol";
 import "./utils/TestUtils.sol";
@@ -28,7 +30,6 @@ contract TestAccount {
         TestUtils.emitValidationParams(version, txHash, transaction);
 
         emit AccountValidationEvent(state, accCounter);
-
 
         /* Modify account state */
         accCounter++;

@@ -21,6 +21,21 @@ def wallet_contract(w3):
     return contract
 
 
+# TODO: deduplicate
+@pytest.fixture
+def wallet_contract_rules(w3):
+    contract = deploy_contract(
+        w3,
+        "rip7560/RIP7560TestRulesAccount",
+        value=0 * 10**18,
+    )
+    time.sleep(0.1)
+    w3.eth.send_transaction(
+        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
+    )
+    return contract
+
+
 @pytest.fixture
 def tx_7560(wallet_contract):
     return TransactionRIP7560(
