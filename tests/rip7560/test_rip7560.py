@@ -20,7 +20,7 @@ def test_eth_sendTransaction7560_banned_opcode(wallet_contract_rules, tx_7560):
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
     send_bundle_now()
     state_after = wallet_contract_rules.functions.state().call()
-    assert state_after == "new"
+    assert state_after == 0
 
 
 def test_valid_transaction():
