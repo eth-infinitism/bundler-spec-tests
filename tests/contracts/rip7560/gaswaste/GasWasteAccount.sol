@@ -16,7 +16,7 @@ contract GasWasteAccount {
         do {
             accCounter++;
         } while (gasleft() > 3000);
-        return RIP7560Utils.accountAcceptTransaction(block.timestamp, block.timestamp + 10000);
+        return RIP7560Utils.accountAcceptTransaction(1, type(uint64).max - 1);
     }
 
     function anyExecutionFunction() external {

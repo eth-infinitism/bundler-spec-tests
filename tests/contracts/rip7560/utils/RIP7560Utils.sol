@@ -7,8 +7,8 @@ bytes4 constant MAGIC_VALUE_PAYMASTER = 0xe0e6183a;
 library RIP7560Utils {
 
     function accountAcceptTransaction(
-        uint256 validAfter,
-        uint256 validUntil
+        uint64 validAfter,
+        uint64 validUntil
     ) internal returns (
         bytes32
     ){

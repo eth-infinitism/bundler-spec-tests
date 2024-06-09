@@ -15,8 +15,9 @@ def test_eth_sendTransaction7560_banned_opcode(wallet_contract_rules, tx_7560):
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
     rule = "TIMESTAMP"
+    tx_7560.sender = wallet_contract_rules.address
     tx_7560.signature = "0x" + rule.encode().hex()
-    response = tx_7560.send()  # todo: this should result in an error!
+    response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
     send_bundle_now()
     state_after = wallet_contract_rules.functions.state().call()
