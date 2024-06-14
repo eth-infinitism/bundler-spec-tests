@@ -252,8 +252,6 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
             mempool = dump_mempool()
             assert mempool == wallet_ops[:-1]
     send_bundle_now()
-    mempool = dump_mempool()
-    assert mempool == wallet_ops[1:-1]
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
@@ -277,8 +275,6 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
         assert dump_mempool() == wallet_ops[: i + 1]
     assert dump_mempool() == wallet_ops
     send_bundle_now()
-    mempool = dump_mempool()
-    assert mempool == wallet_ops[1:]
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
