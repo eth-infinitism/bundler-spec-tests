@@ -28,7 +28,7 @@ def test_paymaster_deposit(
         userop = UserOperation(
             sender=sender,
             paymaster=paymaster.address,
-            paymasterVerificationGasLimit=50000,
+            paymasterVerificationGasLimit=to_hex(50000),
             paymasterData=to_hex(text="nothing"))
         userops.append(userop)
 
