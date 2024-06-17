@@ -7,11 +7,12 @@ from tests.utils import (
     assert_ok,
     assert_rpc_error,
     deploy_wallet_contract,
-    deploy_contract, get_userop_verification_max_cost,
+    deploy_contract, get_userop_max_cost,
 )
 
 
 # EREP-010: paymaster should have deposit to cover all userops in mempool
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_paymaster_deposit(
         w3, entrypoint_contract, paymaster_contract
 ):
@@ -32,7 +33,7 @@ def test_paymaster_deposit(
             paymasterData=to_hex(text="nothing"))
         userops.append(userop)
 
-    sums = [get_userop_verification_max_cost(userop) for userop in userops]
+    sums = [get_userop_max_cost(userop) for userop in userops]
     total_cost = sum(sums)
 
     # deposit enough just below the total cost
