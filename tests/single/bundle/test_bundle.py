@@ -206,7 +206,7 @@ def test_mempool_reputation_rules_all_entities(
             sender=sender,
             nonce=hex(i << 64),
             callData=calldata,
-            initCode=initcode,
+            initCode=initcode.lower(),
             paymasterAndData=paymaster_and_data,
         )
         wallet_ops.append(user_op)
