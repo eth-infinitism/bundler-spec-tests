@@ -23,4 +23,4 @@ def test_eth_getUserOperationReceipt(helper_contract, userop, w3, schema):
 
 def test_eth_getUserOperationReceipt_error():
     response = RPCRequest(method="eth_getUserOperationReceipt", params=[""]).send()
-    assert_rpc_error(response, "Missing/invalid userOpHash", -32601)
+    assert_rpc_error(response, "Missing/invalid userOpHash", -32602)
