@@ -9,13 +9,13 @@ import "./utils/TestUtils.sol";
 
 contract TestAccount {
     uint256 public accCounter = 0;
-    string public state = "new";
+    uint256 public state = 0;
 
     event Funded(string id, uint256 amount);
 
-    event AccountValidationEvent(string state, uint256 counter);
+    event AccountValidationEvent(uint256 state, uint256 counter);
 
-    event AccountExecutionEvent(string state, uint256 counter, bytes data);
+    event AccountExecutionEvent(uint256 state, uint256 counter, bytes data);
 
     constructor() payable {
     }
@@ -33,7 +33,7 @@ contract TestAccount {
 
         /* Modify account state */
         accCounter++;
-        state = "validated";
+        state = 1;
 
         return RIP7560Utils.accountAcceptTransaction(1, type(uint64).max - 1);
     }
@@ -44,11 +44,11 @@ contract TestAccount {
         emit AccountExecutionEvent(state, accCounter, msg.data);
 
 
-        state = "executed";
+        state = 2;
     }
 
     function reset() external {
-        state = "new";
+        state = 0;
         accCounter = 0;
     }
 

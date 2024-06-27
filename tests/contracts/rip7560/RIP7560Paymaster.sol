@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "./utils/RIP7560Utils.sol";
+import "../TestCoin.sol";
+import "../ValidationRules.sol";
 
-contract RIP7560Paymaster {
+import "./utils/RIP7560Utils.sol";
+import "./RIP7560TransactionStruct.sol";
+
+contract RIP7560Paymaster is ValidationRulesStorage {
+
+    TestCoin public coin;
+
     uint256 public pmCounter = 0;
-    bool public revertValidation;
 
     event Funded(string id, uint256 amount);
     event PaymasterValidationEvent(string name, uint256 counter);
     event PaymasterPostTxEvent(string name, uint256 counter, bytes context);
-
-    constructor(bool _revertValidation) {
-        revertValidation = _revertValidation;
-    }
 
     function validatePaymasterTransaction(
         uint256 version,
@@ -26,6 +28,9 @@ contract RIP7560Paymaster {
         emit PaymasterValidationEvent("the-paymaster", pmCounter);
         bytes memory context = abi.encodePacked("context here", pmCounter);
         pmCounter++;
+        RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
+        string memory rule = string(txStruct.signature);
+        ValidationRules.runRule(rule, this, coin, this);
         return RIP7560Utils.paymasterAcceptTransaction("", block.timestamp, block.timestamp + 1000);
     }
 
