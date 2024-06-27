@@ -86,7 +86,7 @@ class RPCRequest:
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res.result._asdict()))
+            print("<<", json.dumps(res))
         return res
 
 
