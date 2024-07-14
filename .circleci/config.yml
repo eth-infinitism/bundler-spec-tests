@@ -155,7 +155,7 @@ jobs:
           working_directory: "./go-ethereum"
           command: make geth
       - run:
-          name: "build go-ethereum"
+          name: "run go-ethereum"
           working_directory: "./go-ethereum"
           command: "\
           ./build/bin/geth \
