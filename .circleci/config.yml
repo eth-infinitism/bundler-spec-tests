@@ -169,7 +169,7 @@ jobs:
           8545 \
           --rpc.allow-unprotected-txs \
           "
-
+          background: true
       - run:
           name: "clone bundler"
           command: git clone https://github.com/eth-infinitism/bundler.git -b rip7560_rev2
