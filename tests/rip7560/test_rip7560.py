@@ -1,10 +1,10 @@
 import pytest
 
+from web3.constants import ADDRESS_ZERO
+
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
 from tests.utils import send_bundle_now, assert_rpc_error, to_prefixed_hex
-
-from web3.constants import ADDRESS_ZERO
 
 
 def test_eth_sendTransaction7560(wallet_contract, tx_7560):
