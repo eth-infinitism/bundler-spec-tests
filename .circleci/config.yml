@@ -102,6 +102,7 @@ jobs:
   test-rip7560-bundler:
     docker:
       - image: cimg/python:3.10.12-node
+      - image: cimg/go
 #      - image: shahafn/rip7560-geth
 #        command: "\
 #          --miner.gaslimit 12000000 \
