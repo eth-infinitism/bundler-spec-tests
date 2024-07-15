@@ -40,14 +40,19 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract_name]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
+def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6, gas_price = 10**6):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
     contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     account = w3.eth.accounts[0]
     tx_hash = contract.constructor(*ctrparams).transact(
-        {"gas": gas, "from": account, "value": hex(value)}
+        {
+            "gas": gas,
+            "from": account,
+            "value": hex(value),
+            "maxFeePerGas": gas_price,
+            "maxPriorityFeePerGas": gas_price}
     )
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
