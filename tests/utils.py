@@ -40,6 +40,7 @@ def compile_contract(contract):
         return compiled_sol["<stdin>:" + contract_name]
 
 
+# pylint: disable=too-many-arguments
 def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6, gas_price = 10**6):
     if ctrparams is None:
         ctrparams = []
