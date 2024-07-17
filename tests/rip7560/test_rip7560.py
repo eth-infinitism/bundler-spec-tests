@@ -7,7 +7,7 @@ from tests.types import RPCErrorCode
 from tests.utils import send_bundle_now, assert_rpc_error, to_prefixed_hex
 
 
-def test_eth_sendTransaction7560(wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid(wallet_contract, tx_7560):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     tx_7560.send()
