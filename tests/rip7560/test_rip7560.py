@@ -1,13 +1,13 @@
 import pytest
 
+from web3.constants import ADDRESS_ZERO
+
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
 from tests.utils import send_bundle_now, assert_rpc_error, to_prefixed_hex
 
-from web3.constants import ADDRESS_ZERO
 
-
-def test_eth_sendTransaction7560(wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid(wallet_contract, tx_7560):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     tx_7560.send()
@@ -18,7 +18,7 @@ def test_eth_sendTransaction7560(wallet_contract, tx_7560):
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_eth_sendTransaction7560_banned_opcode(
-        wallet_contract_rules, tx_7560, banned_op
+    wallet_contract_rules, tx_7560, banned_op
 ):
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
@@ -33,7 +33,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_eth_sendTransaction7560_banned_opcode(
-        wallet_contract, tx_7560, paymaster_contract_7560, banned_op
+    wallet_contract, tx_7560, paymaster_contract_7560, banned_op
 ):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
@@ -54,7 +54,7 @@ def test_paymaster_eth_sendTransaction7560_banned_opcode(
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_factory_eth_sendTransaction7560_banned_opcode(
-        w3, tx_7560, factory_contract_7560, banned_op
+    w3, tx_7560, factory_contract_7560, banned_op
 ):
     new_sender_address = factory_contract_7560.functions.getCreate2Address(
         ADDRESS_ZERO, 123, banned_op
@@ -82,6 +82,7 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
     # no code deployed is the only check I can come up with here
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
+
 
 #
 # def idfunction(case):

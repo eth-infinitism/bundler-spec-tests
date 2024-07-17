@@ -1,6 +1,9 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine.
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
+orbs:
+  go: circleci/go@1.11.0
+
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -98,21 +101,21 @@ jobs:
 ###################################################
   test-rip7560-bundler:
     docker:
-      - image: cimg/python:3.10.12-node
-      - image: shahafn/rip7560-geth
-        command: "\
-          --miner.gaslimit 12000000 \
-          --http \
-          --http.api personal,eth,net,web3,debug \
-          --allow-insecure-unlock \
-          --rpc.allow-unprotected-txs \
-          --http.vhosts '*,localhost,host.docker.internal' \
-          --http.corsdomain '*' \
-          --http.addr '0.0.0.0' \
-          --dev \
-          --rpc.txfeecap 0 \
-          --nodiscover --maxpeers 0 --mine \
-          --verbosity 2"
+      - image: shahafn/go-python-node
+#      - image: shahafn/rip7560-geth
+#        command: "\
+#          --miner.gaslimit 12000000 \
+#          --http \
+#          --http.api personal,eth,net,web3,debug \
+#          --allow-insecure-unlock \
+#          --rpc.allow-unprotected-txs \
+#          --http.vhosts '*,localhost,host.docker.internal' \
+#          --http.corsdomain '*' \
+#          --http.addr '0.0.0.0' \
+#          --dev \
+#          --rpc.txfeecap 0 \
+#          --nodiscover --maxpeers 0 --mine \
+#          --verbosity 2"
     steps:
       - checkout
       - run:
@@ -143,6 +146,30 @@ jobs:
       - run:
           name: "lint"
           command: "pdm run lint"
+
+      - run:
+          name: "clone go-ethereum from infinitism"
+          command: git clone -b implement_tracer --single-branch https://github.com/eth-infinitism/go-ethereum.git
+      - run:
+          name: "build go-ethereum"
+          working_directory: "./go-ethereum"
+          command: make geth
+      - run:
+          name: "run go-ethereum"
+          working_directory: "./go-ethereum"
+          command: "\
+          ./build/bin/geth \
+          --dev \
+          --dev.gaslimit \
+          30000000 \
+          --http \
+          --http.api \
+          'eth,net,web3,personal,debug' \
+          --http.port \
+          8545 \
+          --rpc.allow-unprotected-txs \
+          "
+          background: true
       - run:
           name: "clone bundler"
           command: git clone https://github.com/eth-infinitism/bundler.git -b rip7560_rev2

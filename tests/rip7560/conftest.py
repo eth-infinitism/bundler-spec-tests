@@ -46,6 +46,7 @@ def factory_contract_7560(w3):
     return contract
 
 
+# pylint: disable=fixme
 # TODO: deduplicate
 @pytest.fixture
 def wallet_contract_rules(w3):
