@@ -149,7 +149,7 @@ jobs:
 
       - run:
           name: "clone go-ethereum from infinitism"
-          command: git clone -b implement_tracer --single-branch https://github.com/eth-infinitism/go-ethereum.git
+          command: git clone -b RIP-7560-revision-2 --single-branch https://github.com/eth-infinitism/go-ethereum.git
       - run:
           name: "build go-ethereum"
           working_directory: "./go-ethereum"
