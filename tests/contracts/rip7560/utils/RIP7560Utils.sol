@@ -12,7 +12,8 @@ library RIP7560Utils {
     ) internal returns (
         uint256
     ){
-        return MAGIC_VALUE_SENDER | (uint256(validUntil)<<160) | (uint256(validAfter) << (160+48));
+//        return MAGIC_VALUE_SENDER | (uint256(validUntil)<<160) | (uint256(validAfter) << (160+48));
+        return (uint256(MAGIC_VALUE_SENDER) << (48+48)) | (uint256(validUntil)<<48) | validAfter ;
     }
 
     function paymasterAcceptTransaction(
