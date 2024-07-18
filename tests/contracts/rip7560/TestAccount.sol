@@ -24,7 +24,7 @@ contract TestAccount {
         uint256 version,
         bytes32 txHash,
         bytes calldata transaction
-    ) external returns (bytes32) {
+    ) external returns (uint256) {
 
 //        TestUtils.emitEvmData("validateTransaction");
 //        TestUtils.emitValidationParams(version, txHash, transaction);
@@ -35,7 +35,7 @@ contract TestAccount {
         accCounter++;
         state = 1;
 
-        return RIP7560Utils.accountAcceptTransaction(1, type(uint64).max - 1);
+        return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
 
     function anyExecutionFunction() external {
