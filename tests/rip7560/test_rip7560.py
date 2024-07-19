@@ -38,7 +38,6 @@ def test_paymaster_eth_sendTransaction7560_banned_opcode(
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     tx_7560.sender = wallet_contract.address
-    tx_7560.paymasterVerificationGasLimit = hex(100000)
     tx_7560.paymaster = paymaster_contract_7560.address
     tx_7560.paymasterData = to_prefixed_hex(banned_op)
     response = tx_7560.send()
