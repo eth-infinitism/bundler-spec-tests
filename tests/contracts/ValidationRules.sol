@@ -51,7 +51,6 @@ library ValidationRules {
         else if (eq(rule, "BASEFEE")) return uint160(block.basefee);
         else if (eq(rule, "GASLIMIT")) return uint160(block.gaslimit);
         else if (eq(rule, "GASPRICE")) return uint160(tx.gasprice);
-        else if (eq(rule, "SELFBALANCE")) return uint160(address(this).balance);
         else if (eq(rule, "BALANCE")) return uint160(address(msg.sender).balance);
         else if (eq(rule, "ORIGIN")) return uint160(address(tx.origin));
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
@@ -67,6 +66,13 @@ library ValidationRules {
                 address(i).call{gas: 1000}("");
             }
             return 0;
+        }
+        else if (eq(rule, "SELFBALANCE")) {
+            uint256 self;
+            assembly {
+                self :=selfbalance()
+            }
+            return self;
         }
         else if (eq(rule, "CALLCODE_undeployed_contract")) {
             assembly {
