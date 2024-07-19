@@ -91,6 +91,7 @@ class RPCRequest:
 
 
 class RPCErrorCode(IntEnum):
+    INVALID_INPUT = -32000
     REJECTED_BY_EP_OR_ACCOUNT = -32500
     REJECTED_BY_PAYMASTER = -32501
     BANNED_OPCODE = -32502
