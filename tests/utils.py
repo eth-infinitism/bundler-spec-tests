@@ -35,6 +35,7 @@ def compile_contract(contract):
             output_values=["abi", "bin"],
             solc_version="0.8.25",
             evm_version="cancun",
+            via_ir=True,
         )
         return compiled_sol["<stdin>:" + contract_name]
 
