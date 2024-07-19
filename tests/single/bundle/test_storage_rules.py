@@ -117,6 +117,22 @@ cases = [
         assert_error,
     ),
     StorageTestCase(
+        "OP-070(STO-031)",
+        "transient_storage_tstore",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
+        "OP-070(STO-031)",
+        "transient_storage_tload",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    StorageTestCase(
         "STO-032",
         "reference_storage",
         UNSTAKED,
@@ -135,6 +151,14 @@ cases = [
     StorageTestCase(
         "STO-010",
         "account_storage",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
+    ),
+    StorageTestCase(
+        "OP-070(STO-010)",
+        "account_transient_storage",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,

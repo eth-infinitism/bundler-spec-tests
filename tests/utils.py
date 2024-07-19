@@ -33,9 +33,8 @@ def compile_contract(contract):
             allow_paths=aa_relpath,
             import_remappings=remap,
             output_values=["abi", "bin"],
-            solc_version="0.8.23",
-            evm_version="paris",
-            via_ir=True,
+            solc_version="0.8.25",
+            evm_version="cancun",
         )
         return compiled_sol["<stdin>:" + contract_name]
 

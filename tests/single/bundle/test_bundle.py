@@ -103,9 +103,9 @@ reputations = {
 }
 
 cases = [
-    ReputationTestCase("SREP-020", "banned-entity-not-allowed", "banned", 0, -32504),
+    ReputationTestCase("GREP-010", "banned-entity-not-allowed", "banned", 0, -32504),
     ReputationTestCase(
-        "SREP-030", "throttled-entity-allowed-a-little", "throttled", 4, -32504
+        "GREP-020", "throttled-entity-allowed-limited-count", "throttled", 4, -32504
     ),
     ReputationTestCase(
         "UREP-010 UREP-020", "unstaked-entity-allowed-function", "unstaked", 11, -32505

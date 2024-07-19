@@ -10,6 +10,13 @@ contract SimpleWallet is ITestAccount {
     IEntryPoint ep;
     uint256 public state;
 
+    function funTSTORE() external returns(uint256) {
+        assembly {
+            tstore(0, 1)
+        }
+        return 0;
+    }
+
     constructor(address _ep) payable {
         ep = IEntryPoint(_ep);
         (bool req,) = address(ep).call{value : msg.value}("");
