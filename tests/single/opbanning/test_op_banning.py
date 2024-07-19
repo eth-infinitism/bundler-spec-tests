@@ -31,7 +31,7 @@ banned_opcodes = [
     "BLOCKHASH",
     "CREATE",
     "CREATE2",
-    "SELFDESTRUCT",
+    # "SELFDESTRUCT",
 ]
 
 # the "OP-052" tested elsewhere

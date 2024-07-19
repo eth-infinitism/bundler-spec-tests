@@ -1,5 +1,6 @@
 from tests.rip7560.types import TransactionRIP7560
 from tests.utils import assert_rpc_error
+from tests.types import RPCErrorCode
 
 
 def test_eth_send_failed():
@@ -9,5 +10,5 @@ def test_eth_send_failed():
 
     ret = tx.send()
     assert_rpc_error(
-        ret, "invalid account return data length", 0
+        ret, "invalid account return data length", RPCErrorCode.INVALID_INPUT
     )
