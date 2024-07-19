@@ -31,7 +31,7 @@ contract RIP7560Paymaster is ValidationRulesStorage {
         RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
         string memory rule = string(txStruct.paymasterData);
         ValidationRules.runRule(rule, this, coin, this);
-        return RIP7560Utils.paymasterAcceptTransaction("", block.timestamp, block.timestamp + 1000);
+        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max - 1);
     }
 
     function postPaymasterTransaction(
