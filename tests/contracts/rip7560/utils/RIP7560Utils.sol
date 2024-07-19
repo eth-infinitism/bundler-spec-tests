@@ -2,7 +2,7 @@
 pragma solidity ^0.8.12;
 
 uint160 constant MAGIC_VALUE_SENDER = 0xbf45c166;
-bytes4 constant MAGIC_VALUE_PAYMASTER = 0xe0e6183a;
+uint160 constant MAGIC_VALUE_PAYMASTER = 0xe0e6183a;
 
 library RIP7560Utils {
 
@@ -23,7 +23,8 @@ library RIP7560Utils {
     ) internal returns (
         bytes memory
     ){
-        bytes memory ret = abi.encodeWithSelector(MAGIC_VALUE_PAYMASTER, context, validAfter, validUntil);
+        uint256 validationData = (uint256(MAGIC_VALUE_PAYMASTER) << (48+48)) | (uint256(validUntil)<<48) | validAfter;
+        bytes memory ret = abi.encode(validationData, context);
         uint256 len = ret.length;
         // avoid wrapping return value as a byte array here
         assembly {
