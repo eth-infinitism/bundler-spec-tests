@@ -67,16 +67,17 @@ def deploy_contract(
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
-def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
+def deploy_and_deposit(w3, entrypoint_contract, contractname, staked=False, deposit=10**18):
     contract = deploy_contract(
         w3,
         contractname,
         ctrparams=[entrypoint_contract.address],
     )
-    tx_hash = w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
+    if deposit is not None and deposit > 0:
+        tx_hash = w3.eth.send_transaction(
+            {"from": w3.eth.accounts[0], "to": contract.address, "value": deposit}
+        )
+        w3.eth.wait_for_transaction_receipt(tx_hash)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)
     return contract
@@ -257,23 +258,21 @@ def clear_reputation(url=None):
 
 
 def set_reputation(address, ops_seen=1, ops_included=2, url=None):
-    assert (
-        RPCRequest(
-            method="debug_bundler_setReputation",
-            params=[
-                [
-                    {
-                        "address": address,
-                        "opsSeen": ops_seen,
-                        "opsIncluded": ops_included,
-                    }
-                ],
-                CommandLineArgs.entrypoint,
+    res = RPCRequest(
+        method="debug_bundler_setReputation",
+        params=[
+            [
+                {
+                    "address": address,
+                    "opsSeen": hex(ops_seen),
+                    "opsIncluded": hex(ops_included),
+                }
             ],
-        )
-        .send(url)
-        .result
-    )
+            CommandLineArgs.entrypoint,
+        ],
+    ).send(url)
+
+    assert res.result
 
 
 def to_prefixed_hex(s):
@@ -282,3 +281,18 @@ def to_prefixed_hex(s):
 
 def to_hex(s):
     return s.encode().hex()
+
+
+def to_number(num_or_hex):
+    return num_or_hex if isinstance(num_or_hex, (int, float)) else int(num_or_hex, 16)
+
+
+def sum_hex(*args):
+    return sum(to_number(i) for i in args if i is not None)
+
+def get_userop_max_cost(user_op):
+    return sum_hex(user_op.preVerificationGas,
+                   user_op.verificationGasLimit,
+                   user_op.callGasLimit,
+                   user_op.paymasterVerificationGasLimit,
+                   user_op.paymasterPostOpGasLimit) * to_number(user_op.maxFeePerGas)

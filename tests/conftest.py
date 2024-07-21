@@ -8,9 +8,10 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
 from .utils import (
-    deploy_wallet_contract,
+    assert_ok,
     deploy_and_deposit,
     deploy_contract,
+    deploy_wallet_contract,
     send_bundle_now,
     set_manual_bundling_mode,
 )
@@ -79,13 +80,28 @@ def paymaster_contract(w3, entrypoint_contract):
 
 
 @pytest.fixture
+def staked_paymaster_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", True)
+
+
+@pytest.fixture
 def factory_contract(w3, entrypoint_contract):
     return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", False)
 
 
 @pytest.fixture
+def staked_factory_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesFactory", True)
+
+
+@pytest.fixture
 def rules_account_contract(w3, entrypoint_contract):
     return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", False)
+
+
+@pytest.fixture
+def rules_staked_account_contract(w3, entrypoint_contract):
+    return deploy_and_deposit(w3, entrypoint_contract, "TestRulesAccount", True)
 
 
 @pytest.fixture(scope="session")
@@ -111,9 +127,10 @@ def execute_user_operation(userop):
 # debug apis
 
 
-@pytest.fixture
-def clear_state():
-    return RPCRequest(method="debug_bundler_clearState").send()
+# applied to all tests: clear mempool, reputation before each test
+@pytest.fixture(autouse=True)
+def clear_state_before_each_test():
+    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
 
 
 @pytest.fixture
