@@ -62,7 +62,7 @@ jobs:
           command: "pdm run lint"
       - run:
           name: "clone bundler"
-          command: git clone https://github.com/eth-infinitism/bundler.git
+          command: git clone https://github.com/eth-infinitism/bundler.git -b rip7560_rev2
       - restore_cache:
           keys:
             - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
