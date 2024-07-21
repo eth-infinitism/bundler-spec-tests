@@ -1,5 +1,4 @@
 import collections
-import re
 
 import pytest
 from tests.types import UserOperation, RPCErrorCode
@@ -89,18 +88,30 @@ def build_userop_for_factory(w3, entrypoint_contract, factory_contract, rule):
 
 STAKED = True
 UNSTAKED = False
-PAYMASTER = "TestRulesPaymaster"
-FACTORY = "TestRulesFactory"
-SENDER = "TestRulesAccount"
-AGGREGATOR = "TestRulesAggregator"
+PAYMASTER = "paymaster"
+FACTORY = "factory"
+SENDER = "account"
+AGGREGATOR = "aggregator"
 
-StorageTestCase = collections.namedtuple(
-    "StorageTestCase",
-    ["ruleId", "rule", "staked", "entity", "userop_build_func", "assert_func"],
+
+def entity_to_contract_name(entity):
+    if entity == PAYMASTER:
+        return "TestRulesPaymaster"
+    elif entity == FACTORY:
+        return "TestRulesFactory"
+    elif entity == SENDER:
+        return "TestRulesAccount"
+    elif entity == AGGREGATOR:
+        return "TestRulesAggregator"
+
+
+ValidationRuleTestCase = collections.namedtuple(
+    "ValidationRuleTestCase",
+    ["ruleId", "rule", "staked", "entity", "op_build_func", "assert_func"],
 )
 cases = [
     # unstaked paymaster
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000",
         "no_storage",
         UNSTAKED,
@@ -108,7 +119,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-031",
         "storage",
         UNSTAKED,
@@ -116,7 +127,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-070(STO-031)",
         "transient_storage_tstore",
         UNSTAKED,
@@ -124,7 +135,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-070(STO-031)",
         "transient_storage_tload",
         UNSTAKED,
@@ -132,7 +143,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage",
         UNSTAKED,
@@ -140,7 +151,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage_struct",
         UNSTAKED,
@@ -148,7 +159,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010",
         "account_storage",
         UNSTAKED,
@@ -156,7 +167,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-070(STO-010)",
         "account_transient_storage",
         UNSTAKED,
@@ -164,7 +175,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         UNSTAKED,
@@ -172,7 +183,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         UNSTAKED,
@@ -180,7 +191,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-022",
         "account_reference_storage_init_code",
         UNSTAKED,
@@ -188,7 +199,7 @@ cases = [
         with_initcode(build_userop_for_paymaster),
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "EREP-050-regression",
         "context",
         UNSTAKED,
@@ -196,7 +207,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "external_storage_read",
         UNSTAKED,
@@ -204,7 +215,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "out_of_gas",
         UNSTAKED,
@@ -212,7 +223,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         UNSTAKED,
@@ -221,7 +232,7 @@ cases = [
         assert_error,
     ),
     # staked paymaster
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000",
         "no_storage",
         STAKED,
@@ -229,10 +240,10 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-031", "storage", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage",
         STAKED,
@@ -240,7 +251,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage_struct",
         STAKED,
@@ -248,7 +259,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "reference_storage_struct",
         STAKED,
@@ -256,7 +267,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010",
         "account_storage",
         STAKED,
@@ -264,7 +275,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         STAKED,
@@ -272,7 +283,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         STAKED,
@@ -280,7 +291,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-022",
         "account_reference_storage_init_code",
         STAKED,
@@ -288,7 +299,7 @@ cases = [
         with_initcode(build_userop_for_paymaster),
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "EREP-050-regression",
         "context",
         STAKED,
@@ -296,7 +307,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_write",
         STAKED,
@@ -304,7 +315,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_read",
         STAKED,
@@ -312,7 +323,7 @@ cases = [
         build_userop_for_paymaster,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "out_of_gas",
         STAKED,
@@ -320,7 +331,7 @@ cases = [
         build_userop_for_paymaster,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         STAKED,
@@ -329,13 +340,13 @@ cases = [
         assert_error,
     ),
     # unstaked factory
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000", "no_storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000", "storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_error
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000",
         "reference_storage",
         UNSTAKED,
@@ -343,7 +354,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage_struct",
         UNSTAKED,
@@ -351,7 +362,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010",
         "account_storage",
         UNSTAKED,
@@ -359,7 +370,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         UNSTAKED,
@@ -367,7 +378,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         UNSTAKED,
@@ -375,7 +386,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000",
         "external_storage_read",
         UNSTAKED,
@@ -383,7 +394,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-042",
         "EXTCODEx_CALLx_undeployed_sender",
         UNSTAKED,
@@ -391,7 +402,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODESIZE_undeployed_contract",
         UNSTAKED,
@@ -399,7 +410,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODEHASH_undeployed_contract",
         UNSTAKED,
@@ -407,7 +418,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODECOPY_undeployed_contract",
         UNSTAKED,
@@ -415,7 +426,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "CALL_undeployed_contract",
         UNSTAKED,
@@ -423,7 +434,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "CALLCODE_undeployed_contract",
         UNSTAKED,
@@ -431,7 +442,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "DELEGATECALL_undeployed_contract",
         UNSTAKED,
@@ -439,7 +450,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "STATICCALL_undeployed_contract",
         UNSTAKED,
@@ -447,7 +458,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "out_of_gas",
         UNSTAKED,
@@ -455,7 +466,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         UNSTAKED,
@@ -464,13 +475,13 @@ cases = [
         assert_error,
     ),
     # staked factory
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000", "no_storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-031", "storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage",
         STAKED,
@@ -478,7 +489,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-032",
         "reference_storage_struct",
         STAKED,
@@ -486,7 +497,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010",
         "account_storage",
         STAKED,
@@ -494,7 +505,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         STAKED,
@@ -502,7 +513,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         STAKED,
@@ -510,7 +521,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_write",
         STAKED,
@@ -518,7 +529,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_read",
         STAKED,
@@ -526,7 +537,7 @@ cases = [
         build_userop_for_factory,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "out_of_gas",
         STAKED,
@@ -534,7 +545,7 @@ cases = [
         build_userop_for_factory,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         STAKED,
@@ -543,10 +554,10 @@ cases = [
         assert_error,
     ),
     # unstaked sender
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000", "no_storage", UNSTAKED, SENDER, build_userop_for_sender, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010",
         "account_storage",
         UNSTAKED,
@@ -554,7 +565,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         UNSTAKED,
@@ -562,7 +573,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-022",
         "account_reference_storage_init_code",
         UNSTAKED,
@@ -570,7 +581,7 @@ cases = [
         with_initcode(build_userop_for_sender),
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-022",
         "account_reference_storage_init_code",
         UNSTAKED,
@@ -578,7 +589,7 @@ cases = [
         with_initcode(build_userop_for_sender, deploy_staked_rule_factory),
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-022",
         "account_reference_storage_init_code",
         UNSTAKED,
@@ -586,7 +597,7 @@ cases = [
         with_initcode(build_userop_for_paymaster, deploy_staked_rule_factory),
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         UNSTAKED,
@@ -594,7 +605,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000",
         "external_storage_read",
         UNSTAKED,
@@ -602,10 +613,10 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020", "out_of_gas", UNSTAKED, SENDER, build_userop_for_sender, assert_error
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         UNSTAKED,
@@ -614,13 +625,13 @@ cases = [
         assert_error,
     ),
     # staked sender
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-000", "no_storage", STAKED, SENDER, build_userop_for_sender, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-010", "account_storage", STAKED, SENDER, build_userop_for_sender, assert_ok
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage",
         STAKED,
@@ -628,7 +639,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-021",
         "account_reference_storage_struct",
         STAKED,
@@ -636,10 +647,10 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020", "out_of_gas", STAKED, SENDER, build_userop_for_sender, assert_error
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-020",
         "sstore_out_of_gas",
         STAKED,
@@ -647,7 +658,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_write",
         STAKED,
@@ -655,7 +666,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "STO-033",
         "external_storage_read",
         STAKED,
@@ -663,7 +674,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-011",
         "entryPoint_call_balanceOf",
         UNSTAKED,
@@ -671,7 +682,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-061",
         "eth_value_transfer_forbidden",
         UNSTAKED,
@@ -679,7 +690,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-053",
         "eth_value_transfer_entryPoint",
         UNSTAKED,
@@ -687,7 +698,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-052",
         "eth_value_transfer_entryPoint_depositTo",
         UNSTAKED,
@@ -695,7 +706,7 @@ cases = [
         build_userop_for_sender,
         assert_ok,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODESIZE_undeployed_contract",
         UNSTAKED,
@@ -703,7 +714,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODEHASH_undeployed_contract",
         UNSTAKED,
@@ -711,7 +722,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "EXTCODECOPY_undeployed_contract",
         UNSTAKED,
@@ -719,7 +730,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-054",
         "EXTCODESIZE_entrypoint",
         UNSTAKED,
@@ -727,7 +738,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-054",
         "EXTCODEHASH_entrypoint",
         UNSTAKED,
@@ -735,7 +746,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-054",
         "EXTCODECOPY_entrypoint",
         UNSTAKED,
@@ -743,7 +754,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "CALL_undeployed_contract",
         UNSTAKED,
@@ -751,7 +762,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "CALLCODE_undeployed_contract",
         UNSTAKED,
@@ -759,7 +770,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "DELEGATECALL_undeployed_contract",
         UNSTAKED,
@@ -767,7 +778,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-041",
         "STATICCALL_undeployed_contract",
         UNSTAKED,
@@ -775,7 +786,7 @@ cases = [
         build_userop_for_sender,
         assert_error,
     ),
-    StorageTestCase(
+    ValidationRuleTestCase(
         "OP-062",
         "CALL_undeployed_contract_allowed_precompile",
         UNSTAKED,
@@ -786,18 +797,18 @@ cases = [
 ]
 
 
-def idfunction(case):
-    entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
+def case_id_function(case):
     result = "ok" if case.assert_func.__name__ == assert_ok.__name__ else "drop"
-    return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{entity}][{case.rule}][{result}"
+    return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{case.entity}][{case.rule}][{result}"
 
 
 @pytest.mark.usefixtures("clear_state")
-@pytest.mark.parametrize("case", cases, ids=idfunction)
+@pytest.mark.parametrize("case", cases, ids=case_id_function)
 def test_rule(w3, entrypoint_contract, case):
+    entity_contract_name = entity_to_contract_name(case.entity)
     entity_contract = deploy_and_deposit(
-        w3, entrypoint_contract, case.entity, case.staked
+        w3, entrypoint_contract, entity_contract_name, case.staked
     )
-    userop = case.userop_build_func(w3, entrypoint_contract, entity_contract, case.rule)
+    userop = case.op_build_func(w3, entrypoint_contract, entity_contract, case.rule)
     response = userop.send()
     case.assert_func(response)
