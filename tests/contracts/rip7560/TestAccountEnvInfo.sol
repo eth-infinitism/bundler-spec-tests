@@ -13,16 +13,7 @@ contract TestAccountEnvInfo is TestAccount {
     constructor() payable {}
     TestUtils.OpcodesOutput public opcodes;
 
-//    function validateTransaction(
-//        uint256 version,
-//        bytes32 txHash,
-//        bytes calldata transaction
-//    ) external virtual override returns (uint256) {
-//
-////        TestUtils.emitEvmData("validateTransaction");
-//        return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
-//
-//    }
+    //todo: save opcodes from validationTransaction too
 
     function getStoredOpcodes() external view returns (TestUtils.OpcodesOutput memory) {
         return opcodes;
