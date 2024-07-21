@@ -14,4 +14,3 @@ def test_send_failed():
     assert_rpc_error(
         ret, "invalid account return data length", RPCErrorCode.INVALID_INPUT
     )
-

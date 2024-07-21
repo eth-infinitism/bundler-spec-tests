@@ -6,9 +6,9 @@ from tests.utils import (
     send_bundle_now
 )
 
-
 AA_ENTRYPOINT = "0x0000000000000000000000000000000000007560"
 AA_SENDER_CREATOR = "0x00000000000000000000000000000000ffff7560"
+
 
 def test_side_effects(w3):
     sender = deploy_contract(w3, "rip7560/TestAccountEnvInfo", value=1 * 10 ** 18)
@@ -32,33 +32,31 @@ def test_side_effects(w3):
     send_bundle_now()
     opcodes = sender.functions.getStoredOpcodes().call()
     output = sender.functions.getStoredOpcodes().abi['outputs'][0]['components']
-    opcodeNames = [item['name'] for item in output]
+    opcode_names = [item['name'] for item in output]
 
-    assert len(opcodes) == len(opcodeNames), "fatal: struct length mismatch"
-    struct = dict(zip(opcodeNames, opcodes))
-
-    # TODO: need to calculate expected gas
+    assert len(opcodes) == len(opcode_names), "fatal: struct length mismatch"
+    struct = dict(zip(opcode_names, opcodes))
 
     bal = w3.eth.get_balance(sender.address)
     block = w3.eth.get_block("latest", True)
 
-    tx_prio = int(tx.maxPriorityFeePerGas,16)
-    tx_maxfee = int(tx.maxFeePerGas,16)
+    tx_prio = int(tx.maxPriorityFeePerGas, 16)
+    tx_maxfee = int(tx.maxFeePerGas, 16)
     block_basefee = block.baseFeePerGas
 
-    print("tx=", tx)
-    assert struct == dict(
-        TIMESTAMP=block.timestamp,
-        NUMBER=block.number,
-        CHAINID=1337,
-        GAS=pytest.approx(int(tx.callGasLimit,16),rel=0.01),
-        GASPRICE=min(tx_maxfee, tx_prio + block_basefee),
-        BALANCE=bal,
-        SELFBALANCE=bal,
-        ORIGIN=sender.address,
-        CALLER=AA_ENTRYPOINT,
-        ADDRESS=sender.address,
-        COINBASE=block.miner,
-        BASEFEE=block.baseFeePerGas,
-        CALLVALUE=0,
-    )
+    assert struct == {
+        "TIMESTAMP": block.timestamp,
+        "NUMBER": block.number,
+        "CHAINID": 1337,
+        "GAS": pytest.approx(int(tx.callGasLimit, 16), rel=0.01),
+        "GASLIMIT": block.gasLimit,
+        "GASPRICE": min(tx_maxfee, tx_prio + block_basefee),
+        "BALANCE": bal,
+        "SELFBALANCE": bal,
+        "ORIGIN": sender.address,
+        "CALLER": AA_ENTRYPOINT,
+        "ADDRESS": sender.address,
+        "COINBASE": block.miner,
+        "BASEFEE": block.baseFeePerGas,
+        "CALLVALUE": 0,
+    }
