@@ -9,7 +9,7 @@ from tests.types import (
 )
 
 
-def test_eth_send_no_gas(w3):
+def test_eth_send_no_gas():
     tx = TransactionRIP7560(
         sender="0x1111111111111111111111111111111111111112",
     )
