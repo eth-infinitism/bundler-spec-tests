@@ -5,7 +5,7 @@ from tests.types import RPCErrorCode
 
 def test_eth_send_failed():
     tx = TransactionRIP7560(
-        sender='0x1111111111111111111111111111111111111111',
+        sender="0x1111111111111111111111111111111111111111",
     )
 
     ret = tx.send()
