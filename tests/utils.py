@@ -111,7 +111,6 @@ def pack_factory(factory, factory_data):
 
 
 def pack_uints(high128, low128):
-    print("pack_uints", high128, low128)
     return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
 
 

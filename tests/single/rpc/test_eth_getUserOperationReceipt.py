@@ -16,7 +16,7 @@ def test_eth_getUserOperationReceipt(helper_contract, userop, w3, schema):
     receipt = w3.eth.get_transaction_receipt(
         response.result["receipt"]["transactionHash"]
     )
-    assert response.result["receipt"]["blockHash"] == receipt["blockHash"].hex()
+    assert response.result["receipt"]["blockHash"] == receipt["blockHash"].to_0x_hex()
     Validator.check_schema(schema)
     validate(instance=response.result, schema=schema)
 
