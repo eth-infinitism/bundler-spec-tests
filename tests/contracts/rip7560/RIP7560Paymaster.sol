@@ -9,13 +9,15 @@ import "./RIP7560TransactionStruct.sol";
 
 contract RIP7560Paymaster is ValidationRulesStorage {
 
-    TestCoin public coin;
+    TestCoin immutable public coin = new TestCoin();
 
     uint256 public pmCounter = 0;
 
     event Funded(string id, uint256 amount);
     event PaymasterValidationEvent(string name, uint256 counter);
     event PaymasterPostTxEvent(string name, uint256 counter, bytes context);
+
+    constructor() payable {}
 
     function validatePaymasterTransaction(
         uint256 version,
@@ -25,13 +27,11 @@ contract RIP7560Paymaster is ValidationRulesStorage {
     returns (
         bytes memory validationData
     ){
-        emit PaymasterValidationEvent("the-paymaster", pmCounter);
-        bytes memory context = abi.encodePacked("context here", pmCounter);
-        pmCounter++;
+//        bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
         string memory rule = string(txStruct.paymasterData);
-        ValidationRules.runRule(rule, this, coin, this);
-        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max - 1);
+        ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
+        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max -1 );
     }
 
     function postPaymasterTransaction(

@@ -1,7 +1,7 @@
 import itertools
 from dataclasses import dataclass, field, asdict
 from enum import IntEnum
-from typing import ClassVar
+from typing import ClassVar, Callable
 
 import json
 import jsonrpcclient
@@ -69,7 +69,6 @@ class UserOperation:
                 self.factoryData = "0x"
             else:
                 self.factoryData = self.factoryData.lower()
-
 
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:

@@ -31,9 +31,15 @@ class TransactionRIP7560:
         # pylint: disable=duplicate-code
         self.sender = to_checksum_address(self.sender)
         if self.paymaster is not None:
-            if self.paymasterVerificationGasLimit is None or self.paymasterVerificationGasLimit == "0x0":
+            if (
+                self.paymasterVerificationGasLimit is None
+                or self.paymasterVerificationGasLimit == "0x0"
+            ):
                 self.paymasterVerificationGasLimit = hex(10**6)
-            if self.paymasterPostOpGasLimit is None or self.paymasterPostOpGasLimit == "0x0":
+            if (
+                self.paymasterPostOpGasLimit is None
+                or self.paymasterPostOpGasLimit == "0x0"
+            ):
                 self.paymasterPostOpGasLimit = hex(10**6)
             if self.paymasterData is None:
                 self.paymasterData = "0x"

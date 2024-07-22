@@ -9,7 +9,7 @@ import {TestAccount} from "./TestAccount.sol";
 
 contract RIP7560Deployer is ValidationRulesStorage  {
 
-    TestCoin public coin;
+    TestCoin immutable public coin = new TestCoin();
     // uint256 public deplCounter = 0;
 
     event DeployerEvent(string name, uint256 counter, address deployed);
