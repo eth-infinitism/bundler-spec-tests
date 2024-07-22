@@ -7,13 +7,17 @@ from tests.types import RPCErrorCode
 from tests.utils import send_bundle_now, assert_rpc_error, to_prefixed_hex
 
 
-def test_eth_sendTransaction7560_valid(wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid(w3, wallet_contract, tx_7560):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
+    nonce = w3.eth.get_transaction_count(tx_7560.sender)
+    # created contract has nonce==1
+    assert nonce == 1
     tx_7560.send()
     send_bundle_now()
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
+    assert nonce+1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)

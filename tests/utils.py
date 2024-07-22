@@ -76,13 +76,17 @@ def deploy_and_deposit(
         ctrparams=[entrypoint_contract.address],
     )
     if deposit is not None and deposit > 0:
-        tx_hash = w3.eth.send_transaction(
-            {"from": w3.eth.accounts[0], "to": contract.address, "value": deposit}
-        )
-        w3.eth.wait_for_transaction_receipt(tx_hash)
+        fund(contract.address, deposit)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)
     return contract
+
+
+def fund(w3, addr, value=10**18):
+    tx_hash = w3.eth.send_transaction(
+        {"from": w3.eth.accounts[0], "to": addr, "value": value}
+    )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
 def staked_contract(w3, entrypoint_contract, contract):
