@@ -24,7 +24,7 @@ def create_account(w3, codehash_factory_contract, entrypoint_contract, num):
         nonce, num, entrypoint_contract.address
     ).transact({"from": w3.eth.accounts[0], "value": 10**18})
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    logs = codehash_factory_contract.events.ContractCreated().processReceipt(receipt)
+    logs = codehash_factory_contract.events.ContractCreated().process_receipt(receipt)
     account = logs[0].args.account
     codehash = w3.eth.get_proof(account, [])["codeHash"].hex()
     return account, codehash

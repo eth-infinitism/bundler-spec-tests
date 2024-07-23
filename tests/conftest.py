@@ -8,11 +8,12 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
 from .utils import (
-    deploy_wallet_contract,
+    assert_ok,
     deploy_and_deposit,
     deploy_contract,
+    deploy_wallet_contract,
     send_bundle_now,
-    set_manual_bundling_mode, assert_ok,
+    set_manual_bundling_mode,
 )
 
 

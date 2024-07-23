@@ -70,7 +70,6 @@ class UserOperation:
             else:
                 self.factoryData = self.factoryData.lower()
 
-
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:
             entrypoint = CommandLineArgs.entrypoint
@@ -92,17 +91,18 @@ class RPCRequest:
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
             print(">>", url, json.dumps(asdict(self)))
-        res = jsonrpcclient.responses.to_result(
+        res = jsonrpcclient.responses.to_response(
             requests.post(url, json=asdict(self), timeout=10).json()
         )
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res._asdict()))
+            print("<<", json.dumps(res))
         return res
 
 
 class RPCErrorCode(IntEnum):
+    INVALID_INPUT = -32000
     REJECTED_BY_EP_OR_ACCOUNT = -32500
     REJECTED_BY_PAYMASTER = -32501
     BANNED_OPCODE = -32502
