@@ -95,6 +95,8 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
         ADDRESS_ZERO, 123, banned_op
     ).call()
     tx_7560.sender = new_sender_address
+    fund(w3, new_sender_address)
+    tx_7560.nonce = hex(0)
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
     tx_7560.factory = factory_contract_7560.address
