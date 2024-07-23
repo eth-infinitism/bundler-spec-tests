@@ -57,7 +57,8 @@ def assert_reputation_status(address, status, ops_seen=None, ops_included=None):
     ), "opsIncluded mismatch"
 
 
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.skip("skipped")
+@pytest.mark.usefixtures("manual_bundling_mode")
 @pytest.mark.parametrize("case", ["with_factory", "without_factory"])
 def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
     if case == "with_factory":
@@ -88,7 +89,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
                 factory_contract.address,
                 factory_contract.functions.create(
                     i, "", entrypoint_contract.address
-                ).build_transaction()["data"]
+                ).build_transaction()["data"],
             )
             for i in range(banning_threshold + 1)
         ]

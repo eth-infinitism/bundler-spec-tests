@@ -10,7 +10,7 @@ import "./SimpleWallet.sol";
 contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
     using ValidationRules for string;
 
-    TestCoin immutable coin = new TestCoin();
+    TestCoin immutable public coin = new TestCoin();
 //    IEntryPoint public entryPoint;
 
     constructor(address _ep) payable {

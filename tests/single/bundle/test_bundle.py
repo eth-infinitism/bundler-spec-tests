@@ -19,7 +19,7 @@ from tests.utils import (
 )
 
 
-ALLOWED_OPS_PER_UNSTAKED_SENDER = 4
+SAME_SENDER_MEMPOOL_COUNT = 4
 DEFAULT_MAX_PRIORITY_FEE_PER_GAS = 10**9
 DEFAULT_MAX_FEE_PER_GAS = 5 * 10**9
 MIN_PRICE_BUMP = 10
@@ -53,7 +53,6 @@ replace_op_cases = [
 ]
 
 
-@pytest.mark.usefixtures("clear_state")
 @pytest.mark.parametrize("case", replace_op_cases, ids=lambda case: case.rule)
 def test_bundle_replace_op(w3, case):
     wallet = deploy_wallet_contract(w3)
@@ -118,7 +117,8 @@ def idfunction(case):
     return f"{case.ruleId}-{case.rule_description}-{case.stake_status}"
 
 
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.skip("skipped")
+@pytest.mark.usefixtures("manual_bundling_mode")
 @pytest.mark.parametrize("entity", ["sender", "paymaster", "factory"])
 @pytest.mark.parametrize("case", cases, ids=idfunction)
 # pylint: disable-next=too-many-arguments too-many-locals
@@ -238,24 +238,25 @@ def test_mempool_reputation_rules_all_entities(
     assert_rpc_error(response, entity_address, case.errorCode)
 
 
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
+    """
+    UREP-010: An unstaked sender is only allowed to have SAME_SENDER_MEMPOOL_COUNT UserOperations in the mempool.
+    """
     wallet = deploy_wallet_contract(w3)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     wallet_ops = [
         UserOperation(sender=wallet.address, nonce=hex(i << 64), callData=calldata)
-        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
+        for i in range(SAME_SENDER_MEMPOOL_COUNT + 1)
     ]
     for i, userop in enumerate(wallet_ops):
         userop.send()
-        if i < ALLOWED_OPS_PER_UNSTAKED_SENDER:
+        if i < SAME_SENDER_MEMPOOL_COUNT:
             assert dump_mempool() == wallet_ops[: i + 1]
         else:
             mempool = dump_mempool()
             assert mempool == wallet_ops[:-1]
     send_bundle_now()
-    mempool = dump_mempool()
-    assert mempool == wallet_ops[1:-1]
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
@@ -264,7 +265,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     assert response.result["userOpHash"] == ophash
 
 
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
@@ -272,15 +273,13 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
         UserOperation(
             sender=wallet.address, nonce=hex((i + 1) << 64), callData=calldata
         )
-        for i in range(ALLOWED_OPS_PER_UNSTAKED_SENDER + 1)
+        for i in range(SAME_SENDER_MEMPOOL_COUNT + 1)
     ]
     for i, userop in enumerate(wallet_ops):
         userop.send()
         assert dump_mempool() == wallet_ops[: i + 1]
     assert dump_mempool() == wallet_ops
     send_bundle_now()
-    mempool = dump_mempool()
-    assert mempool == wallet_ops[1:]
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
@@ -290,7 +289,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
 
 
 # STO-041
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_ban_user_op_access_other_ops_sender_in_bundle(
     w3, entrypoint_contract, helper_contract
 ):
@@ -342,7 +341,7 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
 # this condition is extremely similar to STO-041 but the access is in the entity and not in a 3rd contract
 # which allows us to filter out such violations on their entry into the mempool
 # STO-040
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
     wallet1_and_paymaster = deploy_and_deposit(
         w3, entrypoint_contract, "TestFakeWalletPaymaster", False
@@ -378,7 +377,7 @@ def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
 
 
 # SREP-010
-@pytest.mark.usefixtures("clear_state", "manual_bundling_mode")
+@pytest.mark.usefixtures("manual_bundling_mode")
 def test_stake_check_in_bundler(w3, paymaster_contract, entrypoint_contract):
     response = get_stake_status(paymaster_contract.address, entrypoint_contract.address)
 

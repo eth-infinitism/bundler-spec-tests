@@ -51,13 +51,24 @@ class UserOperation:
 
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)
+        self.callData = self.callData.lower()
+        self.signature = self.signature.lower()
         if self.paymaster is not None:
+            self.paymaster = to_checksum_address(self.paymaster)
             if self.paymasterVerificationGasLimit is None:
                 self.paymasterVerificationGasLimit = hex(10**5)
             if self.paymasterPostOpGasLimit is None:
                 self.paymasterPostOpGasLimit = hex(10**5)
             if self.paymasterData is None:
                 self.paymasterData = "0x"
+            else:
+                self.paymasterData = self.paymasterData.lower()
+        if self.factory is not None:
+            self.factory = to_checksum_address(self.factory)
+            if self.factoryData is None:
+                self.factoryData = "0x"
+            else:
+                self.factoryData = self.factoryData.lower()
 
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:
@@ -80,17 +91,18 @@ class RPCRequest:
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
             print(">>", url, json.dumps(asdict(self)))
-        res = jsonrpcclient.responses.to_result(
+        res = jsonrpcclient.responses.to_response(
             requests.post(url, json=asdict(self), timeout=10).json()
         )
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res._asdict()))
+            print("<<", json.dumps(res))
         return res
 
 
 class RPCErrorCode(IntEnum):
+    INVALID_INPUT = -32000
     REJECTED_BY_EP_OR_ACCOUNT = -32500
     REJECTED_BY_PAYMASTER = -32501
     BANNED_OPCODE = -32502
@@ -99,6 +111,7 @@ class RPCErrorCode(IntEnum):
     INAVLID_PAYMASTER_STAKE = -32505
     INVALID_AGGREGATOR = -32506
     INVALID_SIGNATURE = -32507
+    PAYMASTER_DEPOSIT_TOO_LOW = -32508
 
     EXECUTION_REVERTED = -32521
     INVALID_FIELDS = -32602

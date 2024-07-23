@@ -11,35 +11,52 @@ from .types import RPCRequest, UserOperation, CommandLineArgs
 
 @cache
 def compile_contract(contract):
+    contract_subdir = os.path.dirname(contract)
+    contract_name = os.path.basename(contract)
+
     current_dirname = os.path.dirname(__file__)
-    contracts_dirname = current_dirname + "/contracts/"
+    contracts_dirname = current_dirname + "/contracts/" + contract_subdir + "/"
     aa_path = os.path.realpath(current_dirname + "/../@account-abstraction")
     aa_relpath = os.path.relpath(aa_path, contracts_dirname)
     remap = "@account-abstraction=" + aa_relpath
     with open(
-        contracts_dirname + contract + ".sol", "r", encoding="utf-8"
+        contracts_dirname + contract_name + ".sol", "r", encoding="utf-8"
     ) as contractfile:
         test_source = contractfile.read()
         compiled_sol = compile_source(
             test_source,
             base_path=contracts_dirname,
+            # pylint: disable=fixme
+            # todo: only do it for 7560 folder
+            include_path=os.path.abspath(os.path.join(contracts_dirname, os.pardir))
+            + "/",
             allow_paths=aa_relpath,
             import_remappings=remap,
             output_values=["abi", "bin"],
             solc_version="0.8.25",
             evm_version="cancun",
+            via_ir=True,
         )
-        return compiled_sol["<stdin>:" + contract]
+        return compiled_sol["<stdin>:" + contract_name]
 
 
-def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
+# pylint: disable=too-many-arguments
+def deploy_contract(
+    w3, contractname, ctrparams=None, value=0, gas=10 * 10**6, gas_price=10**9
+):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
     contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     account = w3.eth.accounts[0]
     tx_hash = contract.constructor(*ctrparams).transact(
-        {"gas": gas, "from": account, "value": hex(value)}
+        {
+            "gas": gas,
+            "from": account,
+            "value": hex(value),
+            "maxFeePerGas": gas_price,
+            "maxPriorityFeePerGas": gas_price,
+        }
     )
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     # print('Deployed contract. hash, receipt:', tx_hash.hex(), tx_receipt)
@@ -50,16 +67,19 @@ def deploy_contract(w3, contractname, ctrparams=None, value=0, gas=10 * 10**6):
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
-def deploy_and_deposit(w3, entrypoint_contract, contractname, staked):
+def deploy_and_deposit(
+    w3, entrypoint_contract, contractname, staked=False, deposit=10**18
+):
     contract = deploy_contract(
         w3,
         contractname,
         ctrparams=[entrypoint_contract.address],
     )
-    tx_hash = w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
-    )
-    w3.eth.wait_for_transaction_receipt(tx_hash)
+    if deposit is not None and deposit > 0:
+        tx_hash = w3.eth.send_transaction(
+            {"from": w3.eth.accounts[0], "to": contract.address, "value": deposit}
+        )
+        w3.eth.wait_for_transaction_receipt(tx_hash)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)
     return contract
@@ -93,7 +113,6 @@ def pack_factory(factory, factory_data):
 
 
 def pack_uints(high128, low128):
-    print("pack_uints", high128, low128)
     return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
 
 
@@ -263,3 +282,21 @@ def to_prefixed_hex(s):
 
 def to_hex(s):
     return s.encode().hex()
+
+
+def to_number(num_or_hex):
+    return num_or_hex if isinstance(num_or_hex, (int, float)) else int(num_or_hex, 16)
+
+
+def sum_hex(*args):
+    return sum(to_number(i) for i in args if i is not None)
+
+
+def get_userop_max_cost(user_op):
+    return sum_hex(
+        user_op.preVerificationGas,
+        user_op.verificationGasLimit,
+        user_op.callGasLimit,
+        user_op.paymasterVerificationGasLimit,
+        user_op.paymasterPostOpGasLimit,
+    ) * to_number(user_op.maxFeePerGas)
