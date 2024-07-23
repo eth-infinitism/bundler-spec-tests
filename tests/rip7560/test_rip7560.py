@@ -4,7 +4,13 @@ from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
-from tests.utils import send_bundle_now, assert_rpc_error, to_prefixed_hex
+from tests.utils import (
+    assert_ok,
+    assert_rpc_error,
+    fund,
+    send_bundle_now,
+    to_prefixed_hex, deploy_contract,
+)
 
 
 def test_eth_sendTransaction7560_valid(w3, wallet_contract, tx_7560):
@@ -17,7 +23,32 @@ def test_eth_sendTransaction7560_valid(w3, wallet_contract, tx_7560):
     send_bundle_now()
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
-    assert nonce+1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
+    assert nonce + 1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
+
+
+def test_eth_sendTransaction7560_valid_with_factory(
+        w3, tx_7560
+):
+    factory = deploy_contract(w3, "rip7560/TestAccountFactory")
+
+    create_account_func = factory.functions.createAccount(1)
+
+    tx_7560.sender = create_account_func.call()
+    tx_7560.signature = "0x"
+    tx_7560.factory = factory.address
+    tx_7560.factoryData = create_account_func.build_transaction()["data"]
+    tx_7560.nonce = hex(0)
+
+    assert len(w3.eth.get_code(tx_7560.sender)) == 0
+    nonce = w3.eth.get_transaction_count(tx_7560.sender)
+    assert nonce == 0
+    fund(w3, tx_7560.sender)
+    response = tx_7560.send()
+    assert_ok(response)
+    send_bundle_now()
+    assert len(w3.eth.get_code(tx_7560.sender)) > 0
+    nonce_after = w3.eth.get_transaction_count(tx_7560.sender)
+    assert nonce_after == 1
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
