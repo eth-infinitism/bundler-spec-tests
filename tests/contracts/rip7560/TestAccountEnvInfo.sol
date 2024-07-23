@@ -11,15 +11,10 @@ import {TestAccount} from "./TestAccount.sol";
 contract TestAccountEnvInfo is TestAccount {
 
     constructor() payable {}
-    TestUtils.OpcodesOutput public opcodes;
 
-    //todo: save opcodes from validationTransaction too
-
-    function getStoredOpcodes() external view returns (TestUtils.OpcodesOutput memory) {
-        return opcodes;
-    }
+    //todo: emit opcodes from validationTransaction too
 
     function saveEventOpcodes() external {
-        opcodes = TestUtils.getOpcodesOutput();
+        TestUtils.emitEvmData("exec");
     }
 }

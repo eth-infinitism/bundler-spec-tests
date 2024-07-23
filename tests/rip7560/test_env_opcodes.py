@@ -30,12 +30,9 @@ def test_side_effects(w3):
     ret = tx.send()
     assert_ok(ret)
     send_bundle_now()
-    opcodes = sender.functions.getStoredOpcodes().call()
-    output = sender.functions.getStoredOpcodes().abi['outputs'][0]['components']
-    opcode_names = [item['name'] for item in output]
-
-    assert len(opcodes) == len(opcode_names), "fatal: struct length mismatch"
-    struct = dict(zip(opcode_names, opcodes))
+    event_args = sender.events.OpcodesEvent().get_logs()[0].args
+    assert event_args.tag == "exec"
+    struct = dict(event_args.opcodes)
 
     bal = w3.eth.get_balance(sender.address)
     block = w3.eth.get_block("latest", True)
