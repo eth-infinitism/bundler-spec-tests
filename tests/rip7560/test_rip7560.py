@@ -4,6 +4,7 @@ from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
+
 from tests.utils import (
     assert_ok,
     assert_rpc_error,
