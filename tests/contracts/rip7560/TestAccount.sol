@@ -56,7 +56,7 @@ contract TestAccount {
         emit Funded("account", msg.value);
     }
 
-    fallback(bytes calldata) external virtual returns (bytes memory) {
+    fallback(bytes calldata) external returns (bytes memory) {
 //        accCounter++;
 //        emit AccountEvent("account", string(msg.data));
         return "account-returned-data-here";

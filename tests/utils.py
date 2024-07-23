@@ -67,7 +67,9 @@ def deploy_contract(
     return w3.eth.contract(abi=interface["abi"], address=tx_receipt.contractAddress)
 
 
-def deploy_and_deposit(w3, entrypoint_contract, contractname, staked=False, deposit=10**18):
+def deploy_and_deposit(
+    w3, entrypoint_contract, contractname, staked=False, deposit=10**18
+):
     contract = deploy_contract(
         w3,
         contractname,
@@ -111,7 +113,6 @@ def pack_factory(factory, factory_data):
 
 
 def pack_uints(high128, low128):
-    print("pack_uints", high128, low128)
     return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
 
 
@@ -290,9 +291,12 @@ def to_number(num_or_hex):
 def sum_hex(*args):
     return sum(to_number(i) for i in args if i is not None)
 
+
 def get_userop_max_cost(user_op):
-    return sum_hex(user_op.preVerificationGas,
-                   user_op.verificationGasLimit,
-                   user_op.callGasLimit,
-                   user_op.paymasterVerificationGasLimit,
-                   user_op.paymasterPostOpGasLimit) * to_number(user_op.maxFeePerGas)
+    return sum_hex(
+        user_op.preVerificationGas,
+        user_op.verificationGasLimit,
+        user_op.callGasLimit,
+        user_op.paymasterVerificationGasLimit,
+        user_op.paymasterPostOpGasLimit,
+    ) * to_number(user_op.maxFeePerGas)

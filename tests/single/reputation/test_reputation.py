@@ -89,7 +89,7 @@ def test_staked_entity_reputation_threshold(w3, entrypoint_contract, case):
                 factory_contract.address,
                 factory_contract.functions.create(
                     i, "", entrypoint_contract.address
-                ).build_transaction()["data"]
+                ).build_transaction()["data"],
             )
             for i in range(banning_threshold + 1)
         ]

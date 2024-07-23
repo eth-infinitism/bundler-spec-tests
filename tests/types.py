@@ -70,7 +70,6 @@ class UserOperation:
             else:
                 self.factoryData = self.factoryData.lower()
 
-
     def send(self, entrypoint=None, url=None):
         if entrypoint is None:
             entrypoint = CommandLineArgs.entrypoint
