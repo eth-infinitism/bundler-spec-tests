@@ -107,6 +107,7 @@ library TestUtils {
             CALLER := caller()
             CALLVALUE := callvalue()
             COINBASE := coinbase()
+            NUMBER := number()
         }
 
         return OpcodesOutput(
