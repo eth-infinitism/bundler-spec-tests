@@ -76,7 +76,7 @@ def deploy_and_deposit(
         ctrparams=[entrypoint_contract.address],
     )
     if deposit is not None and deposit > 0:
-        fund(contract.address, deposit)
+        fund(w3, contract.address, deposit)
     if staked:
         return staked_contract(w3, entrypoint_contract, contract)
     return contract
