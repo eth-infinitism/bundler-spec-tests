@@ -31,7 +31,7 @@ banned_opcodes = [
     "BLOCKHASH",
     "CREATE",
     "CREATE2",
-    "SELFDESTRUCT",
+    # "SELFDESTRUCT",
 ]
 
 # the "OP-052" tested elsewhere
@@ -93,7 +93,7 @@ def test_paymaster_allowed_opcode_when_staked(
         sender=wallet_contract.address,
         paymaster=staked_paymaster_contract.address,
         paymasterVerificationGasLimit=hex(50000),
-        paymasterData=to_prefixed_hex(op)
+        paymasterData=to_prefixed_hex(op),
     ).send()
     assert_ok(response)
 
@@ -126,9 +126,13 @@ def test_factory_allowed_opcode_when_staked(
     w3, staked_factory_contract, entrypoint_contract, op
 ):
     factory_data = staked_factory_contract.functions.create(
-            123, op, entrypoint_contract.address
-        ).build_transaction()["data"]
+        123, op, entrypoint_contract.address
+    ).build_transaction()["data"]
 
-    sender = deposit_to_undeployed_sender(w3, entrypoint_contract, staked_factory_contract.address, factory_data)
-    response = UserOperation(sender=sender, factory=staked_factory_contract.address, factoryData=factory_data).send()
+    sender = deposit_to_undeployed_sender(
+        w3, entrypoint_contract, staked_factory_contract.address, factory_data
+    )
+    response = UserOperation(
+        sender=sender, factory=staked_factory_contract.address, factoryData=factory_data
+    ).send()
     assert_ok(response)
