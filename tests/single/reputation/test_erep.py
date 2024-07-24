@@ -67,7 +67,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
         UserOperation(
             sender=account.address,
             paymaster=paymaster.address,
-            paymasterVerificationGasLimit=50000,
+            paymasterVerificationGasLimit=to_hex(50000),
             paymasterData=to_hex(text="nothing"),
         ).send()
     )
