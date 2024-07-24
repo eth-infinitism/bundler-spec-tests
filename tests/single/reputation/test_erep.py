@@ -92,7 +92,7 @@ def test_staked_factory_on_account_failure(
 
     pre = get_reputation(factory.address)
     for i in range(2):
-        factory_data = factory.functions.create(i).buildTransaction()["data"]
+        factory_data = factory.functions.create(i).build_transaction()["data"]
         account = w3.eth.call({"to": factory.address, "data": factory_data})[12:]
         w3.eth.send_transaction(
             {"from": w3.eth.accounts[0], "to": account, "value": 10**18}
