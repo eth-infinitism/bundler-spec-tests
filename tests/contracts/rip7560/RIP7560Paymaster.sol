@@ -8,7 +8,7 @@ import "./utils/RIP7560Utils.sol";
 import "./RIP7560TransactionStruct.sol";
 
 contract RIP7560Paymaster is ValidationRulesStorage {
-
+    using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
 
     uint256 public pmCounter = 0;
@@ -27,11 +27,13 @@ contract RIP7560Paymaster is ValidationRulesStorage {
     returns (
         bytes memory validationData
     ){
-//        bytes memory context = abi.encodePacked("context here");
+        bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
         string memory rule = string(txStruct.paymasterData);
-        ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
-        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max -1 );
+        if (!rule.eq("context")) {
+            ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
+        }
+        return RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
     }
 
     function postPaymasterTransaction(
