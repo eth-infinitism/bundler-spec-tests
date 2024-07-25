@@ -169,6 +169,8 @@ def test_mempool_reputation_rules_all_entities(
 
         paymaster = None
         paymaster_data = None
+        paymaster_verification = None
+        paymaster_postop = None
 
         if entity != "factory":
             factory_contract = deploy_and_deposit(
@@ -192,6 +194,8 @@ def test_mempool_reputation_rules_all_entities(
             paymaster = paymaster_contract.address
             # 'nothing' is a special string to pass validation
             paymaster_data = to_hex(text="nothing")
+            paymaster_verification="0x10000"
+            paymaster_postop="0x10000"
 
         user_op = UserOperation(
             sender=sender,
@@ -201,11 +205,12 @@ def test_mempool_reputation_rules_all_entities(
             factoryData=factory_data,
             paymaster=paymaster,
             paymasterData=paymaster_data,
-            paymasterVerificationGasLimit="0x10000",
-            paymasterPostOpGasLimit="0x10000",
+            paymasterVerificationGasLimit=paymaster_verification,
+            paymasterPostOpGasLimit=paymaster_postop
         )
         wallet_ops.append(user_op)
-        user_op.send()
+        assert_ok(user_op.send())
+
 
     assert dump_mempool() == wallet_ops
     # create a UserOperation that exceeds the mempool limit
