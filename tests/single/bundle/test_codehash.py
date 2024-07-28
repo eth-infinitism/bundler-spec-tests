@@ -61,7 +61,7 @@ def test_codehash_changed(w3, entrypoint_contract):
         pytest.skip(
             "selfdestruct opcode removed, no need for a codehash change test anymore."
         )
-    send_bundle_now()
+    send_bundle_now(w3)
     # Asserting that the even though second simulation passes, codehash change is sufficient to remove a userop
     # so no bundle was sent.
     assert_no_useroperation_event(entrypoint_contract, from_block=block_number)
@@ -78,6 +78,6 @@ def test_codehash_changed(w3, entrypoint_contract):
         userop.nonce = hex(i)
         userop.send()
         assert dump_mempool() == [userop]
-        send_bundle_now()
+        send_bundle_now(w3)
         assert dump_mempool() == []
         assert_useroperation_event(entrypoint_contract, userop, from_block=block_number)

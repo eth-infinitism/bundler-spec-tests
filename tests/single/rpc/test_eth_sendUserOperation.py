@@ -14,7 +14,7 @@ def test_eth_sendUserOperation(wallet_contract, helper_contract, userop, schema)
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     response = userop.send()
-    send_bundle_now()
+    send_bundle_now(w3)
     state_after = wallet_contract.functions.state().call()
     assert response.result == userop_hash(helper_contract, userop)
     assert state_after == 1111111
@@ -26,7 +26,7 @@ def test_eth_sendUserOperation_revert(wallet_contract, bad_sig_userop):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     response = bad_sig_userop.send()
-    send_bundle_now()
+    send_bundle_now(w3)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 0
     assert_rpc_error(

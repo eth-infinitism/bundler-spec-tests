@@ -121,7 +121,7 @@ def userop(wallet_contract):
 @pytest.fixture
 def execute_user_operation(userop):
     userop.send()
-    send_bundle_now()
+    send_bundle_now(w3)
 
 
 # debug apis

@@ -251,7 +251,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
         else:
             mempool = dump_mempool()
             assert mempool == wallet_ops[:-1]
-    send_bundle_now()
+    send_bundle_now(w3)
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
@@ -274,7 +274,7 @@ def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract)
         userop.send()
         assert dump_mempool() == wallet_ops[: i + 1]
     assert dump_mempool() == wallet_ops
-    send_bundle_now()
+    send_bundle_now(w3)
     ophash = userop_hash(helper_contract, wallet_ops[0])
     response = RPCRequest(
         method="eth_getUserOperationReceipt",
@@ -311,7 +311,7 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
     user_op2 = UserOperation(sender=wallet2.address, callData=calldata2)
     user_op1.send()
     user_op2.send()
-    send_bundle_now()
+    send_bundle_now(w3)
 
     # check the UserOp2 is still in the mempool as it did nothing wrong
     assert dump_mempool() == [user_op2]

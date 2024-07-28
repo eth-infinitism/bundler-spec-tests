@@ -21,7 +21,7 @@ def test_eth_sendTransaction7560_valid(w3, wallet_contract, tx_7560):
     # created contract has nonce==1
     assert nonce == 1
     tx_7560.send()
-    send_bundle_now()
+    send_bundle_now(w3)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
     assert nonce + 1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
@@ -46,7 +46,7 @@ def test_eth_sendTransaction7560_valid_with_factory(
     fund(w3, tx_7560.sender)
     response = tx_7560.send()
     assert_ok(response)
-    send_bundle_now(None, w3)
+    send_bundle_now(w3)
     assert len(w3.eth.get_code(tx_7560.sender)) > 0
     nonce_after = w3.eth.get_transaction_count(tx_7560.sender)
     assert nonce_after == 1
@@ -54,7 +54,7 @@ def test_eth_sendTransaction7560_valid_with_factory(
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_eth_sendTransaction7560_banned_opcode(
-    wallet_contract_rules, tx_7560, banned_op
+    w3, wallet_contract_rules, tx_7560, banned_op
 ):
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
@@ -62,14 +62,14 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     tx_7560.signature = to_prefixed_hex(banned_op)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
-    send_bundle_now()
+    send_bundle_now(w3)
     state_after = wallet_contract_rules.functions.state().call()
     assert state_after == 0
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_eth_sendTransaction7560_banned_opcode(
-    wallet_contract, tx_7560, paymaster_contract_7560, banned_op
+    w3, wallet_contract, tx_7560, paymaster_contract_7560, banned_op
 ):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
@@ -82,7 +82,7 @@ def test_paymaster_eth_sendTransaction7560_banned_opcode(
         "paymaster uses banned opcode: " + banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )
-    send_bundle_now()
+    send_bundle_now(w3)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 0
 
@@ -115,7 +115,7 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
         banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )
-    send_bundle_now()
+    send_bundle_now(w3)
     # no code deployed is the only check I can come up with here
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""

@@ -29,7 +29,7 @@ def test_side_effects(w3):
     # assert tx_7560 == tx
     ret = tx.send()
     assert_ok(ret)
-    send_bundle_now()
+    send_bundle_now(w3)
     event_args = sender.events.OpcodesEvent().get_logs()[0].args
     assert event_args.tag == "exec"
     struct = dict(event_args.opcodes)
