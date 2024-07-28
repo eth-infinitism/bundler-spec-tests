@@ -61,6 +61,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     assert state_before == 0
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.signature = to_prefixed_hex(banned_op)
+    tx_7560.nonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
     send_bundle_now()
