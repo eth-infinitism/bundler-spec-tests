@@ -1,7 +1,7 @@
 import itertools
 from dataclasses import dataclass, field, asdict
 from enum import IntEnum
-from typing import ClassVar, Callable
+from typing import ClassVar
 
 import json
 import jsonrpcclient
