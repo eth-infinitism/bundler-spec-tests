@@ -158,6 +158,7 @@ jobs:
           name: "run go-ethereum"
           working_directory: "./go-ethereum"
           command: "\
+          --config circleciconfig.toml \
           ./build/bin/geth \
           --dev \
           --dev.gaslimit \
