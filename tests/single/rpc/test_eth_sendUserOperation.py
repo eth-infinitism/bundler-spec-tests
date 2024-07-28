@@ -10,7 +10,7 @@ from tests.utils import userop_hash, assert_rpc_error, send_bundle_now
 
 
 @pytest.mark.parametrize("schema_method", ["eth_sendUserOperation"], ids=[""])
-def test_eth_sendUserOperation(wallet_contract, helper_contract, userop, schema):
+def test_eth_sendUserOperation(w3, wallet_contract, helper_contract, userop, schema):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     response = userop.send()
@@ -22,7 +22,7 @@ def test_eth_sendUserOperation(wallet_contract, helper_contract, userop, schema)
     validate(instance=response.result, schema=schema)
 
 
-def test_eth_sendUserOperation_revert(wallet_contract, bad_sig_userop):
+def test_eth_sendUserOperation_revert(w3, wallet_contract, bad_sig_userop):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     response = bad_sig_userop.send()

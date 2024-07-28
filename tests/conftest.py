@@ -119,7 +119,7 @@ def userop(wallet_contract):
 
 
 @pytest.fixture
-def execute_user_operation(userop):
+def execute_user_operation(w3, userop):
     userop.send()
     send_bundle_now(w3)
 
