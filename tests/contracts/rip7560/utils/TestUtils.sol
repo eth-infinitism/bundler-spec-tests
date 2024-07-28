@@ -28,22 +28,26 @@ library TestUtils {
         bytes signature
     );
 
+    struct OpcodesOutput {
+        uint256 GAS;
+        uint256 GASPRICE;
+        uint256 BASEFEE;
+        uint256 BALANCE;
+        uint256 SELFBALANCE;
+        uint256 GASLIMIT;
+        uint256 TIMESTAMP;
+        uint256 NUMBER;
+        uint256 CHAINID;
+        uint256 CALLVALUE;
+        address ORIGIN;
+        address CALLER;
+        address ADDRESS;
+        address COINBASE;
+    }
+
     event OpcodesEvent(
         string tag,
-        uint256 GAS,
-        uint256 GASPRICE,
-        uint256 BASEFEE,
-        uint256 BALANCE,
-        uint256 SELFBALANCE,
-        uint256 GASLIMIT,
-        uint256 TIMESTAMP,
-        uint256 NUMBER,
-        uint256 CHAINID,
-        address ORIGIN,
-        address CALLER,
-        address CALLVALUE,
-        address ADDRESS,
-        address COINBASE
+        OpcodesOutput opcodes
     );
 
     function emitValidationParams(
@@ -76,7 +80,10 @@ library TestUtils {
     }
 
     function emitEvmData(string memory tag) internal {
-        /* Emit values returned by some relevant opcodes on-chain */
+        emit OpcodesEvent(tag, getOpcodesOutput());
+    }
+
+    function getOpcodesOutput() internal returns (OpcodesOutput memory) {
         uint256 GAS;
         uint256 GASPRICE;
         uint256 BASEFEE;
@@ -86,12 +93,11 @@ library TestUtils {
         uint256 TIMESTAMP;
         uint256 NUMBER;
         uint256 CHAINID;
+        uint256 CALLVALUE;
         address ORIGIN;
         address CALLER;
-        address CALLVALUE;
         address ADDRESS;
         address COINBASE;
-        bytes32 BLOCKHASH;
 
         assembly {
             GAS := gas()
@@ -110,8 +116,7 @@ library TestUtils {
             NUMBER := number()
         }
 
-        emit OpcodesEvent(
-            tag,
+        return OpcodesOutput(
             GAS,
             GASPRICE,
             BASEFEE,
@@ -121,9 +126,9 @@ library TestUtils {
             TIMESTAMP,
             NUMBER,
             CHAINID,
+            CALLVALUE,
             ORIGIN,
             CALLER,
-            CALLVALUE,
             ADDRESS,
             COINBASE
         );
