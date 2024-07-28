@@ -14,17 +14,24 @@ from tests.utils import (
 )
 
 
-def test_eth_sendTransaction7560_valid(w3, wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
     nonce = w3.eth.get_transaction_count(tx_7560.sender)
     # created contract has nonce==1
     assert nonce == 1
-    tx_7560.send()
+    res = tx_7560.send()
+    rethash = res.result
     send_bundle_now(w3)
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
     assert nonce + 1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
+    ev = wallet_contract.events.AccountExecutionEvent().get_logs()[0]
+    evhash = ev.transactionHash.to_0x_hex()
+    assert rethash == evhash
+    assert wallet_contract.address == ev.address
+    w3.eth.get_transaction_receipt(rethash)
+    w3.eth.get_transaction(rethash)
 
 
 def test_eth_sendTransaction7560_valid_with_factory(
