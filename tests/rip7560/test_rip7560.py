@@ -46,7 +46,7 @@ def test_eth_sendTransaction7560_valid_with_factory(
     fund(w3, tx_7560.sender)
     response = tx_7560.send()
     assert_ok(response)
-    send_bundle_now()
+    send_bundle_now(None, w3)
     assert len(w3.eth.get_code(tx_7560.sender)) > 0
     nonce_after = w3.eth.get_transaction_count(tx_7560.sender)
     assert nonce_after == 1

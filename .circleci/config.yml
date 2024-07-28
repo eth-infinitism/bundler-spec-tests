@@ -62,7 +62,7 @@ jobs:
           command: "pdm run lint"
       - run:
           name: "clone bundler"
-          command: git clone https://github.com/eth-infinitism/bundler.git
+          command: git clone https://github.com/eth-infinitism/bundler.git -b AA-381-create-getRip7560Bundle-api
       - restore_cache:
           keys:
             - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
@@ -149,7 +149,7 @@ jobs:
 
       - run:
           name: "clone go-ethereum from infinitism"
-          command: git clone -b RIP-7560-revision-2 --single-branch https://github.com/eth-infinitism/go-ethereum.git
+          command: git clone -b AA-381-create-getRip7560Bundle-api --single-branch https://github.com/eth-infinitism/go-ethereum.git
       - run:
           name: "build go-ethereum"
           working_directory: "./go-ethereum"
@@ -172,7 +172,7 @@ jobs:
           background: true
       - run:
           name: "clone bundler"
-          command: git clone https://github.com/eth-infinitism/bundler.git
+          command: git clone https://github.com/eth-infinitism/bundler.git -b AA-381-create-getRip7560Bundle-api
       - restore_cache:
           keys:
             - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
