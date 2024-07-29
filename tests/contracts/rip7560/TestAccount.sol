@@ -61,4 +61,11 @@ contract TestAccount {
 //        emit AccountEvent("account", string(msg.data));
         return "account-returned-data-here";
     }
+
+    function funTSTORE() external returns(uint256) {
+        assembly {
+            tstore(0, 1)
+        }
+        return 0;
+    }
 }

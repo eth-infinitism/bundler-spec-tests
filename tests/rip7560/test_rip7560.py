@@ -10,7 +10,8 @@ from tests.utils import (
     assert_rpc_error,
     fund,
     send_bundle_now,
-    to_prefixed_hex, deploy_contract,
+    to_prefixed_hex,
+    deploy_contract,
 )
 
 
@@ -25,7 +26,9 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     send_bundle_now()
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
-    assert nonce + 1 == w3.eth.get_transaction_count(tx_7560.sender), "nonce not incremented"
+    assert nonce + 1 == w3.eth.get_transaction_count(
+        tx_7560.sender
+    ), "nonce not incremented"
     ev = wallet_contract.events.AccountExecutionEvent().get_logs()[0]
     evhash = ev.transactionHash.to_0x_hex()
     assert rethash == evhash
@@ -34,9 +37,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_eth_sendTransaction7560_valid_with_factory(
-        w3, tx_7560
-):
+def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
     factory = deploy_contract(w3, "rip7560/TestAccountFactory")
 
     create_account_func = factory.functions.createAccount(1)
@@ -67,6 +68,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     assert state_before == 0
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.signature = to_prefixed_hex(banned_op)
+    tx_7560.nonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
     send_bundle_now()
@@ -126,21 +128,3 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
     # no code deployed is the only check I can come up with here
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
-
-
-#
-# def idfunction(case):
-#     entity = re.match("TestRules(.*)", case.entity).groups()[0].lower()
-#     result = "ok" if case.assert_func.__name__ == assert_ok.__name__ else "drop"
-#     return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{entity}][{case.rule}][{result}"
-#
-#
-# @pytest.mark.usefixtures("clear_state")
-# @pytest.mark.parametrize("case", cases, ids=idfunction)
-# def test_rule(w3, entrypoint_contract, case):
-#     entity_contract = deploy_and_deposit(
-#         w3, entrypoint_contract, case.entity, case.staked
-#     )
-#     userop = case.userop_build_func(w3, entrypoint_contract, entity_contract, case.rule)
-#     response = userop.send()
-#     case.assert_func(response)

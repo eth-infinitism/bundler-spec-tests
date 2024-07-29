@@ -1,19 +1,15 @@
 import pytest
 from tests.rip7560.types import TransactionRIP7560
-from tests.utils import (
-    assert_ok,
-    deploy_contract,
-    send_bundle_now
-)
+from tests.utils import assert_ok, deploy_contract, send_bundle_now
 
 AA_ENTRYPOINT = "0x0000000000000000000000000000000000007560"
 AA_SENDER_CREATOR = "0x00000000000000000000000000000000ffff7560"
 
 
 def test_side_effects(w3):
-    sender = deploy_contract(w3, "rip7560/TestAccountEnvInfo", value=1 * 10 ** 18)
+    sender = deploy_contract(w3, "rip7560/TestAccountEnvInfo", value=1 * 10**18)
     w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": sender.address, "value": 10 ** 18}
+        {"from": w3.eth.accounts[0], "to": sender.address, "value": 10**18}
     )
     tx = TransactionRIP7560(
         sender=sender.address,

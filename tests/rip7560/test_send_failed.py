@@ -2,11 +2,8 @@ from tests.rip7560.types import TransactionRIP7560
 from tests.utils import (
     assert_rpc_error,
     fund,
-
 )
-from tests.types import (
-    RPCErrorCode
-)
+from tests.types import RPCErrorCode
 
 
 def test_eth_send_no_gas():
@@ -15,9 +12,7 @@ def test_eth_send_no_gas():
     )
 
     ret = tx.send()
-    assert_rpc_error(
-        ret, "insufficient funds", RPCErrorCode.INVALID_INPUT
-    )
+    assert_rpc_error(ret, "insufficient funds", RPCErrorCode.INVALID_INPUT)
 
 
 def test_eth_send_no_code(w3):
@@ -40,6 +35,4 @@ def test_eth_send_no_code_wrong_nonce(w3):
     fund(w3, tx.sender)
 
     ret = tx.send()
-    assert_rpc_error(
-        ret, "nonce too high", RPCErrorCode.INVALID_INPUT
-    )
+    assert_rpc_error(ret, "nonce too high", RPCErrorCode.INVALID_INPUT)

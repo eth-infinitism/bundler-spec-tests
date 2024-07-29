@@ -14,7 +14,12 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
 
     TestCoin public coin;
 
-    constructor() payable {}
+    constructor() payable {
+        // true only when deploying through TestRulesAccountFactory, in which case the factory sets the coin
+        if (msg.sender.code.length == 0) {
+            coin = new TestCoin{salt:bytes32(0)}();
+        }
+    }
 
     receive() external payable {}
 
