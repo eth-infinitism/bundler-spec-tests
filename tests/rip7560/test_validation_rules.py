@@ -38,7 +38,6 @@ def with_initcode(build_tx7560_func, deploy_factory_func=deploy_unstaked_factory
             ADDRESS_ZERO, 123, ""
         ).call()
         fund(w3, sender)
-        print("WTF sender factory", sender, factory_contract.address)
         tx7560.sender = sender
         tx7560.factory = factory_contract.address
         tx7560.factoryData = factory_data
@@ -134,7 +133,6 @@ def test_rule(w3, case):
 
     entity_contract_name = entity_to_contract_name(case.entity)
     entity_contract = deploy_contract(w3, entity_contract_name, value=1 * 10**18)
-    print("WTF entity coin", entity_contract.functions.coin().call())
     build_func = get_build_func(case.entity, case.rule)
     tx7560 = build_func(w3, entity_contract, case.rule)
     response = tx7560.send()
