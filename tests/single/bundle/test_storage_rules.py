@@ -121,7 +121,15 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-031",
-        "storage",
+        "storage_read",
+        UNSTAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_error,
+    ),
+    ValidationRuleTestCase(
+        "STO-031",
+        "storage_write",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -241,7 +249,20 @@ cases = [
         assert_ok,
     ),
     ValidationRuleTestCase(
-        "STO-031", "storage", STAKED, PAYMASTER, build_userop_for_paymaster, assert_ok
+        "STO-031",
+        "storage_read",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
+    ),
+    ValidationRuleTestCase(
+        "STO-031",
+        "storage_write",
+        STAKED,
+        PAYMASTER,
+        build_userop_for_paymaster,
+        assert_ok,
     ),
     ValidationRuleTestCase(
         "STO-032",
@@ -344,7 +365,20 @@ cases = [
         "STO-000", "no_storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
     ValidationRuleTestCase(
-        "STO-000", "storage", UNSTAKED, FACTORY, build_userop_for_factory, assert_error
+        "STO-000",
+        "storage_read",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
+    ),
+    ValidationRuleTestCase(
+        "STO-000",
+        "storage_write",
+        UNSTAKED,
+        FACTORY,
+        build_userop_for_factory,
+        assert_error,
     ),
     ValidationRuleTestCase(
         "STO-000",
@@ -479,7 +513,10 @@ cases = [
         "STO-000", "no_storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
     ValidationRuleTestCase(
-        "STO-031", "storage", STAKED, FACTORY, build_userop_for_factory, assert_ok
+        "STO-031", "storage_read", STAKED, FACTORY, build_userop_for_factory, assert_ok
+    ),
+    ValidationRuleTestCase(
+        "STO-031", "storage_write", STAKED, FACTORY, build_userop_for_factory, assert_ok
     ),
     ValidationRuleTestCase(
         "STO-032",
