@@ -20,6 +20,14 @@ contract ValidationRulesStorage is IState {
         return 0;
     }
 
+    function funSSTORE() external returns(uint256) {
+        assembly {
+            sstore(0, 1)
+        }
+        return 0;
+    }
+
+
     function funTLOAD() external returns(uint256) {
         uint256 tval;
         assembly {
@@ -161,7 +169,8 @@ library ValidationRules {
         }
 
         else if (eq(rule, "no_storage")) return 0;
-        else if (eq(rule, "storage")) return self.state();
+        else if (eq(rule, "storage_read")) return self.state();
+        else if (eq(rule, "storage_write")) return self.funSSTORE();
         else if (eq(rule, "reference_storage")) return coin.mint(address (this));
         else if (eq(rule, "reference_storage_struct")) return coin.setStructMember(address(this));
         else if (eq(rule, "account_storage")) return account.state();

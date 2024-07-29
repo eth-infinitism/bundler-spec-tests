@@ -194,8 +194,8 @@ def test_mempool_reputation_rules_all_entities(
             paymaster = paymaster_contract.address
             # 'nothing' is a special string to pass validation
             paymaster_data = to_hex(text="nothing")
-            paymaster_verification="0x10000"
-            paymaster_postop="0x10000"
+            paymaster_verification = "0x10000"
+            paymaster_postop = "0x10000"
 
         user_op = UserOperation(
             sender=sender,
@@ -206,11 +206,10 @@ def test_mempool_reputation_rules_all_entities(
             paymaster=paymaster,
             paymasterData=paymaster_data,
             paymasterVerificationGasLimit=paymaster_verification,
-            paymasterPostOpGasLimit=paymaster_postop
+            paymasterPostOpGasLimit=paymaster_postop,
         )
         wallet_ops.append(user_op)
         assert_ok(user_op.send())
-
 
     assert dump_mempool() == wallet_ops
     # create a UserOperation that exceeds the mempool limit
