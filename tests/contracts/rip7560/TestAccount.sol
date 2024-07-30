@@ -44,8 +44,11 @@ contract TestAccount is IRip7560Account {
 
         emit AccountExecutionEvent(state, accCounter, msg.data);
 
-
         state = 2;
+    }
+
+    function revertingFunction() external {
+        revert("reverting");
     }
 
     function reset() external {

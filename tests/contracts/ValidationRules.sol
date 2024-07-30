@@ -67,6 +67,10 @@ library ValidationRules {
 
     function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self) internal returns (uint) {
         if (eq(rule, "")) return 0;
+        else if (eq(rule, "revert-msg")) {
+            revert("revert-msg");
+            return 0;
+        }
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;
         else if (eq(rule, "TIMESTAMP")) return block.timestamp;
