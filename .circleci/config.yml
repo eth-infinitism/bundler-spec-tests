@@ -95,7 +95,7 @@ jobs:
       - save_cache:
           key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
           paths:
-            - ./bundler
+            - ./bundler/node_modules
 
 
 ###################################################
