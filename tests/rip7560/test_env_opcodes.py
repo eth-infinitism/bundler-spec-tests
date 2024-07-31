@@ -8,14 +8,13 @@ AA_SENDER_CREATOR = "0x00000000000000000000000000000000ffff7560"
 
 def test_side_effects(w3):
     sender = deploy_contract(w3, "rip7560/TestAccountEnvInfo", value=1 * 10**18)
-    w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": sender.address, "value": 10**18}
-    )
+    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=1 * 10**18)
     tx = TransactionRIP7560(
         sender=sender.address,
         nonce=hex(1),
+        paymaster=paymaster.address,
         maxFeePerGas=hex(100000000000),
-        maxPriorityFeePerGas=hex(100000000000),
+        maxPriorityFeePerGas=hex(12345),
         signature="0xface",
         callData=sender.encodeABI(fn_name="saveEventOpcodes"),
         # nonce = "0x1234"

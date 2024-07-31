@@ -34,8 +34,53 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     evhash = ev.transactionHash.to_0x_hex()
     assert rethash == evhash
     assert wallet_contract.address == ev.address
-    w3.eth.get_transaction_receipt(rethash)
     w3.eth.get_transaction(rethash)
+
+
+# assert the account is charged by the gas used in the tx
+def test_eth_send_gas_usage(w3, tx_7560):
+    tx_7560.maxPriorityFeePerGas = hex(12345)
+    balance = w3.eth.get_balance(tx_7560.sender)
+    res = tx_7560.send()
+    assert_ok(res)
+    send_bundle_now()
+    rcpt = w3.eth.get_transaction_receipt(res.result)
+    balance_after = w3.eth.get_balance(tx_7560.sender)
+    rcpt_effective_gas_price = rcpt.effectiveGasPrice
+    block = w3.eth.get_block(rcpt.blockHash)
+    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas,16)
+    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas,16)
+    block_base_fee = block.baseFeePerGas
+
+    print("effectiveGasPrice", rcpt_effective_gas_price, "baseFee", block_base_fee)
+    assert rcpt.gasUsed > 0
+    assert rcpt_effective_gas_price == min(block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas)
+    assert balance - balance_after == rcpt.gasUsed * rcpt_effective_gas_price
+
+
+# assert the paymaster is charged for the gas used by the tx
+def test_eth_send_gas_usage_with_paymaster(w3, tx_7560):
+    tx_7560.maxPriorityFeePerGas = hex(12345)
+    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=10 ** 18)
+    tx_7560.paymaster = paymaster.address
+    balance = w3.eth.get_balance(tx_7560.sender)
+    pm_balance = w3.eth.get_balance(paymaster.address)
+    res = tx_7560.send()
+    assert_ok(res)
+    send_bundle_now()
+    rcpt = w3.eth.get_transaction_receipt(res.result)
+    balance_after = w3.eth.get_balance(tx_7560.sender)
+    pm_balance_after = w3.eth.get_balance(paymaster.address)
+    assert balance_after == balance
+    rcpt_effective_gas_price = rcpt.effectiveGasPrice
+    block = w3.eth.get_block(rcpt.blockHash)
+    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas,16)
+    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas,16)
+    block_base_fee = block.baseFeePerGas
+
+    assert rcpt.gasUsed > 0
+    assert rcpt_effective_gas_price == min(block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas)
+    assert pm_balance - pm_balance_after == rcpt.gasUsed * rcpt_effective_gas_price
 
 
 def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
