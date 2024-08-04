@@ -43,7 +43,7 @@ def test_eth_send_gas_usage(w3, tx_7560):
     balance = w3.eth.get_balance(tx_7560.sender)
     res = tx_7560.send()
     assert_ok(res)
-    send_bundle_now()
+    send_bundle_now(w3)
     rcpt = w3.eth.get_transaction_receipt(res.result)
     balance_after = w3.eth.get_balance(tx_7560.sender)
     rcpt_effective_gas_price = rcpt.effectiveGasPrice
@@ -67,7 +67,7 @@ def test_eth_send_gas_usage_with_paymaster(w3, tx_7560):
     pm_balance = w3.eth.get_balance(paymaster.address)
     res = tx_7560.send()
     assert_ok(res)
-    send_bundle_now()
+    send_bundle_now(w3)
     rcpt = w3.eth.get_transaction_receipt(res.result)
     balance_after = w3.eth.get_balance(tx_7560.sender)
     pm_balance_after = w3.eth.get_balance(paymaster.address)
@@ -135,7 +135,7 @@ def test_bundle_with_events(w3, wallet_contract):
         hashes.append(ret)
         assert_ok(ret)
 
-    send_bundle_now()
+    send_bundle_now(w3)
     b = w3.eth.get_block("latest", full_transactions=True)
 
     assert len(b.transactions) == bundle_size
