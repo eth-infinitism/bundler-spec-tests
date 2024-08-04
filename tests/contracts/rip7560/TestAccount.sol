@@ -6,8 +6,9 @@ import "../ITestAccount.sol";
 import "./RIP7560TransactionType4.sol";
 import "./utils/RIP7560Utils.sol";
 import "./utils/TestUtils.sol";
+import {IRip7560Account} from "./interface/IRip7560Account.sol";
 
-contract TestAccount {
+contract TestAccount is IRip7560Account {
     uint256 public accCounter = 0;
     uint256 public state = 0;
 
@@ -43,8 +44,11 @@ contract TestAccount {
 
         emit AccountExecutionEvent(state, accCounter, msg.data);
 
-
         state = 2;
+    }
+
+    function revertingFunction() external {
+        revert("reverting");
     }
 
     function reset() external {

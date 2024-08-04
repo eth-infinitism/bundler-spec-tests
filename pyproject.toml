@@ -13,7 +13,7 @@ python = "^3.8"
 line-length = 88
 
 [tool.pylint]
-disable = ["C0114", "C0115", "C0116", "W0621"] # missing-module-docstring, redefined-outer-name as it conflicts with pytest fixtures
+disable = ["C0114", "C0115", "C0116", "W0621", "R0914"] # missing-module-docstring, redefined-outer-name as it conflicts with pytest fixtures, too-many-locals
 ignored-classes = ["Error"]
 good-names = ["w3", "id", "i", "s"]
 good-names-rgxs = ["test_.*"]
