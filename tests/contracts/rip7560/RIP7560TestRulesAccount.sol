@@ -33,7 +33,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
         bytes32 txHash,
         bytes calldata transaction
     ) external returns (uint256) {
-        RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
+        RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.signature);
         ValidationRules.runRule(rule, this, coin, this);
         return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
