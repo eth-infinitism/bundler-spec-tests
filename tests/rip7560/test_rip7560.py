@@ -24,7 +24,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     assert nonce == 1
     res = tx_7560.send()
     rethash = res.result
-    send_bundle_now(w3)
+    send_bundle_now()
     state_after = wallet_contract.functions.state().call()
     assert state_after == 2
     assert nonce + 1 == w3.eth.get_transaction_count(
@@ -43,7 +43,7 @@ def test_eth_send_gas_usage(w3, tx_7560):
     balance = w3.eth.get_balance(tx_7560.sender)
     res = tx_7560.send()
     assert_ok(res)
-    send_bundle_now(w3)
+    send_bundle_now()
     rcpt = w3.eth.get_transaction_receipt(res.result)
     balance_after = w3.eth.get_balance(tx_7560.sender)
     rcpt_effective_gas_price = rcpt.effectiveGasPrice
@@ -67,7 +67,7 @@ def test_eth_send_gas_usage_with_paymaster(w3, tx_7560):
     pm_balance = w3.eth.get_balance(paymaster.address)
     res = tx_7560.send()
     assert_ok(res)
-    send_bundle_now(w3)
+    send_bundle_now()
     rcpt = w3.eth.get_transaction_receipt(res.result)
     balance_after = w3.eth.get_balance(tx_7560.sender)
     pm_balance_after = w3.eth.get_balance(paymaster.address)
@@ -100,7 +100,7 @@ def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
     fund(w3, tx_7560.sender)
     response = tx_7560.send()
     assert_ok(response)
-    send_bundle_now(w3)
+    send_bundle_now()
     assert len(w3.eth.get_code(tx_7560.sender)) > 0
     nonce_after = w3.eth.get_transaction_count(tx_7560.sender)
     assert nonce_after == 1
@@ -135,7 +135,7 @@ def test_bundle_with_events(w3, wallet_contract):
         hashes.append(ret)
         assert_ok(ret)
 
-    send_bundle_now(w3)
+    send_bundle_now()
     b = w3.eth.get_block("latest", full_transactions=True)
 
     assert len(b.transactions) == bundle_size
@@ -189,7 +189,7 @@ def test_fail_with_revert(wallet_contract_rules, tx_7560):
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_eth_sendTransaction7560_banned_opcode(
-    w3, wallet_contract_rules, tx_7560, banned_op
+        wallet_contract_rules, tx_7560, banned_op
 ):
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
@@ -198,14 +198,14 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     tx_7560.nonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
-    send_bundle_now(w3)
+    send_bundle_now()
     state_after = wallet_contract_rules.functions.state().call()
     assert state_after == 0
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_eth_sendTransaction7560_banned_opcode(
-    w3, wallet_contract, tx_7560, paymaster_contract_7560, banned_op
+        wallet_contract, tx_7560, paymaster_contract_7560, banned_op
 ):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
@@ -218,7 +218,7 @@ def test_paymaster_eth_sendTransaction7560_banned_opcode(
         "paymaster uses banned opcode: " + banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )
-    send_bundle_now(w3)
+    send_bundle_now()
     state_after = wallet_contract.functions.state().call()
     assert state_after == 0
 
@@ -251,7 +251,7 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
         banned_op,
         RPCErrorCode.BANNED_OPCODE,
     )
-    send_bundle_now(w3)
+    send_bundle_now()
     # no code deployed is the only check I can come up with here
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
