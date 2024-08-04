@@ -138,7 +138,8 @@ def test_bundle_with_events(w3, wallet_contract):
     send_bundle_now()
     b = w3.eth.get_block("latest", full_transactions=True)
 
-    assert len(b.transactions) == bundle_size
+    # one extra transaction due to dev mode needing a "1 wei" trigger to produce a block
+    assert len(b.transactions) == bundle_size + 1
     for i, tx in enumerate(b.transactions):
         rcpt = w3.eth.get_transaction_receipt(tx.hash)
         assert tx.blockHash == rcpt.blockHash
