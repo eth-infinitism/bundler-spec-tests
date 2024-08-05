@@ -8,7 +8,7 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  test-bundler:
+  test-erc4337-bundler:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
@@ -141,6 +141,8 @@ jobs:
           --http.port \
           8545 \
           --rpc.allow-unprotected-txs \
+          --config \
+          circleciconfig.toml \
           "
           background: true
       - run:
@@ -186,9 +188,9 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  test-bundler-workflow:
+  test-bundler-erc4337-workflow:
     jobs:
-      - test-bundler
+      - test-erc4337-bundler
   test-bundler-rip7560-workflow:
     jobs:
       - test-rip7560-bundler

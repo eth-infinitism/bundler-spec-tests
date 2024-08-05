@@ -195,9 +195,9 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factory_data)
     return sender
 
 
-def send_bundle_now(url=None):
+def send_bundle_now():
     try:
-        RPCRequest(method="debug_bundler_sendBundleNow").send(url)
+        RPCRequest(method="debug_bundler_sendBundleNow").send(None)
     except KeyError:
         pass
 

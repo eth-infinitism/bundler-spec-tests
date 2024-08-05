@@ -138,8 +138,9 @@ def test_bundle_with_events(w3, wallet_contract):
     send_bundle_now()
     b = w3.eth.get_block("latest", full_transactions=True)
 
-    assert len(b.transactions) == bundle_size
-    for i, tx in enumerate(b.transactions):
+    # one extra transaction due to dev mode needing a "1 wei" trigger to produce a block
+    assert len(b.transactions) == bundle_size + 1
+    for i, tx in enumerate(b.transactions[:2]):
         rcpt = w3.eth.get_transaction_receipt(tx.hash)
         assert tx.blockHash == rcpt.blockHash
         assert tx.hash.hex() == hashes[i].result[2:]
@@ -205,7 +206,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_eth_sendTransaction7560_banned_opcode(
-    wallet_contract, tx_7560, paymaster_contract_7560, banned_op
+        wallet_contract, tx_7560, paymaster_contract_7560, banned_op
 ):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0
