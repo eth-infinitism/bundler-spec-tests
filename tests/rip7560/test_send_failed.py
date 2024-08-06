@@ -1,7 +1,10 @@
+from web3.constants import ADDRESS_ZERO
 from tests.rip7560.types import TransactionRIP7560
 from tests.utils import (
     assert_rpc_error,
+    decode_error_message,
     fund,
+    to_prefixed_hex,
 )
 from tests.types import RPCErrorCode
 
@@ -23,7 +26,7 @@ def test_eth_send_no_code(w3):
 
     ret = tx.send()
     assert_rpc_error(
-        ret, "invalid account return data length", RPCErrorCode.INVALID_INPUT
+        ret, "account is not deployed and no factory is specified", RPCErrorCode.INVALID_INPUT
     )
 
 
@@ -36,3 +39,82 @@ def test_eth_send_no_code_wrong_nonce(w3):
 
     ret = tx.send()
     assert_rpc_error(ret, "nonce too high", RPCErrorCode.INVALID_INPUT)
+
+
+def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
+    tx_7560.sender = wallet_contract_rules.address
+    tx_7560.nonce = hex(2)
+    tx_7560.signature = to_prefixed_hex("revert-msg")
+
+    response = tx_7560.send()
+    assert_rpc_error(response, "execution reverted", -32000)
+    assert_rpc_error(response, "sender", -32000)
+
+    decoded_error_message = decode_error_message(response)
+    assert decoded_error_message == "on-chain revert message string"
+
+
+def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560):
+    tx_7560.paymaster = paymaster_contract_7560.address
+    tx_7560.paymasterData = to_prefixed_hex("revert-msg")
+
+    response = tx_7560.send()
+    assert_rpc_error(response, "execution reverted", -32000)
+    assert_rpc_error(response, "paymaster", -32000)
+
+    decoded_error_message = decode_error_message(response)
+    assert decoded_error_message == "on-chain revert message string"
+
+
+def test_eth_send_account_validation_returns_invalid_magic(wallet_contract_rules, tx_7560):
+    tx_7560.sender = wallet_contract_rules.address
+    tx_7560.nonce = hex(2)
+    tx_7560.signature = to_prefixed_hex("wrong-return-msg")
+
+    response = tx_7560.send()
+    assert_rpc_error(response, "account did not return correct magic_value", -32000)
+
+
+def test_eth_send_paymaster_validation_returns_invalid_magic(paymaster_contract_7560, tx_7560):
+    tx_7560.paymaster = paymaster_contract_7560.address
+    tx_7560.paymasterData = to_prefixed_hex("wrong-return-msg")
+
+    response = tx_7560.send()
+    assert_rpc_error(response, "paymaster did not return correct magic_value", -32000)
+
+
+def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):
+    new_sender_address = factory_contract_7560.functions.getCreate2Address(
+        ADDRESS_ZERO, 123, "revert-msg"
+    ).call()
+    tx_7560.sender = new_sender_address
+    fund(w3, new_sender_address)
+    tx_7560.nonce = hex(0)
+    tx_7560.factory = factory_contract_7560.address
+    tx_7560.factoryData = factory_contract_7560.functions.createAccount(
+        ADDRESS_ZERO, 123, "revert-msg"
+    ).build_transaction({
+        "gas": 1000000
+    })["data"]
+    response = tx_7560.send()
+    assert_rpc_error(response, "execution reverted", -32000)
+    assert_rpc_error(response, "factory", -32000)
+    decoded_error_message = decode_error_message(response)
+    assert decoded_error_message == "on-chain revert message string"
+
+
+def test_eth_send_deployment_does_not_create_account(w3, factory_contract_7560, tx_7560):
+    new_sender_address = factory_contract_7560.functions.getCreate2Address(
+        ADDRESS_ZERO, 123, "skip-deploy-msg"
+    ).call()
+    tx_7560.sender = new_sender_address
+    fund(w3, new_sender_address)
+    tx_7560.nonce = hex(0)
+    tx_7560.factory = factory_contract_7560.address
+    tx_7560.factoryData = factory_contract_7560.functions.createAccount(
+        ADDRESS_ZERO, 123, "skip-deploy-msg"
+    ).build_transaction({
+        "gas": 1000000
+    })["data"]
+    response = tx_7560.send()
+    assert_rpc_error(response, "account was not deployed by a factory", -32000)

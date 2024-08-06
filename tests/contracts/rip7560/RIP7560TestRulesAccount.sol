@@ -35,6 +35,9 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
     ) external returns (uint256) {
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.signature);
+        if (ValidationRules.eq(rule, "wrong-return-msg")){
+            return type(uint256).max;
+        }
         ValidationRules.runRule(rule, this, coin, this);
         return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }

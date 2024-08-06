@@ -2,9 +2,12 @@ import os
 import time
 from functools import cache
 
+from eth_utils import (
+    is_bytes,
+    to_checksum_address
+)
 from eth_abi import decode
 from eth_abi.packed import encode_packed
-from eth_utils import to_checksum_address
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
@@ -304,3 +307,16 @@ def get_userop_max_cost(user_op):
         user_op.paymasterVerificationGasLimit,
         user_op.paymasterPostOpGasLimit,
     ) * to_number(user_op.maxFeePerGas)
+
+
+def decode_error_message(response):
+    hex_error_message = response.message.split(':')[-1]
+    print(hex_error_message)
+    raw_error_msg = bytes.fromhex(hex_error_message.replace("0x", ""))
+    decoded_error_message = (
+        # pylint: disable=unsubscriptable-object
+        decode(["string"], raw_error_msg[4:])[0]
+        if is_bytes(raw_error_msg)
+        else hex_error_message
+    )
+    return decoded_error_message
