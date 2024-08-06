@@ -1,12 +1,11 @@
 import collections
 import pytest
 
-from eth_abi.packed import encode_packed
-
 from eth_utils import to_hex
 from tests.types import UserOperation, RPCErrorCode, RPCRequest
 from tests.utils import (
     assert_ok,
+    fund,
     assert_rpc_error,
     get_stake_status,
     dump_mempool,
@@ -56,6 +55,7 @@ replace_op_cases = [
 @pytest.mark.parametrize("case", replace_op_cases, ids=lambda case: case.rule)
 def test_bundle_replace_op(w3, case):
     wallet = deploy_wallet_contract(w3)
+    fund(w3, wallet.address)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
     new_op = UserOperation(
         sender=wallet.address,
