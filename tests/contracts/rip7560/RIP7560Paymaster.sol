@@ -30,6 +30,15 @@ contract RIP7560Paymaster is ValidationRulesStorage {
         bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.paymasterData);
+        if (ValidationRules.eq(rule, "wrong-return-msg")){
+            uint256 validationData = type(uint256).max;
+            bytes memory ret = abi.encode(validationData, context);
+            uint256 len = ret.length;
+            // avoid wrapping return value as a byte array here
+            assembly {
+                return(add(ret, 0x20), len)
+            }
+        }
         if (!rule.eq("context")) {
             ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
         }

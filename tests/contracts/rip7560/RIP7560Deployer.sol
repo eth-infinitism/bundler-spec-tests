@@ -39,6 +39,9 @@ contract RIP7560Deployer is ValidationRulesStorage  {
                 extcodecopy(create2address, 0, 0, 2)
             }
         }
+        if (ValidationRules.eq(rule, "skip-deploy-msg")){
+            return address(0);
+        }
         ret = address(new TestAccount{salt : bytes32(salt)}());
         if (!rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
             ValidationRules.runRule(rule, ITestAccount(ret), coin, this);
