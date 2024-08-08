@@ -21,7 +21,7 @@ library RIP7560Utils {
         uint48 validUntil
     ) internal {
         IRip7560EntryPoint(ENTRY_POINT)
-            .acceptAccount(validAfter, validUntil);
+            .acceptAccount{gas: 2300}(validAfter, validUntil);
     }
 
     function paymasterAcceptTransaction(
@@ -30,6 +30,6 @@ library RIP7560Utils {
         uint256 validUntil
     ) internal {
         IRip7560EntryPoint(ENTRY_POINT)
-            .acceptPaymaster(validAfter, validUntil, context);
+            .acceptPaymaster{gas: 2300}(validAfter, validUntil, context);
     }
 }
