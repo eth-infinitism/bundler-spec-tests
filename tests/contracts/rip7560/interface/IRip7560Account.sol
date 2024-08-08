@@ -13,11 +13,10 @@ interface IRip7560Account {
 	 * @param version - transaction encoding version RIP7560Utils.VERSION
 	 * @param txHash - transaction hash to check the signature against
 	 * @param transaction - encoded transaction
-	 * @return validationData - RIP7560Utils.accountAcceptTransaction for return value.
 	 */
 	function validateTransaction(
 		uint256 version,
 		bytes32 txHash,
 		bytes calldata transaction
-	) external returns (uint256 validationData);
+	) external;
 }

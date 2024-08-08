@@ -69,6 +69,7 @@ def tx_7560(wallet_contract):
         nonce=hex(1),
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
+        verificationGasLimit=hex(2000000),
         callData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
         signature="0xface",
     )

@@ -14,13 +14,12 @@ interface IRip7560Paymaster {
 	 * @param version - transaction encoding version RIP7560Utils.VERSION
 	 * @param txHash - transaction hash to check the signature against
 	 * @param transaction - encoded transaction
-	 * @return validationData - use RIP7560Utils.paymasterAcceptTransaction for return value.
 	 */
 	function validatePaymasterTransaction(
 		uint256 version,
 		bytes32 txHash,
 		bytes calldata transaction)
-	external returns (bytes memory validationData);
+	external;
 
 
 	/**

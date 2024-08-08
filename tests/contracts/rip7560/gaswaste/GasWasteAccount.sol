@@ -12,11 +12,11 @@ contract GasWasteAccount {
         uint256,
         bytes32,
         bytes calldata
-    ) external returns (uint256) {
+    ) external {
         do {
             accCounter++;
         } while (gasleft() > 3000);
-        return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
+        RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
 
     function anyExecutionFunction() external {
