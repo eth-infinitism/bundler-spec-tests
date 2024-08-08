@@ -24,16 +24,14 @@ contract RIP7560Paymaster is ValidationRulesStorage {
         bytes32 txHash,
         bytes calldata transaction)
     external
-    returns (
-        bytes memory validationData
-    ){
+    {
         bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.paymasterData);
         if (!rule.eq("context")) {
             ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
         }
-        return RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
+        RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
     }
 
     function postPaymasterTransaction(
