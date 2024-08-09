@@ -20,8 +20,9 @@ library RIP7560Utils {
         uint48 validAfter,
         uint48 validUntil
     ) internal {
-        IRip7560EntryPoint(ENTRY_POINT)
+        bool res = IRip7560EntryPoint(ENTRY_POINT)
             .acceptAccount{gas: 2300}(validAfter, validUntil);
+        require(res, "ep always returns true");
     }
 
     function paymasterAcceptTransaction(
@@ -29,7 +30,8 @@ library RIP7560Utils {
         uint256 validAfter,
         uint256 validUntil
     ) internal {
-        IRip7560EntryPoint(ENTRY_POINT)
+        bool res = IRip7560EntryPoint(ENTRY_POINT)
             .acceptPaymaster{gas: 2300}(validAfter, validUntil, context);
+        require(res, "ep always returns true");
     }
 }
