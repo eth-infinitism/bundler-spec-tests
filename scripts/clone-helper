@@ -7,6 +7,6 @@ exit 1
 fi
 
 dir=`echo $url | perl -pe 's!.*/!!; s/\.git$//' `
-git clone --quiet $url --depth 1 --branch $CIRCLE_BRANCH || git clone --quiet $url --depth 1 --branch $branch
+( test $CIRCLE_BRANCH != "master" && git clone --quiet $url --depth 1 --branch $CIRCLE_BRANCH ) || git clone --quiet $url --depth 1 --branch $branch
 cd $dir
 echo "== checked out '$dir' branch '`git branch --show-current`'"

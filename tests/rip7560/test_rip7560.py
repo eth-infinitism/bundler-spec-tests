@@ -1,5 +1,5 @@
+import hexbytes
 import pytest
-
 from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
@@ -35,6 +35,53 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     assert rethash == evhash
     assert wallet_contract.address == ev.address
     w3.eth.get_transaction(rethash)
+
+
+def test_getTransaction(w3, wallet_contract, tx_7560):
+    res = tx_7560.send()
+    rethash = res.result
+    send_bundle_now()
+    state_after = wallet_contract.functions.state().call()
+    assert state_after == 2
+    tx = dict(w3.eth.get_transaction(rethash))
+    block = w3.eth.get_block("latest")
+
+    expected_ret_fields = dict(
+        type=4,
+        blockHash=block["hash"],
+        blockNumber=block["number"],
+        gasPrice=min(int(tx_7560.maxFeePerGas, 16), block['baseFeePerGas']+int(tx_7560.maxPriorityFeePerGas, 16)),
+        transactionIndex=0,
+        hash=hexbytes.HexBytes(rethash),
+
+        chainId=int(tx_7560.chainId, 16),
+        sender=tx_7560.sender.lower(),
+        nonce=int(tx_7560.nonce, 16),
+        maxFeePerGas=int(tx_7560.maxFeePerGas, 16),
+        maxPriorityFeePerGas=int(tx_7560.maxPriorityFeePerGas, 16),
+        verificationGasLimit=tx_7560.verificationGasLimit,
+        value=int(tx_7560.value, 16),
+        builderFee=tx_7560.builderFee,
+        paymaster=tx_7560.paymaster,
+        paymasterData=tx_7560.paymasterData,
+        paymasterVerificationGasLimit=tx_7560.paymasterVerificationGasLimit,
+        paymasterPostOpGasLimit=tx_7560.paymasterPostOpGasLimit,
+        factory=tx_7560.factory,
+        factoryData=tx_7560.factoryData,
+        signature=tx_7560.signature,
+
+        # mapped fields (use standard TX names, not rip7560 names)
+        input=hexbytes.HexBytes(tx_7560.callData),
+        gas=int(tx_7560.callGasLimit, 16),
+    )
+    # remove "nulls"
+    expected_ret_fields = {k: v for k, v in expected_ret_fields.items() if v is not None}
+
+    # "from" field: there is no good value for it, and it is mandatory.
+    assert tx["from"] == ADDRESS_ZERO
+    del tx["from"]
+
+    assert expected_ret_fields == tx
 
 
 # assert the account is charged by the gas used in the tx

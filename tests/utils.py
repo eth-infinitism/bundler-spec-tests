@@ -198,17 +198,14 @@ def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factory_data)
     return sender
 
 
-def send_bundle_now():
-    try:
-        RPCRequest(method="debug_bundler_sendBundleNow").send(None)
-    except KeyError:
-        pass
+def send_bundle_now(url=None):
+    assert_ok(RPCRequest(method="debug_bundler_sendBundleNow").send(url))
 
 
 def set_manual_bundling_mode(url=None):
-    return RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
+    assert_ok(RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
         url
-    )
+    ))
 
 
 def dump_mempool(url=None):
@@ -262,7 +259,7 @@ def dump_reputation(url=None):
 
 
 def clear_reputation(url=None):
-    return RPCRequest(method="debug_bundler_clearReputation").send(url)
+    assert_ok(RPCRequest(method="debug_bundler_clearReputation").send(url))
 
 
 def set_reputation(address, ops_seen=1, ops_included=2, url=None):
