@@ -361,7 +361,7 @@ def test_ban_user_sender_double_role_in_bundle(w3, entrypoint_contract):
         RPCErrorCode.BANNED_OPCODE,
     )
 
-    RPCRequest(method="debug_bundler_clearState").send()
+    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
 
     # mempool addition order check: paymaster becomes sender
     response2 = user_op2.send()
