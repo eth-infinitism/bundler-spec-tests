@@ -53,7 +53,7 @@ replace_op_cases = [
 
 
 @pytest.mark.parametrize("case", replace_op_cases, ids=lambda case: case.rule)
-def test_bundle_replace_op(w3, case):
+def test_bundle_replace_op(w3, manual_bundling_mode, case):
     wallet = deploy_wallet_contract(w3)
     fund(w3, wallet.address)
     calldata = wallet.encodeABI(fn_name="setState", args=[1])
