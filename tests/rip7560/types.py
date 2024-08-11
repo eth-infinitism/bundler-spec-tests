@@ -1,5 +1,6 @@
 from dataclasses import dataclass, asdict
 
+from web3.constants import ADDRESS_ZERO
 from eth_typing import HexStr
 from eth_utils import to_checksum_address
 from tests.types import RPCRequest
@@ -44,5 +45,21 @@ class TransactionRIP7560:
             if self.paymasterData is None:
                 self.paymasterData = "0x"
 
+    # clean paymaster and factory fields if they are None
+    def cleanup(self):
+        if self.paymaster is None or self.paymaster == ADDRESS_ZERO:
+            self.paymaster = None
+            self.paymasterPostOpGasLimit = None
+            self.paymasterVerificationGasLimit = None
+            self.paymasterData = None
+        if self.factory is None or self.factory == ADDRESS_ZERO:
+            self.factory = None
+            self.factoryData = None
+        return self
+
     def send(self, url=None):
-        return RPCRequest(method="eth_sendTransaction", params=[asdict(self)]).send(url)
+        return RPCRequest(method="eth_sendTransaction", params=[remove_nulls(asdict(self.cleanup()))]).send(url)
+
+
+def remove_nulls(obj):
+    return {k: v for k, v in obj.items() if v is not None}

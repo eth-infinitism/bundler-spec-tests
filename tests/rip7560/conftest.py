@@ -12,11 +12,7 @@ def wallet_contract(w3):
     contract = deploy_contract(
         w3,
         "rip7560/TestAccount",
-        value=0 * 10**18,
-    )
-    time.sleep(0.1)
-    w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10 ** 18}
+        value=10**18,
     )
     return contract
 
@@ -26,11 +22,7 @@ def paymaster_contract_7560(w3):
     contract = deploy_contract(
         w3,
         "rip7560/RIP7560Paymaster",
-        value=0 * 10 ** 18,
-    )
-    time.sleep(0.1)
-    w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10 ** 18}
+        value=10 ** 18,
     )
     return contract
 
