@@ -55,7 +55,10 @@ def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560)
 
     response = tx_7560.send()
 
-    assert_rpc_error(response, "validation phase reverted in contract paymaster: on-chain revert message string", -32000)
+    assert_rpc_error(
+        response,
+        "validation phase reverted in contract paymaster: on-chain revert message string",
+        -32000)
 
 
 def test_eth_send_account_validation_returns_invalid_magic(wallet_contract_rules, tx_7560):

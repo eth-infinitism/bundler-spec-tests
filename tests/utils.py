@@ -3,7 +3,6 @@ import time
 from functools import cache
 
 from eth_utils import (
-    is_bytes,
     to_checksum_address
 )
 from eth_abi import decode
