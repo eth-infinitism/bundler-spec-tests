@@ -304,16 +304,3 @@ def get_userop_max_cost(user_op):
         user_op.paymasterVerificationGasLimit,
         user_op.paymasterPostOpGasLimit,
     ) * to_number(user_op.maxFeePerGas)
-
-
-def decode_error_message(response):
-    hex_error_message = response.message.split(':')[-1]
-    print(hex_error_message)
-    raw_error_msg = bytes.fromhex(hex_error_message.replace("0x", ""))
-    decoded_error_message = (
-        # pylint: disable=unsubscriptable-object
-        decode(["string"], raw_error_msg[4:])[0]
-        if is_bytes(raw_error_msg)
-        else hex_error_message
-    )
-    return decoded_error_message
