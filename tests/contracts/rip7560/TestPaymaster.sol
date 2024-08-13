@@ -14,10 +14,8 @@ contract TestPaymaster is IRip7560Paymaster {
         bytes32 txHash,
         bytes calldata transaction)
     external
-    returns (
-        bytes memory validationData
-    ){
-        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max - 1);
+    {
+        RIP7560Utils.paymasterAcceptTransaction("!hello hello hello!", 1, type(uint48).max - 1);
     }
 
     function postPaymasterTransaction(

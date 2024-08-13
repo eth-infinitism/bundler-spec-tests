@@ -11,13 +11,11 @@ contract GasWastePaymaster {
         bytes32 txHash,
         bytes calldata transaction)
     external
-    returns (
-        bytes memory validationData
-    ){
+    {
         do {
             pmCounter++;
         } while (gasleft() > 3000);
-        return RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max - 1);
+        RIP7560Utils.paymasterAcceptTransaction("", 1, type(uint48).max - 1);
     }
 
     function postPaymasterTransaction(
