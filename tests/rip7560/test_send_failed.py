@@ -80,7 +80,11 @@ def test_eth_send_account_validation_calls_invalid_callback(wallet_contract_rule
     tx_7560.signature = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
-    assert_rpc_error(response, "account validation did call the EntryPoint but not the 'acceptAccount' callback", -32000)
+    assert_rpc_error(
+        response,
+        "account validation did call the EntryPoint but not the 'acceptAccount' callback",
+        -32000
+    )
 
 
 def test_eth_send_paymaster_validation_calls_invalid_callback(paymaster_contract_7560, tx_7560):
@@ -88,7 +92,11 @@ def test_eth_send_paymaster_validation_calls_invalid_callback(paymaster_contract
     tx_7560.paymasterData = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
-    assert_rpc_error(response, "paymaster validation did call the EntryPoint but not the 'acceptPaymaster' callback", -32000)
+    assert_rpc_error(
+        response,
+        "paymaster validation did call the EntryPoint but not the 'acceptPaymaster' callback",
+        -32000
+    )
 
 
 def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):
