@@ -174,10 +174,12 @@ def assert_ok(response):
         raise AttributeError(f"expected result object, got:\n{response}") from exc
 
 
-def assert_rpc_error(response, message, code):
+def assert_rpc_error(response, message, code, data=None):
     try:
         assert response.code == code
         assert message.lower() in response.message.lower()
+        if data is not None:
+            assert response.data == data
     except AttributeError as exc:
         raise AttributeError(f"expected error object, got:\n{response}") from exc
 

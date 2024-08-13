@@ -65,11 +65,14 @@ library ValidationRules {
     //return by runRule if string is unknown.
     uint constant public UNKNOWN = type(uint).max;
 
+    error CustomError(string error, uint256 code);
+
     function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self) internal returns (uint) {
         if (eq(rule, "")) return 0;
         else if (eq(rule, "revert-msg")) {
             revert("on-chain revert message string");
-            return 0;
+        } else if (eq(rule, "revert-custom-msg")) {
+            revert CustomError("on-chain custom error", 777);
         }
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;

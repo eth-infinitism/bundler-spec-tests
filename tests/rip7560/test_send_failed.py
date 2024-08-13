@@ -49,6 +49,19 @@ def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
     assert_rpc_error(response, "validation phase reverted in contract account: on-chain revert message string", -32000)
 
 
+def test_eth_send_account_validation_reverts_custom(w3, wallet_contract_rules, tx_7560):
+    tx_7560.sender = wallet_contract_rules.address
+    tx_7560.nonce = hex(2)
+    tx_7560.signature = to_prefixed_hex("revert-custom-msg")
+
+    response = tx_7560.send()
+    # manually encoding the custom error message with "encodeABI" here
+    c = w3.eth.contract(abi='[{"type":"function","name":"CustomError",'
+                            '"inputs":[{"name": "error","type": "string"},{"name": "code","type": "uint256"}]}]')
+    abi_encoding = c.encodeABI(fn_name="CustomError", args=["on-chain custom error", 777])
+    assert_rpc_error(response, "validation phase reverted in contract account", -32000, abi_encoding)
+
+
 def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560):
     tx_7560.paymaster = paymaster_contract_7560.address
     tx_7560.paymasterData = to_prefixed_hex("revert-msg")
