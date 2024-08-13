@@ -2,9 +2,11 @@ import os
 import time
 from functools import cache
 
+from eth_utils import (
+    to_checksum_address
+)
 from eth_abi import decode
 from eth_abi.packed import encode_packed
-from eth_utils import to_checksum_address
 from solcx import compile_source
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
@@ -172,10 +174,12 @@ def assert_ok(response):
         raise AttributeError(f"expected result object, got:\n{response}") from exc
 
 
-def assert_rpc_error(response, message, code):
+def assert_rpc_error(response, message, code, data=None):
     try:
         assert response.code == code
         assert message.lower() in response.message.lower()
+        if data is not None:
+            assert response.data == data
     except AttributeError as exc:
         raise AttributeError(f"expected error object, got:\n{response}") from exc
 
