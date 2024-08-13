@@ -74,21 +74,21 @@ def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560)
         -32000)
 
 
-def test_eth_send_account_validation_returns_invalid_magic(wallet_contract_rules, tx_7560):
+def test_eth_send_account_validation_calls_invalid_callback(wallet_contract_rules, tx_7560):
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.nonce = hex(2)
-    tx_7560.signature = to_prefixed_hex("wrong-return-msg")
+    tx_7560.signature = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
-    assert_rpc_error(response, "account did not return correct magic_value", -32000)
+    assert_rpc_error(response, "account validation did call the EntryPoint but not the 'acceptAccount' callback", -32000)
 
 
-def test_eth_send_paymaster_validation_returns_invalid_magic(paymaster_contract_7560, tx_7560):
+def test_eth_send_paymaster_validation_calls_invalid_callback(paymaster_contract_7560, tx_7560):
     tx_7560.paymaster = paymaster_contract_7560.address
-    tx_7560.paymasterData = to_prefixed_hex("wrong-return-msg")
+    tx_7560.paymasterData = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
-    assert_rpc_error(response, "paymaster did not return correct magic_value", -32000)
+    assert_rpc_error(response, "paymaster validation did call the EntryPoint but not the 'acceptPaymaster' callback", -32000)
 
 
 def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):

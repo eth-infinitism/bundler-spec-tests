@@ -8,6 +8,10 @@ import "../ValidationRules.sol";
 import "./TestAccount.sol";
 import "./RIP7560TransactionStruct.sol";
 
+interface IRip7560EntryPointWrong {
+    function acceptAccountWrongSig(uint256 validAfter, uint256 validUntil) external;
+}
+
 contract RIP7560TestRulesAccount is ValidationRulesStorage {
 
     using ValidationRules for string;
@@ -35,8 +39,9 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
     ) external {
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.signature);
-        if (ValidationRules.eq(rule, "wrong-return-msg")){
-            return type(uint256).max;
+        if (ValidationRules.eq(rule, "wrong-callback-method")) {
+            ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptAccountWrongSig, (666, 777)));
+            return;
         }
         ValidationRules.runRule(rule, this, coin, this);
         RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);

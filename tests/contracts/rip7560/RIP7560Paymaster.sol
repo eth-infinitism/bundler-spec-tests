@@ -7,6 +7,10 @@ import "../ValidationRules.sol";
 import "./utils/RIP7560Utils.sol";
 import "./RIP7560TransactionStruct.sol";
 
+interface IRip7560EntryPointWrong {
+    function acceptPaymasterWrongSig(uint256 validAfter, uint256 validUntil, bytes calldata context) external;
+}
+
 contract RIP7560Paymaster is ValidationRulesStorage {
     using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
@@ -28,14 +32,9 @@ contract RIP7560Paymaster is ValidationRulesStorage {
         bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.paymasterData);
-        if (ValidationRules.eq(rule, "wrong-return-msg")){
-            uint256 validationData = type(uint256).max;
-            bytes memory ret = abi.encode(validationData, context);
-            uint256 len = ret.length;
-            // avoid wrapping return value as a byte array here
-            assembly {
-                return(add(ret, 0x20), len)
-            }
+        if (ValidationRules.eq(rule, "wrong-callback-method")) {
+            ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptPaymasterWrongSig, (666, 777, bytes("wrong context"))));
+            return;
         }
         if (!rule.eq("context")) {
             ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
