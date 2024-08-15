@@ -3,10 +3,10 @@ pragma solidity ^0.8.12;
 
 import "../ITestAccount.sol";
 
-import "./RIP7560TransactionType4.sol";
-import "./utils/RIP7560Utils.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+import "./lib/contracts/utils/RIP7560Utils.sol";
 import "./utils/TestUtils.sol";
-import "./interface/IRip7560Account.sol";
+import "./lib/contracts/interfaces/IRip7560Account.sol";
 
 contract TestAccount is IRip7560Account {
     uint256 public accCounter = 0;

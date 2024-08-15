@@ -6,7 +6,7 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "../ValidationRules.sol";
 
 import "./TestAccount.sol";
-import "./RIP7560TransactionStruct.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
 
 interface IRip7560EntryPointWrong {
     function acceptAccountWrongSig(uint256 validAfter, uint256 validUntil) external;

@@ -4,8 +4,8 @@ pragma solidity ^0.8.12;
 import "../TestCoin.sol";
 import "../ValidationRules.sol";
 
-import "./utils/RIP7560Utils.sol";
-import "./RIP7560TransactionStruct.sol";
+import "./lib/contracts/utils/RIP7560Utils.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
 
 interface IRip7560EntryPointWrong {
     function acceptPaymasterWrongSig(uint256 validAfter, uint256 validUntil, bytes calldata context) external;
