@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import "../Stakable.sol";
 import "./TestAccount.sol";
-import {IRip7560Paymaster} from "./interface/IRip7560Paymaster.sol";
+import {IRip7560Paymaster} from "./lib/contracts/interfaces/IRip7560Paymaster.sol";
 
 contract TestPaymaster is IRip7560Paymaster {
 

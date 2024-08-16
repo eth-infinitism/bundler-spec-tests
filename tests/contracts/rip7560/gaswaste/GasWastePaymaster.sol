@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "../utils/RIP7560Utils.sol";
+import "../lib/contracts/utils/RIP7560Utils.sol";
 
 contract GasWastePaymaster {
     uint256 public pmCounter = 0;
