@@ -32,6 +32,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "git submodule update --recursive --remote"
+          command: "git submodule update --recursive --remote"
+      - run:
           name: "curl pdm"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
