@@ -62,7 +62,7 @@ library TestUtils {
         /* Emit transaction details as seen on-chain */
         emit Type4TransactionParamsEvent(
             txStruct.sender,
-            txStruct.nonce,
+            txStruct.bigNonce,
             txStruct.validationGasLimit,
             txStruct.paymasterValidationGasLimit,
             txStruct.postOpGasLimit,

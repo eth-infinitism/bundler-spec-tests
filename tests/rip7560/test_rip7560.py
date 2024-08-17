@@ -56,7 +56,7 @@ def test_getTransaction(w3, wallet_contract, tx_7560):
 
         chainId=int(tx_7560.chainId, 16),
         sender=tx_7560.sender.lower(),
-        nonce=int(tx_7560.nonce, 16),
+        nonce=int(tx_7560.bigNonce, 16),
         maxFeePerGas=int(tx_7560.maxFeePerGas, 16),
         maxPriorityFeePerGas=int(tx_7560.maxPriorityFeePerGas, 16),
         verificationGasLimit=tx_7560.verificationGasLimit,
@@ -139,7 +139,7 @@ def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
     tx_7560.signature = "0x"
     tx_7560.factory = factory.address
     tx_7560.factoryData = create_account_func.build_transaction()["data"]
-    tx_7560.nonce = hex(0)
+    tx_7560.bigNonce = hex(0)
 
     assert len(w3.eth.get_code(tx_7560.sender)) == 0
     nonce = w3.eth.get_transaction_count(tx_7560.sender)
@@ -168,7 +168,7 @@ def test_bundle_with_events(w3, wallet_contract):
             factory=factory.address,
             factoryData=create_account_func.build_transaction()["data"],
             paymaster=paymaster.address,
-            nonce=hex(0),
+            bigNonce=hex(0),
             maxFeePerGas=hex(1000_000_000),
             maxPriorityFeePerGas=hex(1000000),
             verificationGasLimit=hex(3000000),
@@ -232,7 +232,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     assert state_before == 0
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.signature = to_prefixed_hex(banned_op)
-    tx_7560.nonce = hex(2)
+    tx_7560.bigNonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
     send_bundle_now()
@@ -269,7 +269,7 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
     ).call()
     tx_7560.sender = new_sender_address
     fund(w3, new_sender_address)
-    tx_7560.nonce = hex(0)
+    tx_7560.bigNonce = hex(0)
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
     tx_7560.factory = factory_contract_7560.address

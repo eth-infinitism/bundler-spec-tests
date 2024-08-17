@@ -32,7 +32,7 @@ def test_eth_send_no_code(w3):
 def test_eth_send_no_code_wrong_nonce(w3):
     tx = TransactionRIP7560(
         sender="0x1111111111111111111111111111111111111113",
-        nonce=hex(5),
+        bigNonce=hex(5),
     )
     fund(w3, tx.sender)
 
@@ -42,7 +42,7 @@ def test_eth_send_no_code_wrong_nonce(w3):
 
 def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
     tx_7560.sender = wallet_contract_rules.address
-    tx_7560.nonce = hex(2)
+    tx_7560.bigNonce = hex(2)
     tx_7560.signature = to_prefixed_hex("revert-msg")
 
     response = tx_7560.send()
@@ -76,7 +76,7 @@ def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560)
 
 def test_eth_send_account_validation_calls_invalid_callback(wallet_contract_rules, tx_7560):
     tx_7560.sender = wallet_contract_rules.address
-    tx_7560.nonce = hex(2)
+    tx_7560.bigNonce = hex(2)
     tx_7560.signature = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
@@ -105,7 +105,7 @@ def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):
     ).call()
     tx_7560.sender = new_sender_address
     fund(w3, new_sender_address)
-    tx_7560.nonce = hex(0)
+    tx_7560.bigNonce = hex(0)
     tx_7560.factory = factory_contract_7560.address
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, "revert-msg"
@@ -122,7 +122,7 @@ def test_eth_send_deployment_does_not_create_account(w3, factory_contract_7560, 
     ).call()
     tx_7560.sender = new_sender_address
     fund(w3, new_sender_address)
-    tx_7560.nonce = hex(0)
+    tx_7560.bigNonce = hex(0)
     tx_7560.factory = factory_contract_7560.address
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, "skip-deploy-msg"

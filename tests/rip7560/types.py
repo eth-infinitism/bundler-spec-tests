@@ -10,9 +10,6 @@ from tests.types import RPCRequest
 class TransactionRIP7560:
     # pylint: disable=too-many-instance-attributes, invalid-name
     sender: HexStr
-    nonce: HexStr = hex(0)
-    # pylint: disable=fixme
-    # todo: duplication is temporary - changing type of 'nonce' parameter is a huge change for geth
     bigNonce: HexStr = hex(0)
     factory: HexStr = "0x0000000000000000000000000000000000000000"
     factoryData: HexStr = "0x"

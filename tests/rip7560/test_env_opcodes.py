@@ -11,7 +11,7 @@ def test_side_effects(w3):
     paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=1 * 10**18)
     tx = TransactionRIP7560(
         sender=sender.address,
-        nonce=hex(1),
+        bigNonce=hex(1),
         paymaster=paymaster.address,
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(12345),
