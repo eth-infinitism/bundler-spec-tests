@@ -35,6 +35,17 @@ jobs:
           name: "git submodule update --recursive --remote"
           command: "git submodule update --recursive --remote"
       - run:
+          name: Install foundry
+          command: |
+            ! forge --version 2> /dev/null
+            curl \
+              --fail \
+              --location \
+              --output /tmp/foundry.tar.gz \
+              "https://github.com/foundry-rs/foundry/releases/download/nightly-f8aa4afec04cc0b7d364a5d78f0cde9e64fd14bf/foundry_nightly_linux_amd64.tar.gz"
+            tar --extract --gzip --file /tmp/foundry.tar.gz --one-top-level
+            ln --symbolic --force foundry/{forge,anvil,cast,chisel} .
+      - run:
           name: "curl pdm"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
