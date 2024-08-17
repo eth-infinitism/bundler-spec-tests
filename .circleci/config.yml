@@ -43,6 +43,7 @@ jobs:
               --location \
               --output /tmp/foundry.tar.gz \
               "https://github.com/foundry-rs/foundry/releases/download/nightly-f8aa4afec04cc0b7d364a5d78f0cde9e64fd14bf/foundry_nightly_linux_amd64.tar.gz"
+            cd "<< parameters.install_path >>"
             tar --extract --gzip --file /tmp/foundry.tar.gz --one-top-level
             ln --symbolic --force foundry/{forge,anvil,cast,chisel} .
             forge --version
