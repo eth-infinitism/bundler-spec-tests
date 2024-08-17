@@ -1,6 +1,7 @@
 from eth_abi.packed import encode_packed
 
-from tests.utils import send_bundle_now
+from tests.types import RPCErrorCode
+from tests.utils import send_bundle_now, assert_rpc_error
 
 
 def get_nonce(w3, nonce_manager, address, key):
@@ -40,3 +41,17 @@ def test_eth_sendTransaction7560_7712_valid(w3, wallet_contract, nonce_manager, 
     assert nonce_after == pack_nonce(key, 1)
     assert state_after == 2
     assert legacy_nonce_after == 1
+
+
+def test_eth_sendTransaction7560_7712_failed(w3, wallet_contract, nonce_manager, tx_7560):
+    key = 777
+    nonce_before = get_nonce(w3, nonce_manager, wallet_contract.address, key)
+    tx_7560.bigNonce = "0x" + nonce_before.hex().lstrip('0')
+    tx_7560.send()
+    send_bundle_now()
+    state_after = wallet_contract.functions.state().call()
+    assert state_after == 2
+
+    ret = tx_7560.send()
+    send_bundle_now()
+    assert_rpc_error(ret, "rip-7712 nonce validation failed: execution reverted", RPCErrorCode.INVALID_INPUT)
