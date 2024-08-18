@@ -12,7 +12,8 @@ from tests.utils import (
     fund,
     send_bundle_now,
     to_prefixed_hex,
-    deploy_contract, compile_contract,
+    deploy_contract,
+    compile_contract,
 )
 
 
@@ -37,9 +38,11 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop(w3, wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop(
+    w3, wallet_contract, tx_7560
+):
     tx_7560.maxPriorityFeePerGas = hex(12345)
-    paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10 ** 18)
+    paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
     assert counter_before == 0
     tx_7560.paymaster = paymaster.address
@@ -50,9 +53,11 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop(w3, wallet_contract
     assert counter_after == 1, "postOp failed to change state"
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(w3, wallet_contract, tx_7560):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(
+    w3, wallet_contract, tx_7560
+):
     tx_7560.maxPriorityFeePerGas = hex(12345)
-    paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10 ** 18)
+    paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
     assert counter_before == 0
     tx_7560.paymaster = paymaster.address
@@ -77,10 +82,12 @@ def test_getTransaction(w3, wallet_contract, tx_7560):
         type=4,
         blockHash=block["hash"],
         blockNumber=block["number"],
-        gasPrice=min(int(tx_7560.maxFeePerGas, 16), block['baseFeePerGas']+int(tx_7560.maxPriorityFeePerGas, 16)),
+        gasPrice=min(
+            int(tx_7560.maxFeePerGas, 16),
+            block["baseFeePerGas"] + int(tx_7560.maxPriorityFeePerGas, 16),
+        ),
         transactionIndex=0,
         hash=hexbytes.HexBytes(rethash),
-
         chainId=int(tx_7560.chainId, 16),
         sender=tx_7560.sender.lower(),
         nonce=int(tx_7560.nonce, 16),
@@ -96,13 +103,14 @@ def test_getTransaction(w3, wallet_contract, tx_7560):
         factory=tx_7560.factory,
         factoryData=tx_7560.factoryData,
         signature=tx_7560.signature,
-
         # mapped fields (use standard TX names, not rip7560 names)
         input=hexbytes.HexBytes(tx_7560.callData),
         gas=int(tx_7560.callGasLimit, 16),
     )
     # remove "nulls"
-    expected_ret_fields = {k: v for k, v in expected_ret_fields.items() if v is not None}
+    expected_ret_fields = {
+        k: v for k, v in expected_ret_fields.items() if v is not None
+    }
 
     # "from" field: there is no good value for it, and it is mandatory.
     assert tx["from"] == ADDRESS_ZERO
@@ -122,20 +130,22 @@ def test_eth_send_gas_usage(w3, tx_7560):
     balance_after = w3.eth.get_balance(tx_7560.sender)
     rcpt_effective_gas_price = rcpt.effectiveGasPrice
     block = w3.eth.get_block(rcpt.blockHash)
-    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas,16)
-    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas,16)
+    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas, 16)
+    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas, 16)
     block_base_fee = block.baseFeePerGas
 
     print("effectiveGasPrice", rcpt_effective_gas_price, "baseFee", block_base_fee)
     assert rcpt.gasUsed > 0
-    assert rcpt_effective_gas_price == min(block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas)
+    assert rcpt_effective_gas_price == min(
+        block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas
+    )
     assert balance - balance_after == rcpt.gasUsed * rcpt_effective_gas_price
 
 
 # assert the paymaster is charged for the gas used by the tx
 def test_eth_send_gas_usage_with_paymaster(w3, tx_7560):
     tx_7560.maxPriorityFeePerGas = hex(12345)
-    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=10 ** 18)
+    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=10**18)
     tx_7560.paymaster = paymaster.address
     balance = w3.eth.get_balance(tx_7560.sender)
     pm_balance = w3.eth.get_balance(paymaster.address)
@@ -148,12 +158,14 @@ def test_eth_send_gas_usage_with_paymaster(w3, tx_7560):
     assert balance_after == balance
     rcpt_effective_gas_price = rcpt.effectiveGasPrice
     block = w3.eth.get_block(rcpt.blockHash)
-    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas,16)
-    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas,16)
+    tx_max_fee_per_gas = int(tx_7560.maxFeePerGas, 16)
+    tx_max_priority_fee_per_gas = int(tx_7560.maxPriorityFeePerGas, 16)
     block_base_fee = block.baseFeePerGas
 
     assert rcpt.gasUsed > 0
-    assert rcpt_effective_gas_price == min(block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas)
+    assert rcpt_effective_gas_price == min(
+        block_base_fee + tx_max_priority_fee_per_gas, tx_max_fee_per_gas
+    )
     assert pm_balance - pm_balance_after == rcpt.gasUsed * rcpt_effective_gas_price
 
 
@@ -183,7 +195,7 @@ def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
 def test_bundle_with_events(w3, wallet_contract):
     icontract = compile_contract("rip7560/TestAccount")
     factory = deploy_contract(w3, "rip7560/TestAccountFactory")
-    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=10 ** 18)
+    paymaster = deploy_contract(w3, "rip7560/TestPaymaster", value=10**18)
 
     txs = []
     hashes = []
@@ -264,7 +276,7 @@ def test_fail_with_revert(wallet_contract_rules, tx_7560):
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_eth_sendTransaction7560_banned_opcode(
-        wallet_contract_rules, tx_7560, banned_op
+    wallet_contract_rules, tx_7560, banned_op
 ):
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
@@ -280,7 +292,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_paymaster_eth_sendTransaction7560_banned_opcode(
-        wallet_contract, tx_7560, paymaster_contract_7560, banned_op
+    wallet_contract, tx_7560, paymaster_contract_7560, banned_op
 ):
     state_before = wallet_contract.functions.state().call()
     assert state_before == 0

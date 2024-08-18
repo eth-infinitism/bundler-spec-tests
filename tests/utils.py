@@ -200,9 +200,9 @@ def send_bundle_now(url=None):
 
 
 def set_manual_bundling_mode(url=None):
-    assert_ok(RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
-        url
-    ))
+    assert_ok(
+        RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(url)
+    )
 
 
 def dump_mempool(url=None):
