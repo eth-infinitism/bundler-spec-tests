@@ -30,7 +30,7 @@ contract RIP7560Paymaster is ValidationRulesStorage {
     external
     {
         bytes memory context = abi.encodePacked("context here");
-        RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
+        RIP7560Transaction memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.paymasterData);
         if (ValidationRules.eq(rule, "wrong-callback-method")) {
             ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptPaymasterWrongSig, (666, 777, bytes("wrong context"))));

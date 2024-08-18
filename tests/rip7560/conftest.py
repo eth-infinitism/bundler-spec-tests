@@ -59,7 +59,8 @@ def wallet_contract_rules(w3):
 def tx_7560(wallet_contract):
     return TransactionRIP7560(
         sender=wallet_contract.address,
-        bigNonce=hex(1),
+        nonceKey=hex(0),
+        nonce=hex(1),
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
         verificationGasLimit=hex(2000000),

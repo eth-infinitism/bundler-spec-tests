@@ -10,7 +10,8 @@ from tests.types import RPCRequest
 class TransactionRIP7560:
     # pylint: disable=too-many-instance-attributes, invalid-name
     sender: HexStr
-    bigNonce: HexStr = hex(0)
+    nonceKey: HexStr = hex(0)
+    nonce: HexStr = hex(0)
     factory: HexStr = "0x0000000000000000000000000000000000000000"
     factoryData: HexStr = "0x"
     callData: HexStr = "0x"

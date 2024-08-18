@@ -31,7 +31,8 @@ def test_eth_sendTransaction7560_7712_valid(w3, wallet_contract, nonce_manager, 
     assert nonce_before == pack_nonce(key, 0)
     assert legacy_nonce_before == 1
 
-    tx_7560.bigNonce = "0x" + nonce_before.hex().lstrip('0')
+    tx_7560.nonceKey = hex(key)
+    tx_7560.nonce = hex(0)
     tx_7560.send()
     send_bundle_now()
 
@@ -43,10 +44,10 @@ def test_eth_sendTransaction7560_7712_valid(w3, wallet_contract, nonce_manager, 
     assert legacy_nonce_after == 1
 
 
-def test_eth_sendTransaction7560_7712_failed(w3, wallet_contract, nonce_manager, tx_7560):
+def test_eth_sendTransaction7560_7712_failed(wallet_contract, tx_7560):
     key = 777
-    nonce_before = get_nonce(w3, nonce_manager, wallet_contract.address, key)
-    tx_7560.bigNonce = "0x" + nonce_before.hex().lstrip('0')
+    tx_7560.nonceKey = hex(key)
+    tx_7560.nonce = hex(0)
     tx_7560.send()
     send_bundle_now()
     state_after = wallet_contract.functions.state().call()

@@ -12,6 +12,7 @@ library TestUtils {
 
     event Type4TransactionParamsEvent(
         address sender,
+        uint256 nonceKey,
         uint256 nonce,
         uint256 validationGasLimit,
         uint256 paymasterValidationGasLimit,
@@ -57,12 +58,13 @@ library TestUtils {
     ) internal {
         emit ValidationTransactionFunctionParams(version, txHash);
 
-        RIP7560TransactionStruct memory txStruct = abi.decode(transaction, (RIP7560TransactionStruct));
+        RIP7560Transaction memory txStruct = abi.decode(transaction, (RIP7560Transaction));
 
         /* Emit transaction details as seen on-chain */
         emit Type4TransactionParamsEvent(
             txStruct.sender,
-            txStruct.bigNonce,
+            txStruct.nonceKey,
+            txStruct.nonce,
             txStruct.validationGasLimit,
             txStruct.paymasterValidationGasLimit,
             txStruct.postOpGasLimit,
