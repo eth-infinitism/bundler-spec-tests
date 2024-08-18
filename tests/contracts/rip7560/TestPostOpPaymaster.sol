@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import "../Stakable.sol";
 import "./TestAccount.sol";
-import {IRip7560Paymaster} from "./interface/IRip7560Paymaster.sol";
+import {IRip7560Paymaster} from "./lib/contracts/interfaces/IRip7560Paymaster.sol";
 import "../ValidationRules.sol";
 
 contract TestPostOpPaymaster is IRip7560Paymaster {
@@ -15,16 +15,13 @@ contract TestPostOpPaymaster is IRip7560Paymaster {
         uint256 version,
         bytes32 txHash,
         bytes calldata transaction)
-    external
-    returns (
-        bytes memory validationData
-    ){
+    external {
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         bytes memory context = txStruct.signature;
         if (string(context).eq("no context")) {
             context = "";
         }
-        return RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max - 1);
+        RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max - 1);
     }
 
     function postPaymasterTransaction(

@@ -25,7 +25,9 @@ def test_eth_send_no_code(w3):
 
     ret = tx.send()
     assert_rpc_error(
-        ret, "account is not deployed and no factory is specified", RPCErrorCode.INVALID_INPUT
+        ret,
+        "account is not deployed and no factory is specified",
+        RPCErrorCode.INVALID_INPUT,
     )
 
 
@@ -46,7 +48,11 @@ def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
     tx_7560.signature = to_prefixed_hex("revert-msg")
 
     response = tx_7560.send()
-    assert_rpc_error(response, "validation phase reverted in contract account: on-chain revert message string", -32000)
+    assert_rpc_error(
+        response,
+        "validation phase reverted in contract account: on-chain revert message string",
+        -32000,
+    )
 
 
 def test_eth_send_account_validation_reverts_custom(w3, wallet_contract_rules, tx_7560):
@@ -56,10 +62,16 @@ def test_eth_send_account_validation_reverts_custom(w3, wallet_contract_rules, t
 
     response = tx_7560.send()
     # manually encoding the custom error message with "encodeABI" here
-    c = w3.eth.contract(abi='[{"type":"function","name":"CustomError",'
-                            '"inputs":[{"name": "error","type": "string"},{"name": "code","type": "uint256"}]}]')
-    abi_encoding = c.encodeABI(fn_name="CustomError", args=["on-chain custom error", 777])
-    assert_rpc_error(response, "validation phase reverted in contract account", -32000, abi_encoding)
+    c = w3.eth.contract(
+        abi='[{"type":"function","name":"CustomError",'
+        '"inputs":[{"name": "error","type": "string"},{"name": "code","type": "uint256"}]}]'
+    )
+    abi_encoding = c.encodeABI(
+        fn_name="CustomError", args=["on-chain custom error", 777]
+    )
+    assert_rpc_error(
+        response, "validation phase reverted in contract account", -32000, abi_encoding
+    )
 
 
 def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560):
@@ -71,10 +83,13 @@ def test_eth_send_paymaster_validation_reverts(paymaster_contract_7560, tx_7560)
     assert_rpc_error(
         response,
         "validation phase reverted in contract paymaster: on-chain revert message string",
-        -32000)
+        -32000,
+    )
 
 
-def test_eth_send_account_validation_calls_invalid_callback(wallet_contract_rules, tx_7560):
+def test_eth_send_account_validation_calls_invalid_callback(
+    wallet_contract_rules, tx_7560
+):
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.nonce = hex(2)
     tx_7560.signature = to_prefixed_hex("wrong-callback-method")
@@ -83,11 +98,13 @@ def test_eth_send_account_validation_calls_invalid_callback(wallet_contract_rule
     assert_rpc_error(
         response,
         "account validation did call the EntryPoint but not the 'acceptAccount' callback",
-        -32000
+        -32000,
     )
 
 
-def test_eth_send_paymaster_validation_calls_invalid_callback(paymaster_contract_7560, tx_7560):
+def test_eth_send_paymaster_validation_calls_invalid_callback(
+    paymaster_contract_7560, tx_7560
+):
     tx_7560.paymaster = paymaster_contract_7560.address
     tx_7560.paymasterData = to_prefixed_hex("wrong-callback-method")
 
@@ -95,7 +112,7 @@ def test_eth_send_paymaster_validation_calls_invalid_callback(paymaster_contract
     assert_rpc_error(
         response,
         "paymaster validation did call the EntryPoint but not the 'acceptPaymaster' callback",
-        -32000
+        -32000,
     )
 
 
@@ -109,14 +126,18 @@ def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):
     tx_7560.factory = factory_contract_7560.address
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, "revert-msg"
-    ).build_transaction({
-        "gas": 1000000
-    })["data"]
+    ).build_transaction({"gas": 1000000})["data"]
     response = tx_7560.send()
-    assert_rpc_error(response, "validation phase reverted in contract deployer: on-chain revert message string", -32000)
+    assert_rpc_error(
+        response,
+        "validation phase reverted in contract deployer: on-chain revert message string",
+        -32000,
+    )
 
 
-def test_eth_send_deployment_does_not_create_account(w3, factory_contract_7560, tx_7560):
+def test_eth_send_deployment_does_not_create_account(
+    w3, factory_contract_7560, tx_7560
+):
     new_sender_address = factory_contract_7560.functions.getCreate2Address(
         ADDRESS_ZERO, 123, "skip-deploy-msg"
     ).call()
@@ -126,8 +147,6 @@ def test_eth_send_deployment_does_not_create_account(w3, factory_contract_7560, 
     tx_7560.factory = factory_contract_7560.address
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, "skip-deploy-msg"
-    ).build_transaction({
-        "gas": 1000000
-    })["data"]
+    ).build_transaction({"gas": 1000000})["data"]
     response = tx_7560.send()
     assert_rpc_error(response, "account was not deployed by a factory", -32000)
