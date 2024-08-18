@@ -38,9 +38,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop(
-    w3, wallet_contract, tx_7560
-):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop(w3, tx_7560):
     tx_7560.maxPriorityFeePerGas = hex(12345)
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
@@ -53,9 +51,7 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop(
     assert counter_after == 1, "postOp failed to change state"
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(
-    w3, wallet_contract, tx_7560
-):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(w3, tx_7560):
     tx_7560.maxPriorityFeePerGas = hex(12345)
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
