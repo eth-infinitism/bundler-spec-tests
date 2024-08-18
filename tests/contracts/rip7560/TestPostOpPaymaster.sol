@@ -20,7 +20,11 @@ contract TestPostOpPaymaster is IRip7560Paymaster {
         bytes memory validationData
     ){
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
-        return RIP7560Utils.paymasterAcceptTransaction(txStruct.signature, 1, type(uint48).max - 1);
+        bytes memory context = txStruct.signature;
+        if (string(context).eq("no context")) {
+            context = "";
+        }
+        return RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max - 1);
     }
 
     function postPaymasterTransaction(
@@ -28,8 +32,8 @@ contract TestPostOpPaymaster is IRip7560Paymaster {
         uint256 actualGasCost,
         bytes calldata context
     ) external {
-        string memory revertPostOp = string(context);
-        if (revertPostOp.eq("revert")) {
+        string memory rule = string(context);
+        if (rule.eq("revert")) {
             revert();
         }
         counter++;
