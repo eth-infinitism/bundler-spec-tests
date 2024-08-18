@@ -38,31 +38,47 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop(w3, tx_7560):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop(
+    w3, wallet_contract, tx_7560
+):
     tx_7560.maxPriorityFeePerGas = hex(12345)
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
+    state_before = wallet_contract.functions.state().call()
     assert counter_before == 0
+    assert state_before == 0
     tx_7560.paymaster = paymaster.address
+    tx_7560.callData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
     counter_after = paymaster.functions.counter().call()
+    state_after = wallet_contract.functions.state().call()
     assert counter_after == 1, "postOp failed to change state"
+    assert state_after == 2, "execution failed to change state"
 
 
-def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(w3, tx_7560):
+def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(
+    w3, wallet_contract, tx_7560
+):
     tx_7560.maxPriorityFeePerGas = hex(12345)
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     counter_before = paymaster.functions.counter().call()
+    state_before = wallet_contract.functions.state().call()
     assert counter_before == 0
+    assert state_before == 0
     tx_7560.paymaster = paymaster.address
+    tx_7560.callData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
     tx_7560.signature = to_prefixed_hex("revert")
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
     counter_after = paymaster.functions.counter().call()
-    assert counter_after == 0, "postOp failed but state did not revert"
+    state_after = wallet_contract.functions.state().call()
+    assert (
+        counter_after == 0
+    ), "postOp failed but paymaster postOp state change did not revert"
+    assert state_after == 1, "postOp failed but execution state change did not revert"
 
 
 def test_getTransaction(w3, wallet_contract, tx_7560):
