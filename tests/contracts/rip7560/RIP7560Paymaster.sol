@@ -4,8 +4,12 @@ pragma solidity ^0.8.12;
 import "../TestCoin.sol";
 import "../ValidationRules.sol";
 
-import "./utils/RIP7560Utils.sol";
-import "./RIP7560TransactionStruct.sol";
+import "./lib/contracts/utils/RIP7560Utils.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+
+interface IRip7560EntryPointWrong {
+    function acceptPaymasterWrongSig(uint256 validAfter, uint256 validUntil, bytes calldata context) external;
+}
 
 contract RIP7560Paymaster is ValidationRulesStorage {
     using ValidationRules for string;
@@ -24,16 +28,18 @@ contract RIP7560Paymaster is ValidationRulesStorage {
         bytes32 txHash,
         bytes calldata transaction)
     external
-    returns (
-        bytes memory validationData
-    ){
+    {
         bytes memory context = abi.encodePacked("context here");
         RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.paymasterData);
+        if (ValidationRules.eq(rule, "wrong-callback-method")) {
+            ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptPaymasterWrongSig, (666, 777, bytes("wrong context"))));
+            return;
+        }
         if (!rule.eq("context")) {
             ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
         }
-        return RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
+        RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
     }
 
     function postPaymasterTransaction(

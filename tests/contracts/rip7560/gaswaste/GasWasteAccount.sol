@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "../RIP7560TransactionType4.sol";
-import "../utils/RIP7560Utils.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+import "../lib/contracts/utils/RIP7560Utils.sol";
 import "../utils/TestUtils.sol";
 
 contract GasWasteAccount {
@@ -12,11 +12,11 @@ contract GasWasteAccount {
         uint256,
         bytes32,
         bytes calldata
-    ) external returns (uint256) {
+    ) external {
         do {
             accCounter++;
         } while (gasleft() > 3000);
-        return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
+        RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
 
     function anyExecutionFunction() external {

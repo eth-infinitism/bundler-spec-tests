@@ -3,10 +3,10 @@ pragma solidity ^0.8.12;
 
 import "../ITestAccount.sol";
 
-import "./RIP7560TransactionType4.sol";
-import "./utils/RIP7560Utils.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+import "./lib/contracts/utils/RIP7560Utils.sol";
 import "./utils/TestUtils.sol";
-import {IRip7560Account} from "./interface/IRip7560Account.sol";
+import "./lib/contracts/interfaces/IRip7560Account.sol";
 
 contract TestAccount is IRip7560Account {
     uint256 public accCounter = 0;
@@ -25,10 +25,7 @@ contract TestAccount is IRip7560Account {
         uint256 version,
         bytes32 txHash,
         bytes calldata transaction
-    ) external returns (uint256) {
-
-//        TestUtils.emitEvmData("validateTransaction");
-//        TestUtils.emitValidationParams(version, txHash, transaction);
+    ) external {
 
         emit AccountValidationEvent(state, accCounter);
 
@@ -36,7 +33,7 @@ contract TestAccount is IRip7560Account {
         accCounter++;
         state = 1;
 
-        return RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
+        RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
 
     function anyExecutionFunction() external {

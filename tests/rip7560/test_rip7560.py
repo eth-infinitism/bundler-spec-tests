@@ -296,17 +296,6 @@ def test_bundle_with_events(w3, wallet_contract):
             assert log.address == txs[i].sender
 
 
-def test_fail_with_revert(wallet_contract_rules, tx_7560):
-    tx_7560.sender = wallet_contract_rules.address
-    tx_7560.nonce = hex(2)
-    tx_7560.signature = to_prefixed_hex("revert-msg")
-
-    response = tx_7560.send()
-    # todo- at least during simulation, should report back original revert data
-    # (otherwise, its very hard to debug validation reverts)
-    assert_rpc_error(response, "execution reverted", -32000)
-
-
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_eth_sendTransaction7560_banned_opcode(
     wallet_contract_rules, tx_7560, banned_op

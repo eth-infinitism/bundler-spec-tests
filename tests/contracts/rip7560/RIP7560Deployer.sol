@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 import "../Create2.sol";
 import "../ValidationRules.sol";
 
-import "./RIP7560TransactionStruct.sol";
+import "./lib/contracts/interfaces/IRip7560Transaction.sol";
 import {TestAccount} from "./TestAccount.sol";
 
 contract RIP7560Deployer is ValidationRulesStorage  {
@@ -38,6 +38,9 @@ contract RIP7560Deployer is ValidationRulesStorage  {
             assembly {
                 extcodecopy(create2address, 0, 0, 2)
             }
+        }
+        if (ValidationRules.eq(rule, "skip-deploy-msg")){
+            return address(0);
         }
         ret = address(new TestAccount{salt : bytes32(salt)}());
         if (!rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
