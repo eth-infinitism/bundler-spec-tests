@@ -2,9 +2,7 @@ import os
 import time
 from functools import cache
 
-from eth_utils import (
-    to_checksum_address
-)
+from eth_utils import to_checksum_address
 from eth_abi import decode
 from eth_abi.packed import encode_packed
 from solcx import compile_source
@@ -204,9 +202,9 @@ def send_bundle_now(url=None):
 
 
 def set_manual_bundling_mode(url=None):
-    assert_ok(RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(
-        url
-    ))
+    assert_ok(
+        RPCRequest(method="debug_bundler_setBundlingMode", params=["manual"]).send(url)
+    )
 
 
 def dump_mempool(url=None):
