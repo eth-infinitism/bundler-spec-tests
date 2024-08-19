@@ -45,7 +45,7 @@ def test_eth_send_no_code_wrong_nonce(w3):
 def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.nonce = hex(2)
-    tx_7560.signature = to_prefixed_hex("revert-msg")
+    tx_7560.authorizationData = to_prefixed_hex("revert-msg")
 
     response = tx_7560.send()
     assert_rpc_error(
@@ -58,7 +58,7 @@ def test_eth_send_account_validation_reverts(wallet_contract_rules, tx_7560):
 def test_eth_send_account_validation_reverts_custom(w3, wallet_contract_rules, tx_7560):
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.nonce = hex(2)
-    tx_7560.signature = to_prefixed_hex("revert-custom-msg")
+    tx_7560.authorizationData = to_prefixed_hex("revert-custom-msg")
 
     response = tx_7560.send()
     # manually encoding the custom error message with "encodeABI" here
@@ -92,7 +92,7 @@ def test_eth_send_account_validation_calls_invalid_callback(
 ):
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.nonce = hex(2)
-    tx_7560.signature = to_prefixed_hex("wrong-callback-method")
+    tx_7560.authorizationData = to_prefixed_hex("wrong-callback-method")
 
     response = tx_7560.send()
     assert_rpc_error(

@@ -16,8 +16,8 @@ def test_side_effects(w3):
         paymaster=paymaster.address,
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(12345),
-        signature="0xface",
-        callData=sender.encodeABI(fn_name="saveEventOpcodes"),
+        authorizationData="0xface",
+        executionData=sender.encodeABI(fn_name="saveEventOpcodes"),
         # nonce = "0x1234"
     )
 

@@ -64,8 +64,8 @@ def build_tx7560_for_sender(w3, rules_account_contract, rule):
     signature = "0x" + rule.encode().hex()
     return TransactionRIP7560(
         sender=rules_account_contract.address,
-        callData=call_data,
-        signature=signature,
+        executionData=call_data,
+        authorizationData=signature,
         nonceKey=hex(0),
         nonce=hex(2),
     )

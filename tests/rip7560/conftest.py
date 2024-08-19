@@ -65,8 +65,8 @@ def tx_7560(wallet_contract):
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
         verificationGasLimit=hex(2000000),
-        callData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
-        signature="0xface",
+        executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+        authorizationData="0xface",
     )
 
 

@@ -38,7 +38,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
         bytes calldata transaction
     ) external {
         RIP7560Transaction memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
-        string memory rule = string(txStruct.signature);
+        string memory rule = string(txStruct.authorizationData);
         if (ValidationRules.eq(rule, "wrong-callback-method")) {
             ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptAccountWrongSig, (666, 777)));
             return;

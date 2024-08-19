@@ -14,12 +14,12 @@ class TransactionRIP7560:
     nonce: HexStr = hex(0)
     factory: HexStr = "0x0000000000000000000000000000000000000000"
     factoryData: HexStr = "0x"
-    callData: HexStr = "0x"
+    executionData: HexStr = "0x"
     callGasLimit: HexStr = hex(3 * 10**5)
     verificationGasLimit: HexStr = hex(10**6)
     maxFeePerGas: HexStr = hex(4 * 10**9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
-    signature: HexStr = "0x"
+    authorizationData: HexStr = "0x"
     paymaster: HexStr = "0x0000000000000000000000000000000000000000"
     paymasterData: HexStr = "0x"
     paymasterVerificationGasLimit: HexStr = hex(0)

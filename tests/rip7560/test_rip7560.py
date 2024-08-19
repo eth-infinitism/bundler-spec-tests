@@ -48,8 +48,8 @@ def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
     assert counter_before == 0
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
-    tx_7560.signature = to_prefixed_hex("no context")
-    tx_7560.callData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.authorizationData = to_prefixed_hex("no context")
+    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
@@ -69,7 +69,7 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop(
     assert counter_before == 0
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
-    tx_7560.callData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
@@ -89,8 +89,8 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(
     assert counter_before == 0
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
-    tx_7560.callData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
-    tx_7560.signature = to_prefixed_hex("revert")
+    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.authorizationData = to_prefixed_hex("revert")
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
@@ -136,9 +136,11 @@ def test_getTransaction(w3, wallet_contract, tx_7560):
         paymasterPostOpGasLimit=tx_7560.paymasterPostOpGasLimit,
         factory=tx_7560.factory,
         factoryData=tx_7560.factoryData,
-        signature=tx_7560.signature,
+        authorizationData=tx_7560.authorizationData,
+        executionData=tx_7560.executionData,
+        # stopped filling in the unrelated "input" filed to be consistent with renaming "calldata" to "executionData"
+        input=hexbytes.HexBytes(""),
         # mapped fields (use standard TX names, not rip7560 names)
-        input=hexbytes.HexBytes(tx_7560.callData),
         gas=int(tx_7560.callGasLimit, 16),
     )
     # remove "nulls"
@@ -209,7 +211,7 @@ def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
     create_account_func = factory.functions.createAccount(1)
 
     tx_7560.sender = create_account_func.call()
-    tx_7560.signature = "0x"
+    tx_7560.authorizationData = "0x"
     tx_7560.factory = factory.address
     tx_7560.factoryData = create_account_func.build_transaction()["data"]
     tx_7560.nonce = hex(0)
@@ -246,11 +248,11 @@ def test_bundle_with_events(w3, wallet_contract):
             maxFeePerGas=hex(1000_000_000),
             maxPriorityFeePerGas=hex(1000000),
             verificationGasLimit=hex(3000000),
-            callData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+            executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
         )
         # force the last tx to fail
         if i == 2:
-            tx.callData = wallet_contract.encodeABI(fn_name="revertingFunction")
+            tx.executionData = wallet_contract.encodeABI(fn_name="revertingFunction")
         txs.append(tx)
         ret = tx.send()
         hashes.append(ret)
@@ -305,7 +307,7 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     state_before = wallet_contract_rules.functions.state().call()
     assert state_before == 0
     tx_7560.sender = wallet_contract_rules.address
-    tx_7560.signature = to_prefixed_hex(banned_op)
+    tx_7560.authorizationData = to_prefixed_hex(banned_op)
     tx_7560.nonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
@@ -350,7 +352,7 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, banned_op
     ).build_transaction()["data"]
-    tx_7560.signature = to_prefixed_hex(banned_op)
+    tx_7560.authorizationData = to_prefixed_hex(banned_op)
     response = tx_7560.send()
     assert_rpc_error(
         response,
