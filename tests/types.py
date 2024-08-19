@@ -23,7 +23,9 @@ class CommandLineArgs:
 
     @classmethod
     # pylint: disable=too-many-arguments
-    def configure(cls, url, entrypoint, nonce_manager, ethereum_node, launcher_script, log_rpc):
+    def configure(
+        cls, url, entrypoint, nonce_manager, ethereum_node, launcher_script, log_rpc
+    ):
         cls.url = url
         cls.entrypoint = entrypoint
         cls.nonce_manager = nonce_manager
