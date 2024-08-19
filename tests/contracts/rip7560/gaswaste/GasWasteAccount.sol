@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "./lib/contracts/interfaces/IRip7560Transaction.sol";
-import "../lib/contracts/utils/RIP7560Utils.sol";
+import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
+import "@rip7560/contracts/utils/RIP7560Utils.sol";
 import "../utils/TestUtils.sol";
 
 contract GasWasteAccount {

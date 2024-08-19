@@ -6,7 +6,7 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "../ValidationRules.sol";
 
 import "./TestAccount.sol";
-import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
 
 interface IRip7560EntryPointWrong {
     function acceptAccountWrongSig(uint256 validAfter, uint256 validUntil) external;
@@ -37,7 +37,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage {
         bytes32 txHash,
         bytes calldata transaction
     ) external {
-        RIP7560TransactionStruct memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
+        RIP7560Transaction memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
         string memory rule = string(txStruct.signature);
         if (ValidationRules.eq(rule, "wrong-callback-method")) {
             ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptAccountWrongSig, (666, 777)));

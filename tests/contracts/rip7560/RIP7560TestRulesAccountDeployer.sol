@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 import "../Create2.sol";
 import "../ValidationRules.sol";
 
-import "./lib/contracts/interfaces/IRip7560Transaction.sol";
+import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
 import "./RIP7560TestRulesAccount.sol";
 
 contract RIP7560TestRulesAccountDeployer {

@@ -54,6 +54,7 @@ def build_tx7560_for_paymaster(w3, paymaster_contract, rule):
         sender=wallet.address,
         paymaster=paymaster_contract.address,
         paymasterData="0x" + rule.encode().hex(),
+        nonceKey=hex(0),
         nonce=hex(1),
     )
 
@@ -65,6 +66,7 @@ def build_tx7560_for_sender(w3, rules_account_contract, rule):
         sender=rules_account_contract.address,
         callData=call_data,
         signature=signature,
+        nonceKey=hex(0),
         nonce=hex(2),
     )
 

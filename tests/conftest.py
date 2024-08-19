@@ -21,6 +21,7 @@ def pytest_configure(config):
     CommandLineArgs.configure(
         url=config.getoption("--url"),
         entrypoint=config.getoption("--entry-point"),
+        nonce_manager=config.getoption("--nonce-manager"),
         ethereum_node=config.getoption("--ethereum-node"),
         launcher_script=config.getoption("--launcher-script"),
         log_rpc=config.getoption("--log-rpc"),
@@ -43,6 +44,7 @@ def pytest_sessionfinish():
 def pytest_addoption(parser):
     parser.addoption("--url", action="store")
     parser.addoption("--entry-point", action="store")
+    parser.addoption("--nonce-manager", action="store")
     parser.addoption("--ethereum-node", action="store")
     parser.addoption("--launcher-script", action="store")
     parser.addoption("--log-rpc", action="store_true", default=False)
