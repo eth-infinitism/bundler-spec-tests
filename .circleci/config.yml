@@ -119,7 +119,9 @@ jobs:
       - run:
           name: "lint"
           command: "pdm run lint"
-
+      - run:
+          name: "format check"
+          command: "pdm run format --check"
       - run:
           name: "clone go-ethereum from infinitism"
           command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git

@@ -59,7 +59,9 @@ class TransactionRIP7560:
         return self
 
     def send(self, url=None):
-        return RPCRequest(method="eth_sendTransaction", params=[remove_nulls(asdict(self.cleanup()))]).send(url)
+        return RPCRequest(
+            method="eth_sendTransaction", params=[remove_nulls(asdict(self.cleanup()))]
+        ).send(url)
 
 
 def remove_nulls(obj):

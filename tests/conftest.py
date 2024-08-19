@@ -142,14 +142,16 @@ def manual_bundling_mode():
 
 @pytest.fixture
 def auto_bundling_mode():
-    assert_ok(RPCRequest(
-        method="debug_bundler_setBundlingMode", params=["auto"]
-    ).send())
+    assert_ok(
+        RPCRequest(method="debug_bundler_setBundlingMode", params=["auto"]).send()
+    )
 
 
 @pytest.fixture
 def set_reputation(reputations):
-    assert_ok(RPCRequest(
-        method="debug_bundler_setReputation",
-        params=[reputations, CommandLineArgs.entrypoint],
-    ).send())
+    assert_ok(
+        RPCRequest(
+            method="debug_bundler_setReputation",
+            params=[reputations, CommandLineArgs.entrypoint],
+        ).send()
+    )

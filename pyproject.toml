@@ -28,7 +28,7 @@ requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
-update-deps = {shell = "git submodule update --remote --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build && cd ../tests/contracts/rip7560/lib && yarn && yarn compile-hardhat"}
+update-deps = {shell = "git submodule update --init --recursive && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build && cd ../tests/contracts/rip7560/lib && yarn && yarn compile-hardhat"}
 test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032  --ethereum-node http://127.0.0.1:8545/ tests/single"
 test-rip7560 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --nonce-manager 0x63f63e798f5F6A934Acf0a3FD1C01f3Fac851fF0  --ethereum-node http://127.0.0.1:8545/ tests/rip7560"
 p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
