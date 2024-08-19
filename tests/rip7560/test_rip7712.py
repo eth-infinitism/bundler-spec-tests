@@ -48,7 +48,6 @@ def test_eth_sendTransaction7560_7712_failed(wallet_contract, tx_7560):
     assert state_after == 2
 
     ret = tx_7560.send()
-    send_bundle_now()
     assert_rpc_error(
         ret,
         "rip-7712 nonce validation failed: execution reverted",

@@ -8,6 +8,6 @@
 	branch = main
 [submodule "./@account-abstraction/"]
 	branch = develop
-[submodule "tests/contracts/rip7560/lib"]
-	path = tests/contracts/rip7560/lib
+[submodule "rip7560"]
+	path = rip7560
 	url = git@github.com:eth-infinitism/rip7560_contracts.git

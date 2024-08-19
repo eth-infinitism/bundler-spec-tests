@@ -212,7 +212,6 @@ def test_eth_sendTransaction7560_valid_with_factory(w3, tx_7560):
     tx_7560.signature = "0x"
     tx_7560.factory = factory.address
     tx_7560.factoryData = create_account_func.build_transaction()["data"]
-    tx_7560.nonceKey = hex(0)
     tx_7560.nonce = hex(0)
 
     assert len(w3.eth.get_code(tx_7560.sender)) == 0
@@ -307,7 +306,6 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     assert state_before == 0
     tx_7560.sender = wallet_contract_rules.address
     tx_7560.signature = to_prefixed_hex(banned_op)
-    tx_7560.nonceKey = hex(0)
     tx_7560.nonce = hex(2)
     response = tx_7560.send()
     assert_rpc_error(response, response.message, RPCErrorCode.BANNED_OPCODE)
@@ -345,7 +343,6 @@ def test_factory_eth_sendTransaction7560_banned_opcode(
     ).call()
     tx_7560.sender = new_sender_address
     fund(w3, new_sender_address)
-    tx_7560.nonceKey = hex(0)
     tx_7560.nonce = hex(0)
     code = w3.eth.get_code(new_sender_address)
     assert code.hex() == ""
