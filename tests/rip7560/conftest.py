@@ -75,7 +75,7 @@ def nonce_manager(w3):
     current_dirname = os.path.dirname(__file__)
     nonce_manager_artifact_path = os.path.realpath(
         current_dirname
-        + "/../../rip7560/artifacts/contracts/predeploys/NonceManager.sol/NonceManager.json"
+        + "/../../@rip7560/artifacts/contracts/predeploys/NonceManager.sol/NonceManager.json"
     )
     code = w3.eth.get_code(CommandLineArgs.nonce_manager)
     assert len(code) > 2, (
