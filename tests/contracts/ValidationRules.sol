@@ -73,6 +73,11 @@ library ValidationRules {
             revert("on-chain revert message string");
         } else if (eq(rule, "revert-custom-msg")) {
             revert CustomError("on-chain custom error", 777);
+        } else if (eq(rule, "revert-out-of-gas-msg")) {
+            uint256 a = 0;
+            while (true) {
+                a++;
+            }
         }
         else if (eq(rule, "GAS")) return gasleft();
         else if (eq(rule, "NUMBER")) return block.number;
