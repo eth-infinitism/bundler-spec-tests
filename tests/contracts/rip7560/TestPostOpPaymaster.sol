@@ -17,7 +17,7 @@ contract TestPostOpPaymaster is IRip7560Paymaster {
         bytes calldata transaction)
     external {
         RIP7560Transaction memory txStruct = RIP7560Utils.decodeTransaction(version, transaction);
-        bytes memory context = txStruct.signature;
+        bytes memory context = txStruct.authorizationData;
         if (string(context).eq("no context")) {
             context = "";
         }

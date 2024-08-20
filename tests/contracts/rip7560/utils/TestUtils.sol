@@ -76,8 +76,8 @@ library TestUtils {
             txStruct.paymasterData,
             txStruct.deployer,
             txStruct.deployerData,
-            txStruct.callData,
-            txStruct.signature
+            txStruct.executionData,
+            txStruct.authorizationData
         );
     }
 
