@@ -181,7 +181,8 @@ def test_eth_send_deployment_reverts(w3, factory_contract_7560, tx_7560):
     response = tx_7560.send()
     assert_rpc_error(
         response,
-        "validation phase reverted in contract deployer: on-chain revert message string",
+        "validation phase failed in contract deployer with exception: "
+        "execution reverted: on-chain revert message string",
         -32000,
     )
 
