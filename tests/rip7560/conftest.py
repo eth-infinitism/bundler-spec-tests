@@ -86,3 +86,21 @@ def nonce_manager(w3):
         return w3.eth.contract(
             abi=nonce_manager["abi"], address=CommandLineArgs.nonce_manager
         )
+
+
+@pytest.fixture(scope="session")
+def stake_manager(w3):
+    current_dirname = os.path.dirname(__file__)
+    stake_manager_artifact_path = os.path.realpath(
+        current_dirname
+        + "/../../@rip7560/artifacts/contracts/predeploys/StakeManager.sol/StakeManager.json"
+    )
+    code = w3.eth.get_code(CommandLineArgs.stake_manager)
+    assert len(code) > 2, (
+        "StakeManager not deployed: --stake-manager=" + CommandLineArgs.stake_manager
+    )
+    with open(stake_manager_artifact_path, encoding="utf-8") as file:
+        stake_manager = json.load(file)
+        return w3.eth.contract(
+            abi=stake_manager["abi"], address=CommandLineArgs.stake_manager
+        )
