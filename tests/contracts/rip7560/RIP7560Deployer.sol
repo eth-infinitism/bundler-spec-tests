@@ -6,8 +6,9 @@ import "../ValidationRules.sol";
 
 import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
 import {TestAccount} from "./TestAccount.sol";
+import "../Stakable.sol";
 
-contract RIP7560Deployer is ValidationRulesStorage  {
+contract RIP7560Deployer is ValidationRulesStorage, Stakable  {
     using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
 

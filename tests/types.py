@@ -17,6 +17,7 @@ class CommandLineArgs:
     url: ClassVar[str]
     entrypoint: ClassVar[str]
     nonce_manager: ClassVar[str]
+    stake_manager: ClassVar[str]
     ethereum_node: ClassVar[str]
     launcher_script: ClassVar[str]
     log_rpc: ClassVar[bool]
@@ -24,11 +25,19 @@ class CommandLineArgs:
     @classmethod
     # pylint: disable=too-many-arguments
     def configure(
-        cls, url, entrypoint, nonce_manager, ethereum_node, launcher_script, log_rpc
+        cls,
+        url,
+        entrypoint,
+        nonce_manager,
+        stake_manager,
+        ethereum_node,
+        launcher_script,
+        log_rpc,
     ):
         cls.url = url
         cls.entrypoint = entrypoint
         cls.nonce_manager = nonce_manager
+        cls.stake_manager = stake_manager
         cls.ethereum_node = ethereum_node
         cls.launcher_script = launcher_script
         cls.log_rpc = log_rpc

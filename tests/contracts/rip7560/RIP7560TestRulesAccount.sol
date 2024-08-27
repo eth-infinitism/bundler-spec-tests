@@ -7,12 +7,13 @@ import "../ValidationRules.sol";
 
 import "./TestAccount.sol";
 import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
+import "../Stakable.sol";
 
 interface IRip7560EntryPointWrong {
     function acceptAccountWrongSig(uint256 validAfter, uint256 validUntil) external;
 }
 
-contract RIP7560TestRulesAccount is ValidationRulesStorage {
+contract RIP7560TestRulesAccount is ValidationRulesStorage, Stakable {
 
     using ValidationRules for string;
 
