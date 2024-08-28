@@ -72,17 +72,21 @@ def tx_7560(wallet_contract):
 
 @pytest.fixture(scope="session")
 def nonce_manager(w3):
+    artifact_path = "/../../@rip7560/artifacts/contracts/predeploys/NonceManager.sol/NonceManager.json"
+    return contract_from_artifact(w3, artifact_path, CommandLineArgs.nonce_manager)
+
+
+@pytest.fixture(scope="session")
+def stake_manager(w3):
+    artifact_path = "/../../@rip7560/artifacts/contracts/predeploys/Rip7560StakeManager.sol/Rip7560StakeManager.json"
+    return contract_from_artifact(w3, artifact_path, CommandLineArgs.stake_manager)
+
+
+def contract_from_artifact(w3, artifact_path, contract_address):
     current_dirname = os.path.dirname(__file__)
-    nonce_manager_artifact_path = os.path.realpath(
-        current_dirname
-        + "/../../@rip7560/artifacts/contracts/predeploys/NonceManager.sol/NonceManager.json"
-    )
-    code = w3.eth.get_code(CommandLineArgs.nonce_manager)
-    assert len(code) > 2, (
-        "NonceManager not deployed: --nonce-manager=" + CommandLineArgs.nonce_manager
-    )
-    with open(nonce_manager_artifact_path, encoding="utf-8") as file:
-        nonce_manager = json.load(file)
-        return w3.eth.contract(
-            abi=nonce_manager["abi"], address=CommandLineArgs.nonce_manager
-        )
+    artifact_realpath = os.path.realpath(current_dirname + artifact_path)
+    code = w3.eth.get_code(contract_address)
+    assert len(code) > 2, "contract not deployed: " + contract_address
+    with open(artifact_realpath, encoding="utf-8") as file:
+        json_file = json.load(file)
+        return w3.eth.contract(abi=json_file["abi"], address=contract_address)
