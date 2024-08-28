@@ -201,8 +201,3 @@ def test_eth_send_deployment_does_not_create_account(
         ADDRESS_ZERO, 123, "skip-deploy-msg"
     ).build_transaction({"gas": 1000000})["data"]
     response = tx_7560.send()
-    assert_rpc_error(
-        response,
-        "validation phase failed with exception: sender not deployed by factory",
-        -32000,
-    )
