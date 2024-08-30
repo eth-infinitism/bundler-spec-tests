@@ -1,7 +1,7 @@
 from eth_abi.packed import encode_packed
 
 from tests.types import RPCErrorCode
-from tests.utils import send_bundle_now, assert_rpc_error
+from tests.utils import send_bundle_now, assert_rpc_error, assert_ok
 
 
 def get_nonce(w3, nonce_manager, address, key):
@@ -27,7 +27,7 @@ def test_eth_sendTransaction7560_7712_valid(
 
     tx_7560.nonceKey = hex(key)
     tx_7560.nonce = hex(0)
-    tx_7560.send()
+    assert_ok(tx_7560.send())
     send_bundle_now()
 
     state_after = wallet_contract.functions.state().call()
