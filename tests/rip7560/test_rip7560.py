@@ -38,6 +38,29 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
+def test_system_event_success(w3, tx_7560):
+    entry_point_interface = compile_contract(
+        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
+    )
+    entry_point = w3.eth.contract(
+        abi=entry_point_interface["abi"],
+        address="0x0000000000000000000000000000000000007560",
+    )
+    print("entry_point_interface")
+    print(entry_point_interface["abi"])
+    res = tx_7560.send()
+    send_bundle_now()
+    rethash = res.result
+    receipt = w3.eth.get_transaction_receipt(rethash)
+    print("receipt")
+    print(receipt)
+    logs = entry_point.events.RIP7560TransactionEvent().get_logs()
+    print("logs")
+    print(logs)
+    event = logs[0]
+    assert event == 777
+
+
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
     w3, wallet_contract, tx_7560
 ):
