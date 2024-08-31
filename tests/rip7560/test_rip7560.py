@@ -91,9 +91,7 @@ def test_system_event_success(
         hexbytes.HexBytes(
             "0xf49eb931dde6523e9b3b1974ad2a8076ce732d024c07e9ed65075b6977574c22"
         ),
-        hexbytes.HexBytes(
-            hex_encode_abi_type("address", new_sender_address, 256)
-        ),
+        hexbytes.HexBytes(hex_encode_abi_type("address", new_sender_address, 256)),
         hexbytes.HexBytes(
             hex_encode_abi_type("address", paymaster_contract_7560.address, 256)
         ),
