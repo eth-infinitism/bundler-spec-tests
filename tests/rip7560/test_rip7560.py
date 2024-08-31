@@ -39,7 +39,9 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_system_event_success(w3, factory_contract_7560, paymaster_contract_7560, tx_7560):
+def test_system_event_success(
+    w3, factory_contract_7560, paymaster_contract_7560, tx_7560
+):
     tx_7560.paymaster = paymaster_contract_7560.address
     tx_7560.factory = factory_contract_7560.address
     tx_7560.factoryData = factory_contract_7560.functions.createAccount(
@@ -89,9 +91,15 @@ def test_system_event_success(w3, factory_contract_7560, paymaster_contract_7560
         hexbytes.HexBytes(
             "0xf49eb931dde6523e9b3b1974ad2a8076ce732d024c07e9ed65075b6977574c22"
         ),
-        hexbytes.HexBytes(hex_encode_abi_type("address", new_sender_address, 256)),
-        hexbytes.HexBytes(hex_encode_abi_type("address", paymaster_contract_7560.address, 256)),
-        hexbytes.HexBytes(hex_encode_abi_type("address", factory_contract_7560.address, 256)),
+        hexbytes.HexBytes(
+            hex_encode_abi_type("address", new_sender_address, 256)
+        ),
+        hexbytes.HexBytes(
+            hex_encode_abi_type("address", paymaster_contract_7560.address, 256)
+        ),
+        hexbytes.HexBytes(
+            hex_encode_abi_type("address", factory_contract_7560.address, 256)
+        ),
     ]
 
 
