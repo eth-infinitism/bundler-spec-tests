@@ -6,12 +6,13 @@ import "../ValidationRules.sol";
 
 import "@rip7560/contracts/utils/RIP7560Utils.sol";
 import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
+import "../Stakable.sol";
 
 interface IRip7560EntryPointWrong {
     function acceptPaymasterWrongSig(uint256 validAfter, uint256 validUntil, bytes calldata context) external;
 }
 
-contract RIP7560Paymaster is ValidationRulesStorage {
+contract RIP7560Paymaster is ValidationRulesStorage, Stakable {
     using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
 

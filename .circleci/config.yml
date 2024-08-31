@@ -158,10 +158,6 @@ jobs:
           working_directory: "./bundler"
           command: yarn install --ignore-engines && yarn preprocess
       - run:
-          name: "deploy entry point"
-          working_directory: "./bundler"
-          command: yarn hardhat-deploy --network localhost
-      - run:
           name: "run bundler"
           working_directory: "./bundler"
           command: yarn bundler-rip7560

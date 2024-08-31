@@ -148,7 +148,7 @@ def test_eth_send_account_validation_calls_invalid_callback(
     response = tx_7560.send()
     assert_rpc_error(
         response,
-        "account validation did call the EntryPoint but not the 'acceptAccount' callback",
+        "validation phase failed with exception: unable to decode acceptAccount: no method with id: 0xd3ae1743",
         -32000,
     )
 
@@ -162,7 +162,7 @@ def test_eth_send_paymaster_validation_calls_invalid_callback(
     response = tx_7560.send()
     assert_rpc_error(
         response,
-        "paymaster validation did call the EntryPoint but not the 'acceptPaymaster' callback",
+        "validation phase failed with exception: unable to decode acceptPaymaster: no method with id: 0x9a0e28f8",
         -32000,
     )
 
@@ -201,4 +201,8 @@ def test_eth_send_deployment_does_not_create_account(
         ADDRESS_ZERO, 123, "skip-deploy-msg"
     ).build_transaction({"gas": 1000000})["data"]
     response = tx_7560.send()
-    assert_rpc_error(response, "account was not deployed by a factory", -32000)
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: sender not deployed by factory",
+        -32000,
+    )

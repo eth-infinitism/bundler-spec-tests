@@ -15,10 +15,11 @@ from tests.utils import (
     deploy_contract,
     deploy_state_contract,
     fund,
+    staked_contract,
 )
 
 
-def deploy_unstaked_factory(w3):
+def deploy_unstaked_factory(w3, _):
     contract = deploy_contract(
         w3,
         "rip7560/RIP7560TestRulesAccountDeployer",
@@ -27,9 +28,21 @@ def deploy_unstaked_factory(w3):
     return contract
 
 
-def with_initcode(build_tx7560_func, deploy_factory_func=deploy_unstaked_factory):
+def deploy_staked_factory(w3, stake_manager):
+    contract = deploy_contract(
+        w3,
+        "rip7560/RIP7560TestRulesAccountDeployer",
+        value=1 * 10**18,
+    )
+    contract = staked_contract(w3, stake_manager, contract)
+    return contract
+
+
+def with_initcode(
+    build_tx7560_func, stake_manager, deploy_factory_func=deploy_unstaked_factory
+):
     def _with_initcode(w3, contract, rule):
-        factory_contract = deploy_factory_func(w3)
+        factory_contract = deploy_factory_func(w3, stake_manager)
         tx7560 = build_tx7560_func(w3, contract, rule)
         factory_data = factory_contract.functions.createAccount(
             ADDRESS_ZERO, 123, ""
@@ -98,7 +111,7 @@ def entity_to_contract_name(entity):
     return None
 
 
-def get_build_func(entity, rule):
+def get_build_func(entity, rule, assert_func, stake_manager):
     build_func = None
     if entity == PAYMASTER:
         build_func = build_tx7560_for_paymaster
@@ -110,22 +123,16 @@ def get_build_func(entity, rule):
         # Not implemented yet
         pass
     if rule.find("init_code") > 0:
-        build_func = with_initcode(build_func)
+        # STO-022 factory must be staked
+        if entity == SENDER and assert_func is assert_ok:
+            build_func = with_initcode(build_func, stake_manager, deploy_staked_factory)
+        else:
+            build_func = with_initcode(build_func, stake_manager)
     return build_func
 
 
 @pytest.mark.parametrize("case", cases, ids=case_id_function)
-def test_rule(w3, case):
-    # Not implemented yet: staked entities
-    if case.staked:
-        pytest.skip()
-    # Not implemented yet: This case needs a staked factory
-    if (
-        case.rule == "account_reference_storage_init_code"
-        and case.entity == SENDER
-        and case.assert_func is assert_ok
-    ):
-        pytest.skip()
+def test_rule(w3, stake_manager, case):
     # EntryPoint rules are mostly irrelevant
     if case.rule == "entryPoint_call_balanceOf" or case.rule in (
         "eth_value_transfer_entryPoint",
@@ -135,7 +142,9 @@ def test_rule(w3, case):
 
     entity_contract_name = entity_to_contract_name(case.entity)
     entity_contract = deploy_contract(w3, entity_contract_name, value=1 * 10**18)
-    build_func = get_build_func(case.entity, case.rule)
+    if case.staked:
+        entity_contract = staked_contract(w3, stake_manager, entity_contract)
+    build_func = get_build_func(case.entity, case.rule, case.assert_func, stake_manager)
     tx7560 = build_func(w3, entity_contract, case.rule)
     response = tx7560.send()
     case.assert_func(response)
