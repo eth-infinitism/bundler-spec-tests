@@ -39,7 +39,18 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_system_event_success(w3, wallet_contract, tx_7560):
+def test_system_event_success(w3, factory_contract_7560, paymaster_contract_7560, tx_7560):
+    tx_7560.paymaster = paymaster_contract_7560.address
+    tx_7560.factory = factory_contract_7560.address
+    tx_7560.factoryData = factory_contract_7560.functions.createAccount(
+        ADDRESS_ZERO, 123, ""
+    ).build_transaction({"gas": 1000000})["data"]
+    new_sender_address = factory_contract_7560.functions.getCreate2Address(
+        ADDRESS_ZERO, 123, ""
+    ).call()
+    tx_7560.sender = new_sender_address
+    tx_7560.nonce = hex(0)
+
     entry_point_interface = compile_contract(
         "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
     )
@@ -62,25 +73,25 @@ def test_system_event_success(w3, wallet_contract, tx_7560):
     )[0].topics
 
     assert system_event_args == {
-        "sender": wallet_contract.address,
-        "paymaster": "0x0000000000000000000000000000000000000000",
-        "deployer": "0x0000000000000000000000000000000000000000",
-        "nonce": 1,
+        "sender": new_sender_address,
+        "paymaster": paymaster_contract_7560.address,
+        "deployer": factory_contract_7560.address,
+        # pylint: disable=fixme
+        # TODO: also pass and check 'nonceKey'
+        "nonce": 0,
         "success": True,
+        # pylint: disable=fixme
+        # TODO: pass and check real 'actualGasCost'
         "actualGasCost": 0,
-        "actualGasUsed": 97199,
+        "actualGasUsed": 926694,
     }
     assert system_event_topics == [
         hexbytes.HexBytes(
             "0xf49eb931dde6523e9b3b1974ad2a8076ce732d024c07e9ed65075b6977574c22"
         ),
-        hexbytes.HexBytes(hex_encode_abi_type("address", wallet_contract.address, 256)),
-        hexbytes.HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ),
-        hexbytes.HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ),
+        hexbytes.HexBytes(hex_encode_abi_type("address", new_sender_address, 256)),
+        hexbytes.HexBytes(hex_encode_abi_type("address", paymaster_contract_7560.address, 256)),
+        hexbytes.HexBytes(hex_encode_abi_type("address", factory_contract_7560.address, 256)),
     ]
 
 
