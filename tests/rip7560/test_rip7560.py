@@ -1,5 +1,6 @@
 import hexbytes
 import pytest
+from web3._utils.encoding import hex_encode_abi_type
 from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
@@ -38,7 +39,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
-def test_system_event_success(w3, tx_7560):
+def test_system_event_success(w3, wallet_contract, tx_7560):
     entry_point_interface = compile_contract(
         "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
     )
@@ -46,19 +47,41 @@ def test_system_event_success(w3, tx_7560):
         abi=entry_point_interface["abi"],
         address="0x0000000000000000000000000000000000007560",
     )
-    print("entry_point_interface")
-    print(entry_point_interface["abi"])
     res = tx_7560.send()
     send_bundle_now()
-    rethash = res.result
-    receipt = w3.eth.get_transaction_receipt(rethash)
-    print("receipt")
-    print(receipt)
-    logs = entry_point.events.RIP7560TransactionEvent().get_logs()
-    print("logs")
-    print(logs)
-    event = logs[0]
-    assert event == 777
+    receipt = w3.eth.get_transaction_receipt(res.result)
+
+    system_event_args = dict(
+        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
+    )
+    system_event_topics = list(
+        filter(
+            lambda x: x.address == "0x0000000000000000000000000000000000007560",
+            receipt.logs,
+        )
+    )[0].topics
+
+    assert system_event_args == {
+        "sender": wallet_contract.address,
+        "paymaster": "0x0000000000000000000000000000000000000000",
+        "deployer": "0x0000000000000000000000000000000000000000",
+        "nonce": 1,
+        "success": True,
+        "actualGasCost": 0,
+        "actualGasUsed": 97199,
+    }
+    assert system_event_topics == [
+        hexbytes.HexBytes(
+            "0xf49eb931dde6523e9b3b1974ad2a8076ce732d024c07e9ed65075b6977574c22"
+        ),
+        hexbytes.HexBytes(hex_encode_abi_type("address", wallet_contract.address, 256)),
+        hexbytes.HexBytes(
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ),
+        hexbytes.HexBytes(
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ),
+    ]
 
 
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
