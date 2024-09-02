@@ -7,14 +7,19 @@ from tests.utils import (
     assert_rpc_error,
     fund,
     to_prefixed_hex,
+    deploy_contract,
 )
 from tests.types import RPCErrorCode
 
 
-def test_eth_send_no_gas():
-    tx = TransactionRIP7560(
-        sender="0x1111111111111111111111111111111111111112",
+def test_eth_send_no_gas(w3):
+    contract = deploy_contract(
+        w3,
+        "rip7560/TestAccount",
+        value=0,
     )
+
+    tx = TransactionRIP7560(sender=contract.address, nonce=hex(1))
 
     ret = tx.send()
     assert_rpc_error(ret, "insufficient funds", RPCErrorCode.INVALID_INPUT)
@@ -201,3 +206,8 @@ def test_eth_send_deployment_does_not_create_account(
         ADDRESS_ZERO, 123, "skip-deploy-msg"
     ).build_transaction({"gas": 1000000})["data"]
     response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: sender not deployed by factory",
+        -32000,
+    )

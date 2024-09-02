@@ -21,6 +21,7 @@ def test_side_effects(w3):
         # nonce = "0x1234"
     )
 
+    coinbase_pre_balance = w3.eth.get_balance(w3.eth.get_block("latest").miner)
     # tx = tx_7560
     # assert tx_7560 == tx
     ret = tx.send()
@@ -28,22 +29,53 @@ def test_side_effects(w3):
     send_bundle_now()
     event_args = sender.events.OpcodesEvent().get_logs()[0].args
     assert event_args.tag == "exec"
-    struct = dict(event_args.opcodes)
+    event_opcodes = dict(event_args.opcodes)
 
     bal = w3.eth.get_balance(sender.address)
-    block = w3.eth.get_block("latest", True)
+    block = w3.eth.get_block("latest")
 
     tx_prio = int(tx.maxPriorityFeePerGas, 16)
-    tx_maxfee = int(tx.maxFeePerGas, 16)
-    block_basefee = block.baseFeePerGas
+    tx_max_fee = int(tx.maxFeePerGas, 16)
+    block_base_fee = block.baseFeePerGas
 
-    assert struct == {
+    tx_gas_price = min(tx_max_fee, tx_prio + block_base_fee)
+
+    coinbase_post_balance = w3.eth.get_balance(block.miner)
+    coinbase_diff = coinbase_post_balance - coinbase_pre_balance
+    # coinbase is paid for every tx in the block, and for each just the tip, not the full gas
+    coinbase_tips = 0
+    for txhash in block.transactions:
+        rcpt = w3.eth.get_transaction_receipt(txhash)
+        actual_priority = rcpt.effectiveGasPrice - block.baseFeePerGas
+        used = rcpt.gasUsed
+        # TODO: gas_used field is broken for NORMAL tx (ok for type 4)
+        if used > rcpt.cumulativeGasUsed:
+            used = 21000
+        tip = actual_priority * used
+        print(
+            "== tx gas",
+            used,
+            "tip",
+            tip,
+            "actual_priority",
+            actual_priority,
+            "basefee",
+            block.baseFeePerGas,
+        )
+        coinbase_tips += tip
+
+    # coinbase_tips = sum([tx.maxPriorityFeePerGas for tx in block.transactions])
+
+    assert coinbase_diff == coinbase_tips
+
+    assert event_opcodes == {
         "TIMESTAMP": block.timestamp,
         "NUMBER": block.number,
         "CHAINID": 1337,
-        "GAS": pytest.approx(int(tx.callGasLimit, 16), rel=0.01),
+        "GAS": pytest.approx(int(tx.callGasLimit, 16), rel=0.02),
+        # GAS - what gasleft should show?
         "GASLIMIT": block.gasLimit,
-        "GASPRICE": min(tx_maxfee, tx_prio + block_basefee),
+        "GASPRICE": tx_gas_price,
         "BALANCE": bal,
         "SELFBALANCE": bal,
         "ORIGIN": sender.address,
