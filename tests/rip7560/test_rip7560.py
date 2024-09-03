@@ -1,5 +1,6 @@
 import hexbytes
 import pytest
+from eth_utils import event_abi_to_log_topic
 from web3._utils.encoding import hex_encode_abi_type
 from web3.constants import ADDRESS_ZERO
 
@@ -41,7 +42,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 
 
 def test_system_event_success(
-    w3, factory_contract_7560, paymaster_contract_7560, tx_7560
+    w3, entry_point_rip7560, factory_contract_7560, paymaster_contract_7560, tx_7560
 ):
     tx_7560.paymaster = paymaster_contract_7560.address
     tx_7560.factory = factory_contract_7560.address
@@ -54,20 +55,12 @@ def test_system_event_success(
     tx_7560.sender = new_sender_address
     tx_7560.nonce = hex(0)
 
-    entry_point_interface = compile_contract(
-        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
-    )
-    entry_point = w3.eth.contract(
-        abi=entry_point_interface["abi"],
-        address="0x0000000000000000000000000000000000007560",
-    )
     res = tx_7560.send()
     send_bundle_now()
     receipt = w3.eth.get_transaction_receipt(res.result)
 
-    system_event_args = dict(
-        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
-    )
+    system_event_args, _, _ = get_system_events(entry_point_rip7560)
+
     system_event_topics = list(
         filter(
             lambda x: x.address == "0x0000000000000000000000000000000000007560",
@@ -89,8 +82,9 @@ def test_system_event_success(
         "actualGasUsed": 1032221,
     }
     assert system_event_topics == [
-        hexbytes.HexBytes(
-            "0xf49eb931dde6523e9b3b1974ad2a8076ce732d024c07e9ed65075b6977574c22"
+        # pylint: disable=protected-access
+        event_abi_to_log_topic(
+            entry_point_rip7560.events.RIP7560TransactionEvent()._get_event_abi()
         ),
         hexbytes.HexBytes(hex_encode_abi_type("address", new_sender_address, 256)),
         hexbytes.HexBytes(
@@ -102,25 +96,18 @@ def test_system_event_success(
     ]
 
 
-def test_system_event_revert_execution(w3, wallet_contract, tx_7560):
+def test_system_event_revert_execution(
+    w3, entry_point_rip7560, wallet_contract, tx_7560
+):
     tx_7560.executionData = wallet_contract.encodeABI(fn_name="revertingFunction")
-    entry_point_interface = compile_contract(
-        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
-    )
-    entry_point = w3.eth.contract(
-        abi=entry_point_interface["abi"],
-        address="0x0000000000000000000000000000000000007560",
-    )
 
     tx_7560.send()
     send_bundle_now()
 
-    system_event_args = dict(
-        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
+    system_event_args, execution_revert_event_args, _ = get_system_events(
+        entry_point_rip7560
     )
-    execution_revert_event_args = dict(
-        entry_point.events.RIP7560TransactionRevertReason().get_logs()[0].args
-    )
+
     expected_revert_reason = bytes.fromhex(encode_panic_error(w3, "reverting")[2:])
     assert execution_revert_event_args == {
         "sender": wallet_contract.address,
@@ -142,14 +129,7 @@ def test_system_event_revert_execution(w3, wallet_contract, tx_7560):
     }
 
 
-def test_system_event_revert_post_op(w3, wallet_contract, tx_7560):
-    entry_point_interface = compile_contract(
-        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
-    )
-    entry_point = w3.eth.contract(
-        abi=entry_point_interface["abi"],
-        address="0x0000000000000000000000000000000000007560",
-    )
+def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, tx_7560):
 
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     tx_7560.paymaster = paymaster.address
@@ -158,11 +138,8 @@ def test_system_event_revert_post_op(w3, wallet_contract, tx_7560):
     tx_7560.send()
     send_bundle_now()
 
-    system_event_args = dict(
-        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
-    )
-    post_op_revert_event_args = dict(
-        entry_point.events.RIP7560TransactionPostOpRevertReason().get_logs()[0].args
+    system_event_args, _, post_op_revert_event_args = get_system_events(
+        entry_point_rip7560
     )
     expected_revert_reason = bytes.fromhex(
         encode_panic_error(w3, "post op revert message")[2:]
@@ -186,6 +163,23 @@ def test_system_event_revert_post_op(w3, wallet_contract, tx_7560):
         "actualGasCost": 0,
         "actualGasUsed": 208127,
     }
+
+
+def get_system_events(entry_point_rip7560):
+    system_event_args = dict(
+        entry_point_rip7560.events.RIP7560TransactionEvent().get_logs()[0].args
+    )
+
+    execution_revert_event_args = None
+    logs = entry_point_rip7560.events.RIP7560TransactionRevertReason().get_logs()
+    if len(logs) > 0:
+        execution_revert_event_args = dict(logs[0].args)
+
+    post_op_revert_event_args = None
+    logs = entry_point_rip7560.events.RIP7560TransactionPostOpRevertReason().get_logs()
+    if len(logs) > 0:
+        post_op_revert_event_args = dict(logs[0].args)
+    return system_event_args, execution_revert_event_args, post_op_revert_event_args
 
 
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
