@@ -3,6 +3,7 @@ import pytest
 from web3._utils.encoding import hex_encode_abi_type
 from web3.constants import ADDRESS_ZERO
 
+from tests.rip7560.test_send_failed import encode_panic_error
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
 from tests.rip7560.types import TransactionRIP7560
@@ -99,6 +100,92 @@ def test_system_event_success(
             hex_encode_abi_type("address", factory_contract_7560.address, 256)
         ),
     ]
+
+
+def test_system_event_revert_execution(w3, wallet_contract, tx_7560):
+    tx_7560.executionData = wallet_contract.encodeABI(fn_name="revertingFunction")
+    entry_point_interface = compile_contract(
+        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
+    )
+    entry_point = w3.eth.contract(
+        abi=entry_point_interface["abi"],
+        address="0x0000000000000000000000000000000000007560",
+    )
+
+    tx_7560.send()
+    send_bundle_now()
+
+    system_event_args = dict(
+        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
+    )
+    execution_revert_event_args = dict(
+        entry_point.events.RIP7560TransactionRevertReason().get_logs()[0].args
+    )
+    expected_revert_reason = bytes.fromhex(encode_panic_error(w3, "reverting")[2:])
+    assert execution_revert_event_args == {
+        "sender": wallet_contract.address,
+        "nonce": 1,
+        "revertReason": expected_revert_reason,
+    }
+    assert system_event_args == {
+        "sender": wallet_contract.address,
+        "paymaster": "0x0000000000000000000000000000000000000000",
+        "deployer": "0x0000000000000000000000000000000000000000",
+        # pylint: disable=fixme
+        # TODO: also pass and check 'nonceKey'
+        "nonce": 1,
+        "success": False,
+        # pylint: disable=fixme
+        # TODO: pass and check real 'actualGasCost'
+        "actualGasCost": 0,
+        "actualGasUsed": 82289,
+    }
+
+
+def test_system_event_revert_post_op(w3, wallet_contract, tx_7560):
+    entry_point_interface = compile_contract(
+        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
+    )
+    entry_point = w3.eth.contract(
+        abi=entry_point_interface["abi"],
+        address="0x0000000000000000000000000000000000007560",
+    )
+
+    paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
+    tx_7560.paymaster = paymaster.address
+    tx_7560.authorizationData = to_prefixed_hex("revert")
+
+    tx_7560.send()
+    send_bundle_now()
+
+    system_event_args = dict(
+        entry_point.events.RIP7560TransactionEvent().get_logs()[0].args
+    )
+    post_op_revert_event_args = dict(
+        entry_point.events.RIP7560TransactionPostOpRevertReason().get_logs()[0].args
+    )
+    expected_revert_reason = bytes.fromhex(
+        encode_panic_error(w3, "post op revert message")[2:]
+    )
+    assert post_op_revert_event_args == {
+        "sender": wallet_contract.address,
+        "paymaster": paymaster.address,
+        "nonce": 1,
+        "revertReason": expected_revert_reason,
+    }
+    assert system_event_args == {
+        "sender": wallet_contract.address,
+        "paymaster": paymaster.address,
+        "deployer": "0x0000000000000000000000000000000000000000",
+        # pylint: disable=fixme
+        # TODO: also pass and check 'nonceKey'
+        "nonce": 1,
+        "success": False,
+        # pylint: disable=fixme
+        # TODO: pass and check real 'actualGasCost'
+        "actualGasCost": 0,
+        "actualGasUsed": 208127,
+    }
 
 
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
