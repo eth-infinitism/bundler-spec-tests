@@ -78,7 +78,7 @@ def nonce_manager(w3):
 
 @pytest.fixture(scope="session")
 def stake_manager(w3):
-    artifact_path = "/../../@rip7560/artifacts/contracts/predeploys/Rip7560StakeManager.sol/Rip7560StakeManager.json"
+    artifact_path = "/../../@rip7560/artifacts/contracts/predeploys/StakeManager.sol/StakeManager.json"
     return contract_from_artifact(w3, artifact_path, CommandLineArgs.stake_manager)
 
 

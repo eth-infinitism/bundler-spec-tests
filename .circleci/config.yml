@@ -169,10 +169,6 @@ jobs:
           command: |
             wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
       - run:
-          name: "preprocess @rip7560 contracts"
-          working_directory: "./@rip7560"
-          command: yarn && yarn compile-hardhat
-      - run:
           name: "pytest"
           command: "pdm run test-rip7560"
       - save_cache:
