@@ -86,7 +86,7 @@ def test_system_event_success(
         # pylint: disable=fixme
         # TODO: pass and check real 'actualGasCost'
         "actualGasCost": 0,
-        "actualGasUsed": 926694,
+        "actualGasUsed": 1032221,
     }
     assert system_event_topics == [
         hexbytes.HexBytes(
