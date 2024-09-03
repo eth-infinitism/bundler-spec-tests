@@ -6,6 +6,7 @@ from tests.rip7560.types import TransactionRIP7560
 from tests.utils import (
     assert_rpc_error,
     fund,
+    send_bundle_now,
     to_prefixed_hex,
 )
 from tests.types import RPCErrorCode
@@ -124,6 +125,33 @@ def test_eth_send_account_validation_reverts1(
     if case.is_expected_data:
         expected_data = encode_custom_error(w3)
     assert_rpc_error(response, case.expected_message, -32000, expected_data)
+
+
+@pytest.mark.parametrize("case", cases, ids=case_id_function)
+def test_eth_send_account_validation_reverts_skip_validation_bundler(
+    wallet_contract_rules,
+    tx_7560: TransactionRIP7560,
+    paymaster_contract_7560,
+    case: RevertTestCase,
+):
+    if case.entity == "account":
+        tx_7560.nonce = hex(2)  # why?
+        tx_7560.sender = wallet_contract_rules.address
+        tx_7560.authorizationData = to_prefixed_hex(case.rule)
+    if case.entity == "paymaster":
+        tx_7560.paymaster = paymaster_contract_7560.address
+        tx_7560.paymasterData = to_prefixed_hex(case.rule)
+
+    print("before send_skip_validation")
+    response = tx_7560.send_skip_validation()
+    print("after send_skip_validation")
+    send_bundle_now()
+    print("after send_bundle_now")
+
+    # expected_data = None
+    # if case.is_expected_data:
+    #     expected_data = encode_custom_error(w3)
+    assert_rpc_error(response, case.expected_message, -32000)
 
 
 def encode_custom_error(w3):
