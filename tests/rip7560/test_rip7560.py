@@ -3,7 +3,7 @@ import pytest
 from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
-from tests.types import RPCErrorCode
+from tests.types import RPCErrorCode, UserOperation
 from tests.rip7560.types import TransactionRIP7560
 
 from tests.utils import (
@@ -12,8 +12,9 @@ from tests.utils import (
     fund,
     send_bundle_now,
     to_prefixed_hex,
-    deploy_contract,
     compile_contract,
+    deploy_contract,
+    dump_mempool,
 )
 
 
@@ -36,6 +37,56 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     assert rethash == evhash
     assert wallet_contract.address == ev.address
     w3.eth.get_transaction(rethash)
+
+
+def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
+    # state_before = wallet_contract.functions.state().call()
+    # assert state_before == 0
+    # calldata = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    count = 3
+    wallets = []
+    for i in range(count):
+        wallets.append(deploy_contract(w3, "rip7560/TestAccount", value=10**18))
+
+    hashes = []
+    for i in range(count):
+        wallet = wallets[i]
+        new_op = TransactionRIP7560(
+            sender=wallet.address,
+            nonce="0x1",
+            executionData="0x",
+            callGasLimit=tx_7560.callGasLimit,
+            maxPriorityFeePerGas=tx_7560.maxPriorityFeePerGas,
+            maxFeePerGas=tx_7560.maxFeePerGas,
+        )
+        res = new_op.send()
+        hashes.append(res.result)
+        assert_ok(res)
+
+    assert len(dump_mempool()) == count
+
+    send_bundle_now()
+    assert dump_mempool() == []
+    block = w3.eth.get_block("latest")
+    assert len(block.transactions) >= count
+    for i in range(len(block.transactions)):
+        if i < count:
+            assert hashes[i] == "0x" + block.transactions[i].hex()
+        rcpt = w3.eth.get_transaction_receipt(block.transactions[i])
+        assert rcpt.status == 1
+        assert rcpt.blockHash == block.hash
+        print(
+            "index",
+            rcpt.transactionIndex,
+            "type",
+            rcpt.type,
+            "\tgasUsed:",
+            rcpt.gasUsed,
+            "\tcumulativeGasUsed",
+            rcpt.cumulativeGasUsed,
+        )
+
+    assert False, "see above broken gas table"
 
 
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
