@@ -3,7 +3,7 @@ import pytest
 from web3.constants import ADDRESS_ZERO
 
 from tests.single.opbanning.test_op_banning import banned_opcodes
-from tests.types import RPCErrorCode, UserOperation
+from tests.types import RPCErrorCode
 from tests.rip7560.types import TransactionRIP7560
 
 from tests.utils import (
@@ -39,6 +39,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
+# pylint: disable=unused-argument
 def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     # state_before = wallet_contract.functions.state().call()
     # assert state_before == 0
@@ -68,8 +69,9 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     send_bundle_now()
     assert dump_mempool() == []
     block = w3.eth.get_block("latest")
-    assert len(block.transactions) >= count
-    for i in range(len(block.transactions)):
+    txlen = len(block.transactions)
+    assert txlen >= count
+    for i in range(txlen):
         if i < count:
             assert hashes[i] == "0x" + block.transactions[i].hex()
         rcpt = w3.eth.get_transaction_receipt(block.transactions[i])
