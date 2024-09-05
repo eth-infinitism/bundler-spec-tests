@@ -6,6 +6,7 @@ from tests.rip7560.types import TransactionRIP7560
 from tests.utils import (
     assert_rpc_error,
     fund,
+    get_rip7560_debug_info,
     send_bundle_now,
     to_prefixed_hex,
 )
@@ -142,16 +143,13 @@ def test_eth_send_account_validation_reverts_skip_validation_bundler(
         tx_7560.paymaster = paymaster_contract_7560.address
         tx_7560.paymasterData = to_prefixed_hex(case.rule)
 
-    print("before send_skip_validation")
     response = tx_7560.send_skip_validation()
-    print("after send_skip_validation")
     send_bundle_now()
-    print("after send_bundle_now")
 
-    # expected_data = None
-    # if case.is_expected_data:
-    #     expected_data = encode_custom_error(w3)
-    assert_rpc_error(response, case.expected_message, -32000)
+    debug_info = get_rip7560_debug_info(response.result)
+
+    assert debug_info.result["frameReverted"] is True
+    assert debug_info.result["revertEntityName"] == case.entity
 
 
 def encode_custom_error(w3):

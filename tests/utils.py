@@ -211,6 +211,12 @@ def set_manual_bundling_mode(url=None):
     )
 
 
+def get_rip7560_debug_info(tx_hash, url=None):
+    return RPCRequest(
+        method="eth_getRip7560TransactionDebugInfo", params=[tx_hash]
+    ).send(url)
+
+
 def dump_mempool(url=None):
     mempool = (
         RPCRequest(
