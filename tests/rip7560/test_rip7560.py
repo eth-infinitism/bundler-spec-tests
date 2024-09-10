@@ -75,11 +75,7 @@ def test_system_event_success(
         # pylint: disable=fixme
         # TODO: also pass and check 'nonceKey'
         "nonce": 0,
-        "success": True,
-        # pylint: disable=fixme
-        # TODO: pass and check real 'actualGasCost'
-        "actualGasCost": 0,
-        "actualGasUsed": 1032221,
+        "executionStatus": 0,
     }
     assert system_event_topics == [
         # pylint: disable=protected-access
@@ -121,11 +117,7 @@ def test_system_event_revert_execution(
         # pylint: disable=fixme
         # TODO: also pass and check 'nonceKey'
         "nonce": 1,
-        "success": False,
-        # pylint: disable=fixme
-        # TODO: pass and check real 'actualGasCost'
-        "actualGasCost": 0,
-        "actualGasUsed": 82289,
+        "executionStatus": 1,
     }
 
 
@@ -157,11 +149,7 @@ def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, t
         # pylint: disable=fixme
         # TODO: also pass and check 'nonceKey'
         "nonce": 1,
-        "success": False,
-        # pylint: disable=fixme
-        # TODO: pass and check real 'actualGasCost'
-        "actualGasCost": 0,
-        "actualGasUsed": 208127,
+        "executionStatus": 2,
     }
 
 
