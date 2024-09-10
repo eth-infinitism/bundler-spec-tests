@@ -4,7 +4,7 @@ from eth_utils import event_abi_to_log_topic
 from web3._utils.encoding import hex_encode_abi_type
 from web3.constants import ADDRESS_ZERO
 
-from tests.rip7560.test_send_failed import encode_panic_error
+from tests.rip7560.test_send_failed import encode_solidity_error
 from tests.single.opbanning.test_op_banning import banned_opcodes
 from tests.types import RPCErrorCode
 from tests.rip7560.types import TransactionRIP7560
@@ -104,7 +104,7 @@ def test_system_event_revert_execution(
         entry_point_rip7560
     )
 
-    expected_revert_reason = bytes.fromhex(encode_panic_error(w3, "reverting")[2:])
+    expected_revert_reason = bytes.fromhex(encode_solidity_error(w3, "reverting")[2:])
     assert execution_revert_event_args == {
         "sender": wallet_contract.address,
         "nonce": 1,
@@ -134,7 +134,7 @@ def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, t
         entry_point_rip7560
     )
     expected_revert_reason = bytes.fromhex(
-        encode_panic_error(w3, "post op revert message")[2:]
+        encode_solidity_error(w3, "post op revert message")[2:]
     )
     assert post_op_revert_event_args == {
         "sender": wallet_contract.address,
