@@ -42,19 +42,31 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 
 
 def test_system_event_success(
-    w3, entry_point_rip7560, factory_contract_7560, paymaster_contract_7560, tx_7560
+    w3, entry_point_rip7560, factory_contract_7560, paymaster_contract_7560
 ):
-    tx_7560.paymaster = paymaster_contract_7560.address
-    tx_7560.factory = factory_contract_7560.address
-    tx_7560.factoryData = factory_contract_7560.functions.createAccount(
+    paymaster = paymaster_contract_7560.address
+    factory = factory_contract_7560.address
+    factory_data = factory_contract_7560.functions.createAccount(
         ADDRESS_ZERO, 123, ""
     ).build_transaction({"gas": 1000000})["data"]
     new_sender_address = factory_contract_7560.functions.getCreate2Address(
         ADDRESS_ZERO, 123, ""
     ).call()
-    tx_7560.sender = new_sender_address
-    tx_7560.nonce = hex(0)
-
+    sender = new_sender_address
+    nonce = hex(0)
+    tx_7560 = TransactionRIP7560(
+        sender=sender,
+        paymaster=paymaster,
+        factory=factory,
+        factoryData=factory_data,
+        nonceKey=hex(0),
+        nonce=nonce,
+        maxFeePerGas=hex(100000000000),
+        maxPriorityFeePerGas=hex(100000000000),
+        verificationGasLimit=hex(2000000),
+        executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+        authorizationData="0xface",
+    )
     res = tx_7560.send()
     send_bundle_now()
     receipt = w3.eth.get_transaction_receipt(res.result)
@@ -122,7 +134,6 @@ def test_system_event_revert_execution(
 
 
 def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, tx_7560):
-
     paymaster = deploy_contract(w3, "rip7560/TestPostOpPaymaster", value=10**18)
     tx_7560.paymaster = paymaster.address
     tx_7560.authorizationData = to_prefixed_hex("revert")
