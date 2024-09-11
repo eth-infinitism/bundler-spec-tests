@@ -113,7 +113,7 @@ def test_eth_send_account_validation_reverts1(
     case: RevertTestCase,
 ):
     if case.entity == "account":
-        tx_7560.nonce = hex(2)  # why?
+        tx_7560.nonce = hex(2)
         tx_7560.sender = wallet_contract_rules.address
         tx_7560.authorizationData = to_prefixed_hex(case.rule)
     if case.entity == "paymaster":
@@ -130,21 +130,37 @@ def test_eth_send_account_validation_reverts1(
 
 @pytest.mark.parametrize("case", cases, ids=case_id_function)
 def test_eth_send_account_validation_reverts_skip_validation_bundler(
+    w3,
     wallet_contract_rules,
     tx_7560: TransactionRIP7560,
     paymaster_contract_7560,
     case: RevertTestCase,
 ):
     if case.entity == "account":
-        tx_7560.nonce = hex(2)  # why?
+        tx_7560.nonce = hex(2)
         tx_7560.sender = wallet_contract_rules.address
         tx_7560.authorizationData = to_prefixed_hex(case.rule)
     if case.entity == "paymaster":
+        tx_7560.nonce = hex(2)
+        tx_7560.sender = wallet_contract_rules.address
+        tx_7560.authorizationData = to_prefixed_hex("")
         tx_7560.paymaster = paymaster_contract_7560.address
         tx_7560.paymasterData = to_prefixed_hex(case.rule)
 
+    state_before = wallet_contract_rules.functions.state().call()
+    assert state_before == 0
+
+    nonce_before = w3.eth.get_transaction_count(tx_7560.sender)
+    assert nonce_before == 2
+
     response = tx_7560.send_skip_validation()
     send_bundle_now()
+
+    state_after = wallet_contract_rules.functions.state().call()
+    assert state_after == 0
+
+    nonce_after = w3.eth.get_transaction_count(tx_7560.sender)
+    assert nonce_after == 2
 
     debug_info = get_rip7560_debug_info(response.result)
 
