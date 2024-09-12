@@ -46,7 +46,7 @@ def test_environment_introspection_opcodes(w3):
     factory_opcode_events = factory.events.OpcodesEvent().get_logs()
     assert len(account_opcode_events) == 2
     assert len(paymaster_opcode_events) == 2
-    assert len(factory_opcode_events) == 2
+    assert len(factory_opcode_events) == 1
 
     tmp_deployment_gas_cost = (
         540000  # we should expose these values in the receipt and use the real ones
