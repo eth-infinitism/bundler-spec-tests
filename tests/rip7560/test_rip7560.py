@@ -454,7 +454,8 @@ def test_bundle_with_events(w3, wallet_contract):
             if log == "reverted":
                 continue
             # print("checking log ", index, " for tx ", i)
-            assert log.logIndex == 1 + i * 5 + index
+            events_per_tx = 6
+            assert log.logIndex == 1 + i * events_per_tx + index
             assert log.address == txs[i].sender
 
 
