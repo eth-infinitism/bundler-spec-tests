@@ -6,7 +6,10 @@ import pytest
 
 from tests.rip7560.types import TransactionRIP7560
 from tests.types import CommandLineArgs
-from tests.utils import deploy_contract
+from tests.utils import (
+    deploy_contract,
+    compile_contract,
+)
 
 
 @pytest.fixture
@@ -68,6 +71,18 @@ def tx_7560(wallet_contract):
         executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
         authorizationData="0xface",
     )
+
+
+@pytest.fixture(scope="session")
+def entry_point_rip7560(w3):
+    entry_point_interface = compile_contract(
+        "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
+    )
+    entry_point = w3.eth.contract(
+        abi=entry_point_interface["abi"],
+        address="0x0000000000000000000000000000000000007560",
+    )
+    return entry_point
 
 
 @pytest.fixture(scope="session")

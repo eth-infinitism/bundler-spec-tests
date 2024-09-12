@@ -45,6 +45,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage, Stakable {
             return;
         }
         ValidationRules.runRule(rule, this, coin, this);
+        setState(1);
         RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
 }
