@@ -64,7 +64,7 @@ library TestUtils {
         emit Type4TransactionParamsEvent(
             txStruct.sender,
             txStruct.nonceKey,
-            txStruct.nonce,
+            txStruct.nonceSequence,
             txStruct.validationGasLimit,
             txStruct.paymasterValidationGasLimit,
             txStruct.postOpGasLimit,

@@ -168,6 +168,16 @@ def test_eth_send_account_validation_reverts_skip_validation_bundler(
     assert debug_info.result["revertEntityName"] == case.entity
 
 
+def encode_solidity_error(w3, value):
+    # manually encoding the custom error message with "encodeABI" here
+    c = w3.eth.contract(
+        abi='[{"type":"function","name":"Error",'
+        '"inputs":[{"name": "error","type": "string"}]}]'
+    )
+    abi_encoding = c.encodeABI(fn_name="Error", args=[value])
+    return abi_encoding
+
+
 def encode_custom_error(w3):
     # manually encoding the custom error message with "encodeABI" here
     c = w3.eth.contract(
