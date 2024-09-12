@@ -313,3 +313,21 @@ def get_userop_max_cost(user_op):
         user_op.paymasterVerificationGasLimit,
         user_op.paymasterPostOpGasLimit,
     ) * to_number(user_op.maxFeePerGas)
+
+
+def get_rip7560_tx_max_cost(tx):
+    tx_max_gas_limit = sum_hex(
+        15000,
+        tx.verificationGasLimit,
+        tx.callGasLimit,
+        tx.paymasterVerificationGasLimit,
+        tx.paymasterPostOpGasLimit,
+    )
+    max_cost = tx_max_gas_limit * to_number(tx.maxFeePerGas)
+    print(
+        "get_rip7560_tx_max_cost",
+        tx_max_gas_limit,
+        to_number(tx.maxFeePerGas),
+        max_cost,
+    )
+    return max_cost

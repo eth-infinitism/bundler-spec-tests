@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "../ITestAccount.sol";
-
 import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
 import "@rip7560/contracts/utils/RIP7560Utils.sol";
 import "./utils/TestUtils.sol";
@@ -25,7 +23,7 @@ contract TestAccount is IRip7560Account {
         uint256 version,
         bytes32 txHash,
         bytes calldata transaction
-    ) external {
+    ) public virtual {
 
         emit AccountValidationEvent(state, accCounter);
 
