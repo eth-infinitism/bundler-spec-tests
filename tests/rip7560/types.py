@@ -63,6 +63,12 @@ class TransactionRIP7560:
             method="eth_sendTransaction", params=[remove_nulls(asdict(self.cleanup()))]
         ).send(url)
 
+    def send_skip_validation(self, url=None):
+        return RPCRequest(
+            method="debug_bundler_sendTransactionSkipValidation",
+            params=[remove_nulls(asdict(self.cleanup()))],
+        ).send(url)
+
 
 def remove_nulls(obj):
     return {k: v for k, v in obj.items() if v is not None}
