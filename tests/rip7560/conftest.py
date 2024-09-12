@@ -73,7 +73,7 @@ def tx_7560(wallet_contract):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def entry_point_rip7560(w3):
     entry_point_interface = compile_contract(
         "../../@rip7560/contracts/interfaces/IRip7560EntryPoint"
