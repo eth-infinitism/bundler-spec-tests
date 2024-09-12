@@ -42,7 +42,11 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 
 
 def test_system_event_success(
-    w3, entry_point_rip7560, factory_contract_7560, paymaster_contract_7560
+    w3,
+    wallet_contract,
+    entry_point_rip7560,
+    factory_contract_7560,
+    paymaster_contract_7560,
 ):
     paymaster = paymaster_contract_7560.address
     factory = factory_contract_7560.address
@@ -54,6 +58,7 @@ def test_system_event_success(
     ).call()
     sender = new_sender_address
     nonce = hex(0)
+    # pylint: disable=duplicate-code
     tx_7560 = TransactionRIP7560(
         sender=sender,
         paymaster=paymaster,
@@ -71,7 +76,9 @@ def test_system_event_success(
     send_bundle_now()
     receipt = w3.eth.get_transaction_receipt(res.result)
 
-    system_event_args, _, _ = get_system_events(entry_point_rip7560)
+    system_event_args, account_deployed_event_args, _, _ = get_system_events(
+        entry_point_rip7560
+    )
 
     system_event_topics = list(
         filter(
@@ -83,11 +90,14 @@ def test_system_event_success(
     assert system_event_args == {
         "sender": new_sender_address,
         "paymaster": paymaster_contract_7560.address,
-        "deployer": factory_contract_7560.address,
-        # pylint: disable=fixme
-        # TODO: also pass and check 'nonceKey'
-        "nonce": 0,
+        "nonceKey": 0,
+        "nonceSequence": 0,
         "executionStatus": 0,
+    }
+    assert account_deployed_event_args == {
+        "sender": new_sender_address,
+        "paymaster": paymaster_contract_7560.address,
+        "deployer": factory_contract_7560.address,
     }
     assert system_event_topics == [
         # pylint: disable=protected-access
@@ -97,9 +107,6 @@ def test_system_event_success(
         hexbytes.HexBytes(hex_encode_abi_type("address", new_sender_address, 256)),
         hexbytes.HexBytes(
             hex_encode_abi_type("address", paymaster_contract_7560.address, 256)
-        ),
-        hexbytes.HexBytes(
-            hex_encode_abi_type("address", factory_contract_7560.address, 256)
         ),
     ]
 
@@ -112,23 +119,22 @@ def test_system_event_revert_execution(
     tx_7560.send()
     send_bundle_now()
 
-    system_event_args, execution_revert_event_args, _ = get_system_events(
+    system_event_args, _, execution_revert_event_args, _ = get_system_events(
         entry_point_rip7560
     )
 
     expected_revert_reason = bytes.fromhex(encode_solidity_error(w3, "reverting")[2:])
     assert execution_revert_event_args == {
         "sender": wallet_contract.address,
-        "nonce": 1,
+        "nonceKey": 0,
+        "nonceSequence": 1,
         "revertReason": expected_revert_reason,
     }
     assert system_event_args == {
         "sender": wallet_contract.address,
         "paymaster": "0x0000000000000000000000000000000000000000",
-        "deployer": "0x0000000000000000000000000000000000000000",
-        # pylint: disable=fixme
-        # TODO: also pass and check 'nonceKey'
-        "nonce": 1,
+        "nonceKey": 0,
+        "nonceSequence": 1,
         "executionStatus": 1,
     }
 
@@ -141,7 +147,7 @@ def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, t
     tx_7560.send()
     send_bundle_now()
 
-    system_event_args, _, post_op_revert_event_args = get_system_events(
+    system_event_args, _, _, post_op_revert_event_args = get_system_events(
         entry_point_rip7560
     )
     expected_revert_reason = bytes.fromhex(
@@ -150,16 +156,15 @@ def test_system_event_revert_post_op(w3, entry_point_rip7560, wallet_contract, t
     assert post_op_revert_event_args == {
         "sender": wallet_contract.address,
         "paymaster": paymaster.address,
-        "nonce": 1,
+        "nonceKey": 0,
+        "nonceSequence": 1,
         "revertReason": expected_revert_reason,
     }
     assert system_event_args == {
         "sender": wallet_contract.address,
         "paymaster": paymaster.address,
-        "deployer": "0x0000000000000000000000000000000000000000",
-        # pylint: disable=fixme
-        # TODO: also pass and check 'nonceKey'
-        "nonce": 1,
+        "nonceKey": 0,
+        "nonceSequence": 1,
         "executionStatus": 2,
     }
 
@@ -168,6 +173,11 @@ def get_system_events(entry_point_rip7560):
     system_event_args = dict(
         entry_point_rip7560.events.RIP7560TransactionEvent().get_logs()[0].args
     )
+
+    account_deployed_event_args = None
+    logs = entry_point_rip7560.events.RIP7560AccountDeployed().get_logs()
+    if len(logs) > 0:
+        account_deployed_event_args = dict(logs[0].args)
 
     execution_revert_event_args = None
     logs = entry_point_rip7560.events.RIP7560TransactionRevertReason().get_logs()
@@ -178,7 +188,12 @@ def get_system_events(entry_point_rip7560):
     logs = entry_point_rip7560.events.RIP7560TransactionPostOpRevertReason().get_logs()
     if len(logs) > 0:
         post_op_revert_event_args = dict(logs[0].args)
-    return system_event_args, execution_revert_event_args, post_op_revert_event_args
+    return (
+        system_event_args,
+        account_deployed_event_args,
+        execution_revert_event_args,
+        post_op_revert_event_args,
+    )
 
 
 def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
