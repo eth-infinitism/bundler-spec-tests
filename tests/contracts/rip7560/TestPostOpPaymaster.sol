@@ -31,7 +31,7 @@ contract TestPostOpPaymaster is IRip7560Paymaster {
     ) external {
         string memory rule = string(context);
         if (rule.eq("revert")) {
-            revert();
+            revert("post op revert message");
         }
         counter++;
     }
