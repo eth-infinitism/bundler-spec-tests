@@ -54,7 +54,10 @@ def send_and_check_payment(w3, tx: TransactionRIP7560):
         rcpt = w3.eth.get_transaction_receipt(txhash)
         actual_priority = rcpt.effectiveGasPrice - block.baseFeePerGas
         used = rcpt.gasUsed
-        # todo: gas_used field is broken for NORMAL tx (ok for type 4)
+
+        print(
+            f"::warning {__file__} : gas_used field is BROKEN for 2nd TX. Workaround until AA-438 is fixed"
+        )
         if used > rcpt.cumulativeGasUsed:
             used = 21000
 
