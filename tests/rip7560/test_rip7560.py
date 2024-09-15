@@ -74,12 +74,22 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     block = w3.eth.get_block("latest")
     txlen = len(block.transactions)
     assert txlen >= count
+    tot = 0
     for i in range(txlen):
         if i < count:
             assert hashes[i] == "0x" + block.transactions[i].hex()
         rcpt = w3.eth.get_transaction_receipt(block.transactions[i])
         assert rcpt.status == 1
         assert rcpt.blockHash == block.hash
+        # we check cumulative gas calc, not specific TX gas used
+        if rcpt.type == 4:
+            assert rcpt.gasUsed == pytest.approx(83000,rel=0.05)
+        else:
+            assert rcpt.gasUsed == 21000
+
+        tot +=rcpt.gasUsed
+        assert rcpt.cumulativeGasUsed == tot
+
         print(
             "index",
             rcpt.transactionIndex,
@@ -91,7 +101,6 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
             rcpt.cumulativeGasUsed,
         )
 
-    assert False, "see above broken gas table"
 
 
 def test_system_event_success(
