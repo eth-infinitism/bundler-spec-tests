@@ -55,16 +55,17 @@ def send_and_check_payment(w3, tx: TransactionRIP7560):
         actual_priority = rcpt.effectiveGasPrice - block.baseFeePerGas
         used = rcpt.gasUsed
 
-        print(
-            f"::warning {__file__} : gas_used field is BROKEN for 2nd TX. Workaround until AA-438 is fixed"
-        )
         if used > rcpt.cumulativeGasUsed:
+            print(
+                f"::warning {__file__} : gas_used field is BROKEN for 2nd TX. Workaround until AA-438 is fixed"
+            )
             used = 21000
 
         if rcpt.type == 4:
             tx_cost = used * rcpt.effectiveGasPrice
             total_tx_cost = total_tx_cost + tx_cost
 
+        print(f"{txhash.hex()} used {used} cumulative {rcpt.cumulativeGasUsed}")
         tip = actual_priority * used
         total_tx_tips += tip
 
