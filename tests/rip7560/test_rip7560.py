@@ -83,11 +83,11 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
         assert rcpt.blockHash == block.hash
         # we check cumulative gas calc, not specific TX gas used
         if rcpt.type == 4:
-            assert rcpt.gasUsed == pytest.approx(83000,rel=0.05)
+            assert rcpt.gasUsed == pytest.approx(83000, rel=0.05)
         else:
             assert rcpt.gasUsed == 21000
 
-        tot +=rcpt.gasUsed
+        tot += rcpt.gasUsed
         assert rcpt.cumulativeGasUsed == tot
 
         print(
@@ -100,7 +100,6 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
             "\tcumulativeGasUsed",
             rcpt.cumulativeGasUsed,
         )
-
 
 
 def test_system_event_success(
