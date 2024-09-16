@@ -9,14 +9,19 @@ from tests.utils import (
     get_rip7560_debug_info,
     send_bundle_now,
     to_prefixed_hex,
+    deploy_contract,
 )
 from tests.types import RPCErrorCode
 
 
-def test_eth_send_no_gas():
-    tx = TransactionRIP7560(
-        sender="0x1111111111111111111111111111111111111112",
+def test_eth_send_no_gas(w3):
+    contract = deploy_contract(
+        w3,
+        "rip7560/TestAccount",
+        value=0,
     )
+
+    tx = TransactionRIP7560(sender=contract.address, nonce=hex(1))
 
     ret = tx.send()
     assert_rpc_error(ret, "insufficient funds", RPCErrorCode.INVALID_INPUT)
