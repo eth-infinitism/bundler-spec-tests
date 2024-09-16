@@ -8,6 +8,9 @@ import "../utils/TestUtils.sol";
 contract GasWasteAccount {
     uint256 public accCounter = 0;
 
+    constructor() payable {
+    }
+
     function validateTransaction(
         uint256,
         bytes32,
