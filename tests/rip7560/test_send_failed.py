@@ -258,3 +258,15 @@ def test_eth_send_deployment_does_not_create_account(
         "validation phase failed with exception: sender not deployed by factory",
         -32000,
     )
+
+
+def test_insufficient_pre_transaction_gas(tx_7560):
+    tx_7560.verificationGasLimit = hex(30000)
+    tx_7560.authorizationData = "0x" + ("ff" * 1000)
+    tx_7560.executionData = "0x"
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "insufficient ValidationGasLimit(30000) to cover PreTransactionGasCost(31000)",
+        -32000,
+    )
