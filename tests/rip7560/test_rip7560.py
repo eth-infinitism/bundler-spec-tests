@@ -15,8 +15,9 @@ from tests.utils import (
     fund,
     send_bundle_now,
     to_prefixed_hex,
-    deploy_contract,
     compile_contract,
+    deploy_contract,
+    dump_mempool,
 )
 
 
@@ -39,6 +40,65 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     assert rethash == evhash
     assert wallet_contract.address == ev.address
     w3.eth.get_transaction(rethash)
+
+
+# pylint: disable=unused-argument
+def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
+    # state_before = wallet_contract.functions.state().call()
+    # assert state_before == 0
+    # calldata = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    count = 3
+    wallets = []
+    for i in range(count):
+        wallets.append(deploy_contract(w3, "rip7560/TestAccount", value=10**18))
+
+    hashes = []
+    for i in range(count):
+        wallet = wallets[i]
+        new_op = TransactionRIP7560(
+            sender=wallet.address,
+            nonce="0x1",
+            executionData="0x",
+            callGasLimit=tx_7560.callGasLimit,
+            maxPriorityFeePerGas=tx_7560.maxPriorityFeePerGas,
+            maxFeePerGas=tx_7560.maxFeePerGas,
+        )
+        res = new_op.send()
+        hashes.append(res.result)
+        assert_ok(res)
+
+    assert len(dump_mempool()) == count
+
+    send_bundle_now()
+    assert dump_mempool() == []
+    block = w3.eth.get_block("latest")
+    txlen = len(block.transactions)
+    assert txlen >= count
+    tot = 0
+    for i in range(txlen):
+        if i < count:
+            assert hashes[i] == "0x" + block.transactions[i].hex()
+        rcpt = w3.eth.get_transaction_receipt(block.transactions[i])
+        assert rcpt.status == 1
+        assert rcpt.blockHash == block.hash
+        if rcpt.type == 4:
+            assert rcpt.gasUsed == 81183
+        else:
+            assert rcpt.gasUsed == 21000
+
+        tot += rcpt.gasUsed
+        assert rcpt.cumulativeGasUsed == tot
+
+        print(
+            "index",
+            rcpt.transactionIndex,
+            "type",
+            rcpt.type,
+            "\tgasUsed:",
+            rcpt.gasUsed,
+            "\tcumulativeGasUsed",
+            rcpt.cumulativeGasUsed,
+        )
 
 
 def test_system_event_success(
