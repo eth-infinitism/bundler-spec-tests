@@ -13,9 +13,12 @@ class TransactionRIP7560:
     nonceKey: HexStr = hex(0)
     nonce: HexStr = hex(0)
     factory: HexStr = "0x0000000000000000000000000000000000000000"
+    deployer: HexStr = None  # alias for factory
     factoryData: HexStr = "0x"
+    deployerData: HexStr = None  # alias for factoryData
     executionData: HexStr = "0x"
     callGasLimit: HexStr = hex(3 * 10**5)
+    gas: HexStr = None  # alias for callGasLimit
     verificationGasLimit: HexStr = hex(10**6)
     maxFeePerGas: HexStr = hex(4 * 10**9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
@@ -31,7 +34,17 @@ class TransactionRIP7560:
 
     def __post_init__(self):
         # pylint: disable=duplicate-code
+        print("self before postinit", self)
         self.sender = to_checksum_address(self.sender)
+        if self.deployer is not None:
+            self.factory = self.deployer
+            self.deployer = None
+        if self.deployerData is not None:
+            self.factoryData = self.deployerData
+            self.deployerData = None
+        if self.gas is not None:
+            self.callGasLimit = self.gas
+            self.gas = None
         if self.paymaster is not None:
             if (
                 self.paymasterVerificationGasLimit is None
