@@ -11,7 +11,7 @@ def get_nonce(w3, nonce_manager, address, key):
 
 
 def test_eth_sendTransaction7560_7712_valid(
-        w3, wallet_contract, nonce_manager, tx_7560
+    w3, wallet_contract, nonce_manager, tx_7560
 ):
     key = 777
 
