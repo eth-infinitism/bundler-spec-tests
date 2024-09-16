@@ -6,6 +6,8 @@ from eth_utils import to_checksum_address
 from eth_abi import decode
 from eth_abi.packed import encode_packed
 from solcx import compile_source
+
+from .rip7560.types import TransactionRIP7560
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
@@ -226,7 +228,10 @@ def dump_mempool(url=None):
         .result
     )
     for i, entry in enumerate(mempool):
-        mempool[i] = UserOperation(**entry)
+        if "executionData" in entry:
+            mempool[i] = TransactionRIP7560(**entry)
+        else:
+            mempool[i] = UserOperation(**entry)
     return mempool
 
 
