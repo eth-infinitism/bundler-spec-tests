@@ -187,7 +187,7 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: shahafn/go-python-node
-      - image: ethereum/client-go:v1.14.0
+      - image: ethpandaops/geth:prague-devnet-3-effcd38
         command: "\
           --miner.gaslimit 12000000 \
           --http \
@@ -215,29 +215,29 @@ jobs:
           name: "pdm install"
           command: "pdm install"
 
-      - run:
-          name: "clone go-ethereum from lightclient"
-          command: ./scripts/clone-helper prague-devnet-3 https://github.com/lightclient/go-ethereum.git
-      - run:
-          name: "build go-ethereum"
-          working_directory: "./go-ethereum"
-          command: make geth
-      - run:
-          name: "run go-ethereum"
-          working_directory: "./go-ethereum"
-          command: "\
-          ./build/bin/geth \
-          --dev \
-          --dev.gaslimit \
-          30000000 \
-          --http \
-          --http.api \
-          'eth,net,web3,personal,debug' \
-          --http.port \
-          8545 \
-          --rpc.allow-unprotected-txs \
-          "
-          background: true
+#      - run:
+#          name: "clone go-ethereum from lightclient"
+#          command: ./scripts/clone-helper prague-devnet-3 https://github.com/lightclient/go-ethereum.git
+#      - run:
+#          name: "build go-ethereum"
+#          working_directory: "./go-ethereum"
+#          command: make geth
+#      - run:
+#          name: "run go-ethereum"
+#          working_directory: "./go-ethereum"
+#          command: "\
+#          ./build/bin/geth \
+#          --dev \
+#          --dev.gaslimit \
+#          30000000 \
+#          --http \
+#          --http.api \
+#          'eth,net,web3,personal,debug' \
+#          --http.port \
+#          8545 \
+#          --rpc.allow-unprotected-txs \
+#          "
+#          background: true
 
       - run:
           name: "clone bundler"
