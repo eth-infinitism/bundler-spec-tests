@@ -15,5 +15,6 @@ def test_send_eip_7702_tx(w3):
             hex(0),
         )
     ]
+    tx.authorizationList = []
     res = tx.send()
     print(res)
