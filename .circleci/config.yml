@@ -180,15 +180,100 @@ jobs:
           paths:
             - ./bundler/node_modules
 
+# TODO: extract all the shared boilerplate stuff, pdm and bundler compilation
 
+  test-erc4337-with-eip7702-bundler:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: shahafn/go-python-node
+      - image: ethereum/client-go:v1.14.0
+        command: "\
+          --miner.gaslimit 12000000 \
+          --http \
+          --http.api personal,eth,net,web3,debug \
+          --allow-insecure-unlock \
+          --rpc.allow-unprotected-txs \
+          --http.vhosts '*,localhost,host.docker.internal' \
+          --http.corsdomain '*' \
+          --http.addr '0.0.0.0' \
+          --dev \
+          --rpc.txfeecap 0 \
+          --nodiscover --maxpeers 0 --mine \
+          --verbosity 2"
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "curl pdm"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - run:
+          name: "update-deps"
+          command: "pdm run update-deps"
+      - run:
+          name: "pdm install"
+          command: "pdm install"
 
+      - run:
+          name: "clone go-ethereum from lightclient"
+          command: ./scripts/clone-helper prague-devnet-3 https://github.com/lightclient/go-ethereum.git
+      - run:
+          name: "build go-ethereum"
+          working_directory: "./go-ethereum"
+          command: make geth
+      - run:
+          name: "run go-ethereum"
+          working_directory: "./go-ethereum"
+          command: "\
+          ./build/bin/geth \
+          --dev \
+          --dev.gaslimit \
+          30000000 \
+          --http \
+          --http.api \
+          'eth,net,web3,personal,debug' \
+          --http.port \
+          8545 \
+          --rpc.allow-unprotected-txs \
+          "
+          background: true
+
+      - run:
+          name: "clone bundler"
+          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
+      - run:
+          name: "yarn install for bundler"
+          working_directory: "./bundler"
+          command: yarn install --ignore-engines && yarn preprocess
+      - run:
+          name: "deploy entry point"
+          working_directory: "./bundler"
+          command: yarn hardhat-deploy --network localhost
+      - run:
+          name: "run bundler"
+          working_directory: "./bundler"
+          command: yarn bundler
+          background: true
+      - run:
+          name: "await bundler"
+          working_directory: "./bundler"
+          shell: /bin/sh
+          command: |
+            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
+      - run:
+          name: "pytest"
+          command: "pdm run test-eip7702"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  test-bundler-erc4337-workflow:
+#  test-bundler-erc4337-workflow:
+#    jobs:
+#      - test-erc4337-bundler
+#  test-bundler-rip7560-workflow:
+#    jobs:
+#      - test-rip7560-bundler
+  test-erc4337-with-eip7702-bundler:
     jobs:
-      - test-erc4337-bundler
-  test-bundler-rip7560-workflow:
-    jobs:
-      - test-rip7560-bundler
+      - test-erc4337-with-eip7702-bundler
