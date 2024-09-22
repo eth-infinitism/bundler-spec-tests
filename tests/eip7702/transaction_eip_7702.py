@@ -19,13 +19,15 @@ class TupleEIP7702:
 @dataclass
 class TransactionEIP7702:
     # pylint: disable=too-many-instance-attributes, invalid-name
+    to: HexStr = "0x0000000000000000000000000000000000000000"
+    data: HexStr = "0x00"
     nonce: HexStr = hex(0)
     gas: HexStr = hex(1_000_000)  # alias for callGasLimit
     maxFeePerGas: HexStr = hex(4 * 10 ** 9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10 ** 9)
     chainId: HexStr = hex(1337)
     value: HexStr = hex(0)
-    accessList: HexStr = ""
+    accessList: list[HexStr] = () # todo: type is not correct, must always be empty!
     authorizationList: list[TupleEIP7702] = ()
 
     # todo: implement

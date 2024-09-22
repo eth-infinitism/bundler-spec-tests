@@ -7,14 +7,13 @@ def test_send_eip_7702_tx(w3):
     tx.authorizationList = [
         # todo: fill in the valid tuple
         TupleEIP7702(
-            hex(0),
-            hex(0),
-            hex(0),
-            hex(0),
-            hex(0),
-            hex(0),
+            hex(1337),
+            "0x0000000000000000000000000000000000000000",
+            hex(1),
+            hex(1),
+            "0x1000000000000000000000000000000000000000000000000000000000000000",
+            "0x1000000000000000000000000000000000000000000000000000000000000000",
         )
     ]
-    tx.authorizationList = []
     res = tx.send()
     print(res)
