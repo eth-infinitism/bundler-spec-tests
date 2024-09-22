@@ -12,9 +12,8 @@ def test_devnet(w3):
         'maxFeePerGas': 2000000000,
         'maxPriorityFeePerGas': 1000000000,
         'nonce': 0,
-        'chainId': 1,
-        'type': '0x2',  # the type is optional and, if omitted, will be interpreted based on the provided transaction parameters
+        'chainId': 1337
     }
     signed = w3.eth.account.sign_transaction(transaction, account.key)
-    res = w3.eth.send_raw_transaction(signed.raw_transaction)
+    res = w3.eth.send_raw_transaction(signed.rawTransaction.hex())
     print(res)
