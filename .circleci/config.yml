@@ -215,29 +215,29 @@ jobs:
           name: "pdm install"
           command: "pdm install"
 
-#      - run:
-#          name: "clone go-ethereum from lightclient"
-#          command: ./scripts/clone-helper prague-devnet-3 https://github.com/lightclient/go-ethereum.git
-#      - run:
-#          name: "build go-ethereum"
-#          working_directory: "./go-ethereum"
-#          command: make geth
-#      - run:
-#          name: "run go-ethereum"
-#          working_directory: "./go-ethereum"
-#          command: "\
-#          ./build/bin/geth \
-#          --dev \
-#          --dev.gaslimit \
-#          30000000 \
-#          --http \
-#          --http.api \
-#          'eth,net,web3,personal,debug' \
-#          --http.port \
-#          8545 \
-#          --rpc.allow-unprotected-txs \
-#          "
-#          background: true
+      - run:
+          name: "clone go-ethereum"
+          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
+      - run:
+          name: "build go-ethereum"
+          working_directory: "./go-ethereum"
+          command: make geth
+      - run:
+          name: "run go-ethereum"
+          working_directory: "./go-ethereum"
+          command: "\
+          ./build/bin/geth \
+          --dev \
+          --dev.gaslimit \
+          30000000 \
+          --http \
+          --http.api \
+          'eth,net,web3,personal,debug' \
+          --http.port \
+          8545 \
+          --rpc.allow-unprotected-txs \
+          "
+          background: true
 
       - run:
           name: "clone bundler"

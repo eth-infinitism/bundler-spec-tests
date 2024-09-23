@@ -22,7 +22,7 @@ class TransactionEIP7702:
     to: HexStr = "0x0000000000000000000000000000000000000000"
     data: HexStr = "0x00"
     nonce: HexStr = hex(0)
-    gas: HexStr = hex(1_000_000)  # alias for callGasLimit
+    gasLimit: HexStr = hex(1_000_000)  # alias for callGasLimit
     maxFeePerGas: HexStr = hex(4 * 10 ** 9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10 ** 9)
     chainId: HexStr = hex(1337)
