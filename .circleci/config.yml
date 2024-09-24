@@ -243,9 +243,9 @@ jobs:
           name: "clone bundler"
           command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
       - run:
-          name: "yarn install for bundler"
+          name: "yarn install for bundler (TMP: delete nested 'util' to use our pre-built)"
           working_directory: "./bundler"
-          command: yarn install --ignore-engines && yarn preprocess
+          command: yarn install --ignore-engines && yarn preprocess && rm -rf ./node_modules/@ethereumjs/common/node_modules/@ethereumjs/util
       - run:
           name: "deploy entry point"
           working_directory: "./bundler"

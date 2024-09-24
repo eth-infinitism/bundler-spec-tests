@@ -6,7 +6,8 @@ import pytest
 from solcx import install_solc
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
-from .types import UserOperation, RPCRequest, CommandLineArgs
+from .types import RPCRequest, CommandLineArgs
+from .user_operation_erc4337 import UserOperation
 from .utils import (
     assert_ok,
     deploy_and_deposit,
