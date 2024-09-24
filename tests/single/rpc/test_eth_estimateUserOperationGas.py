@@ -23,7 +23,7 @@ def test_eth_estimateUserOperationGas(userop: UserOperation, schema):
 def test_eth_estimateUserOperationGas_execution_revert(
     wallet_contract, userop: UserOperation
 ):
-    userop.callData = wallet_contract.encodeABI(fn_name="fail")
+    userop.callData = wallet_contract.encode_abi(abi_element_identifier="fail")
     response = RPCRequest(
         method="eth_estimateUserOperationGas",
         params=[asdict(userop), CommandLineArgs.entrypoint],

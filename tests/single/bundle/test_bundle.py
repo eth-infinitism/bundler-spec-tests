@@ -56,7 +56,7 @@ replace_op_cases = [
 def test_bundle_replace_op(w3, manual_bundling_mode, case):
     wallet = deploy_wallet_contract(w3)
     fund(w3, wallet.address)
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    calldata = wallet.encode_abi(abi_element_identifier="setState", args=[1])
     new_op = UserOperation(
         sender=wallet.address,
         nonce="0x0",
@@ -69,7 +69,9 @@ def test_bundle_replace_op(w3, manual_bundling_mode, case):
         DEFAULT_MAX_PRIORITY_FEE_PER_GAS, case.bump_priority
     )
     new_max_fee_per_gas = bump_fee_by(DEFAULT_MAX_FEE_PER_GAS, case.bump_max)
-    replacement_calldata = wallet.encodeABI(fn_name="setState", args=[2])
+    replacement_calldata = wallet.encode_abi(
+        abi_element_identifier="setState", args=[2]
+    )
     replacement_op = UserOperation(
         sender=wallet.address,
         nonce="0x0",
@@ -134,7 +136,7 @@ def test_mempool_reputation_rules_all_entities(
     sender = deposit_to_undeployed_sender(
         w3, entrypoint_contract, factory_contract.address, factory_data
     )
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    calldata = wallet.encode_abi(abi_element_identifier="setState", args=[1])
 
     assert dump_mempool() == []
     if entity == "sender":
@@ -243,7 +245,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
     UREP-010: An unstaked sender is only allowed to have SAME_SENDER_MEMPOOL_COUNT UserOperations in the mempool.
     """
     wallet = deploy_wallet_contract(w3)
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    calldata = wallet.encode_abi(abi_element_identifier="setState", args=[1])
     wallet_ops = [
         UserOperation(sender=wallet.address, nonce=hex(i << 64), callData=calldata)
         for i in range(SAME_SENDER_MEMPOOL_COUNT + 1)
@@ -267,7 +269,7 @@ def test_max_allowed_ops_unstaked_sender(w3, helper_contract):
 @pytest.mark.usefixtures("manual_bundling_mode")
 def test_max_allowed_ops_staked_sender(w3, entrypoint_contract, helper_contract):
     wallet = deploy_and_deposit(w3, entrypoint_contract, "SimpleWallet", True)
-    calldata = wallet.encodeABI(fn_name="setState", args=[1])
+    calldata = wallet.encode_abi(abi_element_identifier="setState", args=[1])
     wallet_ops = [
         UserOperation(
             sender=wallet.address, nonce=hex((i + 1) << 64), callData=calldata
@@ -298,16 +300,16 @@ def test_ban_user_op_access_other_ops_sender_in_bundle(
     )
     wallet2 = deploy_and_deposit(w3, entrypoint_contract, "TestFakeWalletToken", False)
     wallet1_token.functions.sudoSetBalance(wallet1_token.address, 10**18).transact(
-        {"from": w3.eth.accounts[0]}
+        {"from": w3.eth.default_account}
     )
     wallet1_token.functions.sudoSetBalance(wallet2.address, 10**18).transact(
-        {"from": w3.eth.accounts[0]}
+        {"from": w3.eth.default_account}
     )
     wallet1_token.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
-        {"from": w3.eth.accounts[0]}
+        {"from": w3.eth.default_account}
     )
     wallet2.functions.sudoSetAnotherWallet(wallet1_token.address).transact(
-        {"from": w3.eth.accounts[0]}
+        {"from": w3.eth.default_account}
     )
     calldata1 = wallet2.address
     calldata2 = "0x"

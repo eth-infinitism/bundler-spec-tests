@@ -174,23 +174,23 @@ def test_eth_send_account_validation_reverts_skip_validation_bundler(
 
 
 def encode_solidity_error(w3, value):
-    # manually encoding the custom error message with "encodeABI" here
+    # manually encoding the custom error message with "encode_abi" here
     c = w3.eth.contract(
         abi='[{"type":"function","name":"Error",'
         '"inputs":[{"name": "error","type": "string"}]}]'
     )
-    abi_encoding = c.encodeABI(fn_name="Error", args=[value])
+    abi_encoding = c.encode_abi(abi_element_identifier="Error", args=[value])
     return abi_encoding
 
 
 def encode_custom_error(w3):
-    # manually encoding the custom error message with "encodeABI" here
+    # manually encoding the custom error message with "encode_abi" here
     c = w3.eth.contract(
         abi='[{"type":"function","name":"CustomError",'
         '"inputs":[{"name": "error","type": "string"},{"name": "code","type": "uint256"}]}]'
     )
-    abi_encoding = c.encodeABI(
-        fn_name="CustomError", args=["on-chain custom error", 777]
+    abi_encoding = c.encode_abi(
+        abi_element_identifier="CustomError", args=["on-chain custom error", 777]
     )
     return abi_encoding
 
