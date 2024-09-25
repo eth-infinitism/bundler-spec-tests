@@ -38,7 +38,7 @@ def test_paymaster_deposit(w3, entrypoint_contract, paymaster_contract):
 
     # deposit enough just below the total cost
     entrypoint_contract.functions.depositTo(paymaster.address).transact(
-        {"from": w3.eth.accounts[0], "value": total_cost - 1}
+        {"from": w3.eth.default_account, "value": total_cost - 1}
     )
     for u in userops[0:-1]:
         assert_ok(u.send())

@@ -22,7 +22,7 @@ def create_account(w3, codehash_factory_contract, entrypoint_contract, num):
     nonce = 123
     tx_hash = codehash_factory_contract.functions.create(
         nonce, num, entrypoint_contract.address
-    ).transact({"from": w3.eth.accounts[0], "value": 10**18})
+    ).transact({"from": w3.eth.default_account, "value": 10**18})
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     logs = codehash_factory_contract.events.ContractCreated().process_receipt(receipt)
     account = logs[0].args.account
@@ -46,7 +46,7 @@ def test_codehash_changed(w3, entrypoint_contract):
     # Calling SELFDESTRUCT before constructing the account on the same address with different code hash
 
     tx_hash = codehash_factory_contract.functions.destroy(account0).transact(
-        {"from": w3.eth.accounts[0]}
+        {"from": w3.eth.default_account}
     )
     w3.eth.wait_for_transaction_receipt(tx_hash)
     if len(w3.eth.get_code(account0)) != 0:
@@ -70,7 +70,7 @@ def test_codehash_changed(w3, entrypoint_contract):
     # Sanity check: reconstructing the accounts again to see that they can be bundled
     for i in range(2):
         tx_hash = codehash_factory_contract.functions.destroy(account0).transact(
-            {"from": w3.eth.accounts[0]}
+            {"from": w3.eth.default_account}
         )
         w3.eth.wait_for_transaction_receipt(tx_hash)
         block_number = w3.eth.get_block_number()

@@ -49,13 +49,23 @@ def compile_contract(contract):
 
 # pylint: disable=too-many-arguments
 def deploy_contract(
-    w3, contractname, ctrparams=None, value=0, gas=10 * 10**6, gas_price=10**9
+    w3,
+    contractname,
+    ctrparams=None,
+    value=0,
+    gas=10 * 10**6,
+    gas_price=10**9,
+    account=None,
 ):
     if ctrparams is None:
         ctrparams = []
     interface = compile_contract(contractname)
-    contract = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
-    account = w3.eth.accounts[0]
+    contract = w3.eth.contract(
+        abi=interface["abi"],
+        bytecode=interface["bin"],
+    )
+    if account is None:
+        account = w3.eth.default_account
     tx_hash = contract.constructor(*ctrparams).transact(
         {
             "gas": gas,
@@ -91,14 +101,14 @@ def deploy_and_deposit(
 
 def fund(w3, addr, value=10**18):
     tx_hash = w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": addr, "value": value}
+        {"from": w3.eth.default_account, "to": addr, "value": value}
     )
     w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
 def staked_contract(w3, entrypoint_contract, contract):
     tx_hash = contract.functions.addStake(entrypoint_contract.address, 2).transact(
-        {"from": w3.eth.accounts[0], "value": 1 * 10**18}
+        {"from": w3.eth.default_account, "value": 1 * 10**18}
     )
     assert int(tx_hash.hex(), 16), "could not stake contract"
     w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -198,7 +208,7 @@ def get_sender_address(w3, factory, factory_data):
 def deposit_to_undeployed_sender(w3, entrypoint_contract, factory, factory_data):
     sender = get_sender_address(w3, factory, factory_data)
     tx_hash = entrypoint_contract.functions.depositTo(sender).transact(
-        {"value": 10**18, "from": w3.eth.accounts[0]}
+        {"value": 10**18, "from": w3.eth.default_account}
     )
     w3.eth.wait_for_transaction_receipt(tx_hash)
     return sender
