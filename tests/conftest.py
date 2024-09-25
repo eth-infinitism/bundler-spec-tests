@@ -60,6 +60,8 @@ def w3():
         private_key = (
             "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
         )
+        # pylint doesn't deal with @combomethod well
+        # pylint: disable = no-value-for-parameter
         account = Account.from_key(private_key)
         w3.eth.default_account = account.address
         w3.middleware_onion.add(SignAndSendRawMiddlewareBuilder.build(private_key))
