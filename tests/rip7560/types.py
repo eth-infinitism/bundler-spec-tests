@@ -34,7 +34,6 @@ class TransactionRIP7560:
 
     def __post_init__(self):
         # pylint: disable=duplicate-code
-        print("self before postinit", self)
         self.sender = to_checksum_address(self.sender)
         if self.deployer is not None:
             self.factory = self.deployer
