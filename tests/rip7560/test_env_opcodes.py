@@ -32,7 +32,7 @@ def test_environment_introspection_opcodes(w3):
         maxFeePerGas=hex(400000000),
         maxPriorityFeePerGas=hex(400000000),
         authorizationData="0xface",
-        executionData=account_abi.encodeABI(fn_name="saveEventOpcodes"),
+        executionData=account_abi.encode_abi(abi_element_identifier="saveEventOpcodes"),
     )
 
     paymaster_balance_before = w3.eth.get_balance(paymaster.address)

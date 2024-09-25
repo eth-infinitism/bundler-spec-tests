@@ -9,14 +9,19 @@ from tests.utils import (
     get_rip7560_debug_info,
     send_bundle_now,
     to_prefixed_hex,
+    deploy_contract,
 )
 from tests.types import RPCErrorCode
 
 
-def test_eth_send_no_gas():
-    tx = TransactionRIP7560(
-        sender="0x1111111111111111111111111111111111111112",
+def test_eth_send_no_gas(w3):
+    contract = deploy_contract(
+        w3,
+        "rip7560/TestAccount",
+        value=0,
     )
+
+    tx = TransactionRIP7560(sender=contract.address, nonce=hex(1))
 
     ret = tx.send()
     assert_rpc_error(ret, "insufficient funds", RPCErrorCode.INVALID_INPUT)
@@ -31,20 +36,19 @@ def test_eth_send_no_code(w3):
     ret = tx.send()
     assert_rpc_error(
         ret,
-        "account is not deployed and no factory is specified",
+        "account is not deployed and no deployer is specified",
         RPCErrorCode.INVALID_INPUT,
     )
 
 
-def test_eth_send_no_code_wrong_nonce(w3):
-    tx = TransactionRIP7560(
-        sender="0x1111111111111111111111111111111111111113",
-        nonce=hex(5),
-    )
-    fund(w3, tx.sender)
-
-    ret = tx.send()
+def test_eth_send_wrong_nonce(tx_7560):
+    tx_7560.nonce = hex(5)
+    ret = tx_7560.send()
     assert_rpc_error(ret, "nonce too high", RPCErrorCode.INVALID_INPUT)
+
+    tx_7560.nonce = hex(0)
+    ret = tx_7560.send()
+    assert_rpc_error(ret, "nonce too low", RPCErrorCode.INVALID_INPUT)
 
 
 RevertTestCase = collections.namedtuple(
@@ -169,23 +173,23 @@ def test_eth_send_account_validation_reverts_skip_validation_bundler(
 
 
 def encode_solidity_error(w3, value):
-    # manually encoding the custom error message with "encodeABI" here
+    # manually encoding the custom error message with "encode_abi" here
     c = w3.eth.contract(
         abi='[{"type":"function","name":"Error",'
         '"inputs":[{"name": "error","type": "string"}]}]'
     )
-    abi_encoding = c.encodeABI(fn_name="Error", args=[value])
+    abi_encoding = c.encode_abi(abi_element_identifier="Error", args=[value])
     return abi_encoding
 
 
 def encode_custom_error(w3):
-    # manually encoding the custom error message with "encodeABI" here
+    # manually encoding the custom error message with "encode_abi" here
     c = w3.eth.contract(
         abi='[{"type":"function","name":"CustomError",'
         '"inputs":[{"name": "error","type": "string"},{"name": "code","type": "uint256"}]}]'
     )
-    abi_encoding = c.encodeABI(
-        fn_name="CustomError", args=["on-chain custom error", 777]
+    abi_encoding = c.encode_abi(
+        abi_element_identifier="CustomError", args=["on-chain custom error", 777]
     )
     return abi_encoding
 
@@ -255,6 +259,18 @@ def test_eth_send_deployment_does_not_create_account(
     response = tx_7560.send()
     assert_rpc_error(
         response,
-        "validation phase failed with exception: sender not deployed by factory",
+        "validation phase failed with exception: sender not deployed by the deployer",
+        -32000,
+    )
+
+
+def test_insufficient_pre_transaction_gas(tx_7560):
+    tx_7560.verificationGasLimit = hex(30000)
+    tx_7560.authorizationData = "0x" + ("ff" * 1000)
+    tx_7560.executionData = "0x"
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "insufficient ValidationGasLimit(30000) to cover PreTransactionGasCost(31000)",
         -32000,
     )

@@ -3,9 +3,10 @@ import os
 import subprocess
 
 import pytest
+from eth_account import Account
 from solcx import install_solc
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from web3.middleware import SignAndSendRawMiddlewareBuilder, ExtraDataToPOAMiddleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
 from .utils import (
     assert_ok,
@@ -55,7 +56,18 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereum_node))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    if len(w3.eth.accounts) == 0:
+        private_key = (
+            "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
+        )
+        # pylint doesn't deal with @combomethod well
+        # pylint: disable = no-value-for-parameter
+        account = Account.from_key(private_key)
+        w3.eth.default_account = account.address
+        w3.middleware_onion.add(SignAndSendRawMiddlewareBuilder.build(private_key))
+    else:
+        w3.eth.default_account = w3.eth.accounts[0]
+    w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
     return w3
 
 
@@ -117,7 +129,9 @@ def helper_contract(w3):
 def userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
-        callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
+        callData=wallet_contract.encode_abi(
+            abi_element_identifier="setState", args=[1111111]
+        ),
         signature="0xface",
     )
 
