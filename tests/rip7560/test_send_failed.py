@@ -295,7 +295,7 @@ def test_overflow_block_gas_limit(w3: Web3, tx_7560: TransactionRIP7560):
         new_op = TransactionRIP7560(
             sender=wallet.address,
             nonce="0x1",
-            executionData=wallet.encodeABI(fn_name="anyExecutionFunction"),
+            executionData=wallet.encode_abi(fn_name="anyExecutionFunction"),
             callGasLimit=hex(10_000_000),
             maxPriorityFeePerGas=tx_7560.maxPriorityFeePerGas,
             maxFeePerGas=tx_7560.maxFeePerGas,
