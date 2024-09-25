@@ -36,20 +36,19 @@ def test_eth_send_no_code(w3):
     ret = tx.send()
     assert_rpc_error(
         ret,
-        "account is not deployed and no factory is specified",
+        "account is not deployed and no deployer is specified",
         RPCErrorCode.INVALID_INPUT,
     )
 
 
-def test_eth_send_no_code_wrong_nonce(w3):
-    tx = TransactionRIP7560(
-        sender="0x1111111111111111111111111111111111111113",
-        nonce=hex(5),
-    )
-    fund(w3, tx.sender)
-
-    ret = tx.send()
+def test_eth_send_wrong_nonce(tx_7560):
+    tx_7560.nonce = hex(5)
+    ret = tx_7560.send()
     assert_rpc_error(ret, "nonce too high", RPCErrorCode.INVALID_INPUT)
+
+    tx_7560.nonce = hex(0)
+    ret = tx_7560.send()
+    assert_rpc_error(ret, "nonce too low", RPCErrorCode.INVALID_INPUT)
 
 
 RevertTestCase = collections.namedtuple(
@@ -260,7 +259,7 @@ def test_eth_send_deployment_does_not_create_account(
     response = tx_7560.send()
     assert_rpc_error(
         response,
-        "validation phase failed with exception: sender not deployed by factory",
+        "validation phase failed with exception: sender not deployed by the deployer",
         -32000,
     )
 
