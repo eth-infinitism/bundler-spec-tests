@@ -1,5 +1,6 @@
 import collections
 import pytest
+from web3 import Web3
 
 from web3.constants import ADDRESS_ZERO
 from tests.rip7560.types import TransactionRIP7560
@@ -10,6 +11,8 @@ from tests.utils import (
     send_bundle_now,
     to_prefixed_hex,
     deploy_contract,
+    assert_ok,
+    dump_mempool,
 )
 from tests.types import RPCErrorCode
 
@@ -274,3 +277,42 @@ def test_insufficient_pre_transaction_gas(tx_7560):
         "insufficient ValidationGasLimit(30000) to cover PreTransactionGasCost(31000)",
         -32000,
     )
+
+
+# pylint: disable=duplicate-code
+def test_overflow_block_gas_limit(w3: Web3, tx_7560: TransactionRIP7560):
+    count = 3
+    wallets = []
+    hashes = []
+    for i in range(count):
+        wallets.append(
+            deploy_contract(w3, "rip7560/gaswaste/GasWasteAccount", value=20**18)
+        )
+
+    for i in range(count):
+        wallet = wallets[i]
+        new_op = TransactionRIP7560(
+            sender=wallet.address,
+            nonce="0x1",
+            executionData=wallet.encode_abi("anyExecutionFunction"),
+            callGasLimit=hex(10_000_000),
+            maxPriorityFeePerGas=tx_7560.maxPriorityFeePerGas,
+            maxFeePerGas=tx_7560.maxFeePerGas,
+        )
+        # GasWasteAccount uses 'GAS' opcode to leave 100 gas
+        res = new_op.send_skip_validation()
+        hashes.append(res.result)
+        assert_ok(res)
+
+    mempool = dump_mempool()
+    print(mempool)
+    assert len(mempool) == count
+    send_bundle_now()
+    block = w3.eth.get_block("latest")
+    tx_len = len(block.transactions)
+    # note: two 7560 transactions and a zero-value legacy transaction from 'send_bundle_now'
+    assert tx_len == count
+
+    debug_info = get_rip7560_debug_info(hashes[2])
+
+    assert debug_info.result["revertEntityName"] == "block gas limit"
