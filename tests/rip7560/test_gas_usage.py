@@ -19,7 +19,9 @@ def test_gas_usage_with_paymaster(w3, wallet_contract):
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(12345),
         authorizationData="0xface",
-        executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+        executionData=wallet_contract.encode_abi(
+            abi_element_identifier="anyExecutionFunction"
+        ),
         # nonce = "0x1234"
     )
     send_and_check_payment(w3, tx)

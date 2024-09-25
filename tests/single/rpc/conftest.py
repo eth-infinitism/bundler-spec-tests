@@ -9,7 +9,9 @@ from tests.types import UserOperation
 def bad_sig_userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
-        callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
+        callData=wallet_contract.encode_abi(
+            abi_element_identifier="setState", args=[1111111]
+        ),
         signature="0xdead",
     )
 
@@ -18,7 +20,9 @@ def bad_sig_userop(wallet_contract):
 def invalid_sig_userop(wallet_contract):
     return UserOperation(
         sender=wallet_contract.address,
-        callData=wallet_contract.encodeABI(fn_name="setState", args=[1111111]),
+        callData=wallet_contract.encode_abi(
+            abi_element_identifier="setState", args=[1111111]
+        ),
         signature="0xdeaf",
     )
 

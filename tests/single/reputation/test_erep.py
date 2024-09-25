@@ -76,7 +76,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
     assert to_number(pre.opsSeen) == to_number(post_submit.opsSeen) - 1
 
     # make OOB state change to make UserOp in mempool to fail
-    account.functions.setState(0xDEAD).transact({"from": w3.eth.accounts[0]})
+    account.functions.setState(0xDEAD).transact({"from": w3.eth.default_account})
     send_bundle_now()
     post = get_reputation(paymaster.address)
     assert post == pre
@@ -95,7 +95,7 @@ def test_staked_factory_on_account_failure(
         factory_data = factory.functions.create(i).build_transaction()["data"]
         account = w3.eth.call({"to": factory.address, "data": factory_data})[12:]
         w3.eth.send_transaction(
-            {"from": w3.eth.accounts[0], "to": account, "value": 10**18}
+            {"from": w3.eth.default_account, "to": account, "value": 10**18}
         )
         assert_ok(
             UserOperation(
@@ -108,6 +108,6 @@ def test_staked_factory_on_account_failure(
         )
 
     # cause 2nd account to revert in bundle creation
-    factory.functions.setAccountState(0xDEAD).transact({"from": w3.eth.accounts[0]})
+    factory.functions.setAccountState(0xDEAD).transact({"from": w3.eth.default_account})
     send_bundle_now()
     assert get_reputation(factory.address).opsSeen >= 10000
