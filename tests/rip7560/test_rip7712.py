@@ -5,7 +5,6 @@ from tests.utils import send_bundle_now, assert_rpc_error, assert_ok, to_number
 
 
 def get_nonce(w3, nonce_manager, address, key):
-    # get_nonce_call_data = encode_packed(["address", "uint256"], [address, key])
     get_nonce_call_data = encode_packed(["address", "uint192"], [address, key])
     return w3.eth.call({"to": nonce_manager.address, "data": get_nonce_call_data})
 
