@@ -187,20 +187,20 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: shahafn/go-python-node
-      - image: ethpandaops/geth:prague-devnet-3-effcd38
-        command: "\
-          --miner.gaslimit 12000000 \
-          --http \
-          --http.api personal,eth,net,web3,debug \
-          --allow-insecure-unlock \
-          --rpc.allow-unprotected-txs \
-          --http.vhosts '*,localhost,host.docker.internal' \
-          --http.corsdomain '*' \
-          --http.addr '0.0.0.0' \
-          --dev \
-          --rpc.txfeecap 0 \
-          --nodiscover --maxpeers 0 --mine \
-          --verbosity 2"
+#      - image: ethpandaops/geth:prague-devnet-3-effcd38
+#        command: "\
+#          --miner.gaslimit 12000000 \
+#          --http \
+#          --http.api personal,eth,net,web3,debug \
+#          --allow-insecure-unlock \
+#          --rpc.allow-unprotected-txs \
+#          --http.vhosts '*,localhost,host.docker.internal' \
+#          --http.corsdomain '*' \
+#          --http.addr '0.0.0.0' \
+#          --dev \
+#          --rpc.txfeecap 0 \
+#          --nodiscover --maxpeers 0 --mine \
+#          --verbosity 2"
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
