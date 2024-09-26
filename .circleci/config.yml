@@ -31,26 +31,17 @@ jobs:
       - run:
           name: "Run format check"
           command: "pdm run format --check"
-
-  test-erc4337-bundler:
-    docker:
-      - image: shahafn/go-python-node
-    steps:
-      - checkout
       - run:
           name: "Clone go-ethereum from Infinitism"
           command: "./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git"
-      - restore_cache:
-          keys:
-            - dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
       - run:
           name: "Build go-ethereum"
           working_directory: "./go-ethereum"
           command: "make geth"
-      - save_cache:
-          key: dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
+      - persist_to_workspace:
+          root: ./go-ethereum/build/bin
           paths:
-            - ./go-ethereum/build
+            - geth
       - run:
           name: "Clone bundler"
           command: "./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git"
@@ -65,9 +56,36 @@ jobs:
           key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
           paths:
             - ./bundler/node_modules
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bundler
+
+  test-erc4337-bundler:
+    docker:
+      - image: shahafn/go-python-node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: workspace
+      - run:
+          name: "Install PDM"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - run:
+          name: "Setup go-ethereum"
+          command: |
+            mkdir -p ./go-ethereum/build/bin
+            mv workspace/geth ./go-ethereum/build/bin/
+      - run:
+          name: "Setup bundler"
+          command: |
+            mv workspace/bundler ./bundler
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -108,37 +126,26 @@ jobs:
       - image: shahafn/go-python-node
     steps:
       - checkout
+      - attach_workspace:
+          at: workspace
       - run:
-          name: "Clone go-ethereum from Infinitism"
-          command: "./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git"
-      - restore_cache:
-          keys:
-            - dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
-      - run:
-          name: "Build go-ethereum"
-          working_directory: "./go-ethereum"
-          command: "make geth"
-      - save_cache:
-          key: dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
-          paths:
-            - ./go-ethereum/build
-      - run:
-          name: "Clone bundler"
-          command: "./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git"
-      - restore_cache:
-          keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
-      - run:
-          name: "Install bundler dependencies"
-          working_directory: "./bundler"
-          command: "yarn install --ignore-engines && yarn preprocess"
-      - save_cache:
-          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
-          paths:
-            - ./bundler/node_modules
+          name: "Install PDM"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - run:
+          name: "Setup go-ethereum"
+          command: |
+            mkdir -p ./go-ethereum/build/bin
+            mv workspace/geth ./go-ethereum/build/bin/
+      - run:
+          name: "Setup bundler"
+          command: |
+            mv workspace/bundler ./bundler
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
