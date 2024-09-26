@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import "../../Stakable.sol";
 import "../TestAccount.sol";
-import {IRip7560Paymaster} from "@rip7560/contracts/interfaces/IRip7560Paymaster.sol";
+import {IRip7560Paymaster, UsedGasBreakdown} from "@rip7560/contracts/interfaces/IRip7560Paymaster.sol";
 
 contract OpcodesTestPaymaster is IRip7560Paymaster {
 
@@ -21,8 +21,8 @@ contract OpcodesTestPaymaster is IRip7560Paymaster {
 
     function postPaymasterTransaction(
         bool success,
-        uint256 actualGasCost,
-        bytes calldata context
+        bytes calldata context,
+        UsedGasBreakdown calldata usedGasBreakdown
     ) external {
         TestUtils.emitEvmData("paymaster-postop");
     }
