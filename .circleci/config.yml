@@ -21,47 +21,33 @@ jobs:
       - run:
           name: "Install dependencies"
           command: "pdm install"
+      - save_cache:
+          key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
+          paths:
+            - .venv
       - run:
           name: "Run lint"
           command: "pdm run lint"
       - run:
-          name: "Check code format"
+          name: "Run format check"
           command: "pdm run format --check"
       - run:
           name: "Clone go-ethereum from Infinitism"
-          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
+          command: "./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git"
       - restore_cache:
           keys:
             - dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
       - run:
           name: "Build go-ethereum"
           working_directory: "./go-ethereum"
-          command: make geth
+          command: "make geth"
       - save_cache:
           key: dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
           paths:
             - ./go-ethereum/build
       - run:
-          name: "Run go-ethereum"
-          working_directory: "./go-ethereum"
-          command: "\
-          ./build/bin/geth \
-          --dev \
-          --dev.gaslimit \
-          30000000 \
-          --http \
-          --http.api \
-          'eth,net,web3,personal,debug' \
-          --http.port \
-          8545 \
-          --rpc.allow-unprotected-txs \
-          --config \
-          circleciconfig.toml \
-          "
-          background: true
-      - run:
           name: "Clone bundler"
-          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
+          command: "./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git"
       - restore_cache:
           keys:
             - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
@@ -70,24 +56,36 @@ jobs:
           working_directory: "./bundler"
           command: "yarn install --ignore-engines && yarn preprocess"
       - save_cache:
-          key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
-          paths:
-            - .venv
-      - save_cache:
           key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
           paths:
             - ./bundler/node_modules
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .  # Persist entire workspace
 
   test-erc4337-bundler:
     docker:
       - image: shahafn/go-python-node
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - restore_cache:
+          keys:
+            - dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+      - run:
+          name: "Run go-ethereum"
+          command: |
+            ./go-ethereum/build/bin/geth \
+              --dev \
+              --dev.gaslimit 30000000 \
+              --http \
+              --http.api 'eth,net,web3,personal,debug' \
+              --http.port 8545 \
+              --rpc.allow-unprotected-txs \
+              --config circleciconfig.toml &
+          background: true
       - run:
           name: "Run bundler (ERC4337)"
           working_directory: "./bundler"
@@ -99,8 +97,8 @@ jobs:
           shell: /bin/sh
           command: |
             wget --post-data='{"method": "eth_supportedEntryPoints"}' \
-            --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
-            http://localhost:3000/rpc
+              --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
+              http://localhost:3000/rpc
       - run:
           name: "Run pytest (ERC4337)"
           command: "pdm run test"
@@ -109,8 +107,28 @@ jobs:
     docker:
       - image: shahafn/go-python-node
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - restore_cache:
+          keys:
+            - dependency-cache-go-ethereum-{{ checksum "./go-ethereum/go.sum" }}
+      - restore_cache:
+          keys:
+            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+      - run:
+          name: "Run go-ethereum"
+          command: |
+            ./go-ethereum/build/bin/geth \
+              --dev \
+              --dev.gaslimit 30000000 \
+              --http \
+              --http.api 'eth,net,web3,personal,debug' \
+              --http.port 8545 \
+              --rpc.allow-unprotected-txs \
+              --config circleciconfig.toml &
+          background: true
       - run:
           name: "Run bundler (RIP7560)"
           working_directory: "./bundler"
@@ -122,8 +140,8 @@ jobs:
           shell: /bin/sh
           command: |
             wget --post-data='{"method": "eth_supportedEntryPoints"}' \
-            --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
-            http://localhost:3000/rpc
+              --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
+              http://localhost:3000/rpc
       - run:
           name: "Run pytest (RIP7560)"
           command: "pdm run test-rip7560"
