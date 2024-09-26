@@ -2,6 +2,7 @@
 pragma solidity ^0.8.12;
 
 import "@rip7560/contracts/utils/RIP7560Utils.sol";
+import {UsedGasBreakdown} from "@rip7560/contracts/interfaces/IRIP7560Paymaster.sol";
 
 contract GasWastePaymaster {
     uint256 public pmCounter = 0;
@@ -20,8 +21,8 @@ contract GasWastePaymaster {
 
     function postPaymasterTransaction(
         bool success,
-        uint256 actualGasCost,
-        bytes calldata context
+        bytes calldata context,
+        UsedGasBreakdown calldata usedGasBreakdown
     ) external {
         do {
             pmCounter++;
