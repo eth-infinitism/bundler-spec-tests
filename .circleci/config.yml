@@ -1,8 +1,4 @@
 version: 2.1
-
-orbs:
-  go: circleci/go@1.11.0
-
 jobs:
   common-setup:
     docker:
@@ -17,50 +13,65 @@ jobs:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
           name: "Update dependencies"
-          command: "pdm run update-deps"
+          command: pdm run update-deps
       - run:
           name: "Install dependencies"
-          command: "pdm install"
+          command: pdm install
       - save_cache:
           key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
           paths:
             - .venv
       - run:
           name: "Run lint"
-          command: "pdm run lint"
+          command: pdm run lint
       - run:
           name: "Run format check"
-          command: "pdm run format --check"
+          command: pdm run format --check
       - run:
-          name: "Clone go-ethereum from Infinitism"
-          command: "./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git"
+          name: "Clone go-ethereum"
+          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
       - run:
-          name: "Build go-ethereum"
-          working_directory: "./go-ethereum"
-          command: "make geth"
-      - persist_to_workspace:
-          root: ./go-ethereum/build/bin
-          paths:
-            - geth
-      - run:
-          name: "Clone bundler"
-          command: "./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git"
+          name: "Get go-ethereum commit hash"
+          working_directory: go-ethereum
+          command: echo "export GO_ETHEREUM_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+            - go-ethereum-build-{{ .Environment.GO_ETHEREUM_COMMIT_HASH }}
+      - run:
+          name: "Build go-ethereum"
+          working_directory: go-ethereum
+          command: make geth
+      - save_cache:
+          key: go-ethereum-build-{{ .Environment.GO_ETHEREUM_COMMIT_HASH }}
+          paths:
+            - go-ethereum/build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - go-ethereum/build/bin/geth
+            - go-ethereum/circleciconfig.toml
+      - run:
+          name: "Clone bundler"
+          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
+      - run:
+          name: "Get bundler commit hash"
+          working_directory: bundler
+          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
+      - restore_cache:
+          keys:
+            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Install bundler dependencies"
-          working_directory: "./bundler"
-          command: "yarn install --ignore-engines && yarn preprocess"
+          working_directory: bundler
+          command: yarn install --ignore-engines && yarn preprocess
       - save_cache:
-          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+          key: bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
           paths:
-            - ./bundler/node_modules
+            - bundler/node_modules
       - persist_to_workspace:
           root: .
           paths:
             - bundler
-
   test-erc4337-bundler:
     docker:
       - image: shahafn/go-python-node
@@ -75,17 +86,25 @@ jobs:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
+          name: "Update dependencies"
+          command: pdm run update-deps
+      - run:
           name: "Setup go-ethereum"
           command: |
-            mkdir -p ./go-ethereum/build/bin
-            mv workspace/geth ./go-ethereum/build/bin/
+            mkdir -p go-ethereum/build/bin
+            mv workspace/go-ethereum/build/bin/geth go-ethereum/build/bin/
+            mv workspace/go-ethereum/circleciconfig.toml go-ethereum/
       - run:
           name: "Setup bundler"
           command: |
-            mv workspace/bundler ./bundler
+            mv workspace/bundler bundler
+      - run:
+          name: "Get bundler commit hash"
+          working_directory: bundler
+          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -118,9 +137,8 @@ jobs:
               --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
               http://localhost:3000/rpc
       - run:
-          name: "Run pytest (ERC4337)"
-          command: "pdm run test"
-
+          name: "Run pytest"
+          command: pdm run test
   test-rip7560-bundler:
     docker:
       - image: shahafn/go-python-node
@@ -135,17 +153,25 @@ jobs:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
+          name: "Update dependencies"
+          command: pdm run update-deps
+      - run:
           name: "Setup go-ethereum"
           command: |
-            mkdir -p ./go-ethereum/build/bin
-            mv workspace/geth ./go-ethereum/build/bin/
+            mkdir -p go-ethereum/build/bin
+            mv workspace/go-ethereum/build/bin/geth go-ethereum/build/bin/
+            mv workspace/go-ethereum/circleciconfig.toml go-ethereum/
       - run:
           name: "Setup bundler"
           command: |
-            mv workspace/bundler ./bundler
+            mv workspace/bundler bundler
+      - run:
+          name: "Get bundler commit hash"
+          working_directory: bundler
+          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -166,8 +192,8 @@ jobs:
           background: true
       - run:
           name: "Run bundler (RIP7560)"
-          working_directory: "./bundler"
-          command: "yarn bundler-rip7560"
+          working_directory: bundler
+          command: yarn bundler-rip7560
           background: true
       - run:
           name: "Await bundler (RIP7560)"
@@ -180,7 +206,6 @@ jobs:
       - run:
           name: "Run pytest (RIP7560)"
           command: "pdm run test-rip7560"
-
 workflows:
   version: 2
   test-bundler-workflow:
