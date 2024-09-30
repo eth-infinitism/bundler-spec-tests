@@ -6,7 +6,6 @@ from eth_utils import to_checksum_address
 from eth_abi import decode
 from solcx import compile_source
 
-from .rip7560.types import TransactionRIP7560
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
