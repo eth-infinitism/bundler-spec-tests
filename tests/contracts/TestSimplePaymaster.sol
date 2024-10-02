@@ -8,6 +8,10 @@ contract TestSimplePaymaster is IPaymaster {
     IEntryPoint public entryPoint;
     constructor(address _ep) payable {
         entryPoint = IEntryPoint(_ep);
+        if (_ep != address(0)) {
+            (bool req,) = address(_ep).call{value : msg.value}("");
+            require(req);
+        }
     }
 
     function validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32, uint256) external returns (bytes memory context, uint256 validationData) {

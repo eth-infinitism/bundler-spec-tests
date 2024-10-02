@@ -6,6 +6,7 @@ from eth_utils import to_checksum_address
 from eth_abi import decode
 from solcx import compile_source
 
+from .rip7560.types import TransactionRIP7560
 from .types import RPCRequest, UserOperation, CommandLineArgs
 
 
@@ -300,11 +301,11 @@ def hex_concat(*arr):
 
 
 def to_prefixed_hex(s, byte_count=None):
-    str = to_hex(s).replace("0x", "")
+    string = to_hex(s).replace("0x", "")
     pad = 0
     if byte_count:
-        pad = max(byte_count * 2 - len(str), 0)
-    return "0x" + ("0" * pad) + str
+        pad = max(byte_count * 2 - len(string), 0)
+    return "0x" + ("0" * pad) + string
 
 
 def to_hex(s):
