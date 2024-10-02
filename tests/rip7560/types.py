@@ -4,7 +4,7 @@ from web3.constants import ADDRESS_ZERO
 from eth_typing import HexStr
 from eth_utils import to_checksum_address
 from tests.types import RPCRequest
-from tests.utils import remove_nulls
+from tests.types import remove_nulls
 
 
 @dataclass
