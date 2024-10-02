@@ -46,7 +46,7 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     # state_before = wallet_contract.functions.state().call()
     # assert state_before == 0
-    # calldata = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    # calldata = wallet_contract.encode_abi(abi_element_identifier="anyExecutionFunction")
     count = 3
     wallets = []
     for i in range(count):
@@ -129,7 +129,9 @@ def test_system_event_success(
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
         verificationGasLimit=hex(2000000),
-        executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+        executionData=wallet_contract.encode_abi(
+            abi_element_identifier="anyExecutionFunction"
+        ),
         authorizationData="0xface",
     )
     res = tx_7560.send()
@@ -174,7 +176,9 @@ def test_system_event_success(
 def test_system_event_revert_execution(
     w3, entry_point_rip7560, wallet_contract, tx_7560
 ):
-    tx_7560.executionData = wallet_contract.encodeABI(fn_name="revertingFunction")
+    tx_7560.executionData = wallet_contract.encode_abi(
+        abi_element_identifier="revertingFunction"
+    )
 
     tx_7560.send()
     send_bundle_now()
@@ -267,7 +271,9 @@ def test_eth_sendTransaction7560_valid_with_paymaster_no_postop(
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
     tx_7560.authorizationData = to_prefixed_hex("no context")
-    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.executionData = wallet_contract.encode_abi(
+        abi_element_identifier="anyExecutionFunction"
+    )
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
@@ -287,7 +293,9 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop(
     assert counter_before == 0
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
-    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.executionData = wallet_contract.encode_abi(
+        abi_element_identifier="anyExecutionFunction"
+    )
     res = tx_7560.send()
     assert_ok(res)
     send_bundle_now()
@@ -307,7 +315,9 @@ def test_eth_sendTransaction7560_valid_with_paymaster_postop_revert(
     assert counter_before == 0
     assert state_before == 0
     tx_7560.paymaster = paymaster.address
-    tx_7560.executionData = wallet_contract.encodeABI(fn_name="anyExecutionFunction")
+    tx_7560.executionData = wallet_contract.encode_abi(
+        abi_element_identifier="anyExecutionFunction"
+    )
     tx_7560.authorizationData = to_prefixed_hex("revert")
     res = tx_7560.send()
     assert_ok(res)
@@ -466,11 +476,15 @@ def test_bundle_with_events(w3, wallet_contract):
             maxFeePerGas=hex(1000_000_000),
             maxPriorityFeePerGas=hex(1000000),
             verificationGasLimit=hex(3000000),
-            executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+            executionData=wallet_contract.encode_abi(
+                abi_element_identifier="anyExecutionFunction"
+            ),
         )
         # force the last tx to fail
         if i == 2:
-            tx.executionData = wallet_contract.encodeABI(fn_name="revertingFunction")
+            tx.executionData = wallet_contract.encode_abi(
+                abi_element_identifier="revertingFunction"
+            )
         txs.append(tx)
         ret = tx.send()
         hashes.append(ret)

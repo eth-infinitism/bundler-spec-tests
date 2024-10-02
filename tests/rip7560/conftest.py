@@ -54,7 +54,7 @@ def wallet_contract_rules(w3):
     )
     time.sleep(0.1)
     w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": contract.address, "value": 10**18}
+        {"from": w3.eth.default_account, "to": contract.address, "value": 10**18}
     )
     return contract
 
@@ -68,7 +68,9 @@ def tx_7560(wallet_contract):
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
         verificationGasLimit=hex(2000000),
-        executionData=wallet_contract.encodeABI(fn_name="anyExecutionFunction"),
+        executionData=wallet_contract.encode_abi(
+            abi_element_identifier="anyExecutionFunction"
+        ),
         authorizationData="0xface",
     )
 
