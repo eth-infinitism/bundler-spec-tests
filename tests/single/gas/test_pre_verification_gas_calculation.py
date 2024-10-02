@@ -14,7 +14,7 @@ def set_user_op_field_value(user_op_input, test_field_name, new_value):
 
 # perform a binary search for a minimal valid numeric value for a UserOperation field
 def find_min_value_for_field(
-        entrypoint_contract, user_op_input, test_field_name, minimum_value, maximum_value
+    entrypoint_contract, user_op_input, test_field_name, minimum_value, maximum_value
 ):
     # check that maximum value is sufficient
     assert_ok(RPCRequest(method="debug_bundler_clearState").send())
@@ -74,7 +74,7 @@ expected_min_pre_verification_gas = {
 @pytest.mark.parametrize("dynamic_length_field_name", dynamic_length_field_names)
 @pytest.mark.parametrize("field_length", field_lengths)
 def test_pre_verification_gas_calculation(
-        w3, entrypoint_contract, wallet_contract, dynamic_length_field_name, field_length
+    w3, entrypoint_contract, wallet_contract, dynamic_length_field_name, field_length
 ):
     # this field can be parametrized as well
     # however currently ERC-4337 validates all other fields on-chain so testing them is unnecessary
@@ -94,7 +94,7 @@ def test_pre_verification_gas_calculation(
                 w3,
                 "TestSimplePaymaster",
                 [entrypoint_contract.address],
-                value=1 * 10 ** 18,
+                value=1 * 10**18,
             )
             op.paymaster = paymaster.address
             op.paymasterData = "0x" + "ff" * field_length
