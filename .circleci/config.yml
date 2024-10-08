@@ -30,19 +30,15 @@ jobs:
       - run:
           name: "Clone go-ethereum"
           command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
-      - run:
-          name: "Get go-ethereum commit hash"
-          working_directory: go-ethereum
-          command: echo "export GO_ETHEREUM_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - go-ethereum-build-{{ .Environment.GO_ETHEREUM_COMMIT_HASH }}
+            - go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
       - run:
           name: "Build go-ethereum"
           working_directory: go-ethereum
           command: make geth
       - save_cache:
-          key: go-ethereum-build-{{ .Environment.GO_ETHEREUM_COMMIT_HASH }}
+          key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
           paths:
             - go-ethereum/build
       - persist_to_workspace:
@@ -53,19 +49,15 @@ jobs:
       - run:
           name: "Clone bundler"
           command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
-      - run:
-          name: "Get bundler commit hash"
-          working_directory: bundler
-          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
           command: yarn install --ignore-engines && yarn preprocess
       - save_cache:
-          key: bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
+          key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
           paths:
             - bundler/node_modules
       - persist_to_workspace:
@@ -98,13 +90,9 @@ jobs:
           name: "Setup bundler"
           command: |
             mv workspace/bundler bundler
-      - run:
-          name: "Get bundler commit hash"
-          working_directory: bundler
-          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -165,13 +153,9 @@ jobs:
           name: "Setup bundler"
           command: |
             mv workspace/bundler bundler
-      - run:
-          name: "Get bundler commit hash"
-          working_directory: bundler
-          command: echo "export BUNDLER_COMMIT_HASH=$(git rev-parse HEAD)" >> $BASH_ENV
       - restore_cache:
           keys:
-            - bundler-deps-{{ .Environment.BUNDLER_COMMIT_HASH }}-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
