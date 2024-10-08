@@ -7,7 +7,12 @@ exit 1
 fi
 
 dir=`echo $url | perl -pe 's!.*/!!; s/\.git$//' `
-( test $CIRCLE_BRANCH != "master" && git clone --quiet $url --depth 1 --shallow-submodules --branch $CIRCLE_BRANCH ) || git clone --quiet $url --depth 1 --shallow-submodules --branch $branch
+( test $CIRCLE_BRANCH != "master" && git clone --quiet $url --depth 1 --branch $CIRCLE_BRANCH ) || git clone --quiet $url --depth 1 --branch $branch
 cd $dir
 echo "== checked out '$dir' branch '`git branch --show-current`'"
-git submodule update --recursive --init
+
+if [ "$3" == "--no-submodules" ]; then
+    echo "Skipping submodule cloning as per request."
+ else
+    git submodule update --recursive --init
+fi
