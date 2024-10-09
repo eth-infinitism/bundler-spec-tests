@@ -32,6 +32,12 @@ commands:
           key: rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
           paths:
             - "@rip7560/node_modules"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "@account-abstraction"
+            - "spec"
+            - "@rip7560"
 jobs:
   common-setup:
     docker:
@@ -57,36 +63,6 @@ jobs:
       - run:
           name: "Run format check"
           command: pdm run format --check
-#      - run:
-#          name: "Update submodules"
-#          command: pdm run submodule-update
-#      - restore_cache:
-#          keys:
-#            - account-abstraction-node-modules-{{ checksum "@account-abstraction/yarn.lock" }}
-#            - account-abstraction-node-modules-
-#      - restore_cache:
-#          keys:
-#            - spec-node-modules-{{ checksum "spec/yarn.lock" }}
-#            - spec-node-modules-
-#      - restore_cache:
-#          keys:
-#            - rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
-#            - rip7560-node-modules-
-#      - run:
-#          name: "build submodules"
-#          command: pdm run dep-build
-#      - save_cache:
-#          key: account-abstraction-node-modules-{{ checksum "@account-abstraction/yarn.lock" }}
-#          paths:
-#            - "@account-abstraction/node_modules"
-#      - save_cache:
-#          key: spec-node-modules-{{ checksum "spec/yarn.lock" }}
-#          paths:
-#            - "spec/node_modules"
-#      - save_cache:
-#          key: rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
-#          paths:
-#            - "@rip7560/node_modules"
       - update-and-build-deps-cached
       - run:
           name: "Clone go-ethereum"
@@ -97,7 +73,7 @@ jobs:
       - run:
           name: "Build go-ethereum"
           working_directory: go-ethereum
-          command: make geth
+          command: test ! -f go-ethereum/build/bin/geth && make geth
       - save_cache:
           key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
           paths:
@@ -138,7 +114,13 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-      - update-and-build-deps-cached
+#      - update-and-build-deps-cached
+      - run:
+          name: "Setup submodules"
+          command: |
+            mv workspace/@account-abstraction ./
+            mv workspace/spec ./
+            mv workspace/@rip7560 ./
       - run:
           name: "Setup go-ethereum"
           command: |
@@ -199,7 +181,13 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-      - update-and-build-deps-cached
+#      - update-and-build-deps-cached
+      - run:
+          name: "Setup submodules"
+          command: |
+            mv workspace/@account-abstraction ./
+            mv workspace/spec ./
+            mv workspace/@rip7560 ./
       - run:
           name: "Setup go-ethereum"
           command: |
