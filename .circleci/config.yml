@@ -137,7 +137,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-#      - update-and-build-deps-cached
       - run:
           name: "Setup submodules"
           command: |
@@ -205,7 +204,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-#      - update-and-build-deps-cached
       - run:
           name: "Setup submodules"
           command: |
