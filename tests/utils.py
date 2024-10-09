@@ -2,13 +2,14 @@ import os
 import time
 from functools import cache
 
-from eth_utils import to_checksum_address
 from eth_abi import decode
 from eth_abi.packed import encode_packed
+from eth_utils import to_checksum_address
 from solcx import compile_source
 
 from .rip7560.types import TransactionRIP7560
-from .types import RPCRequest, UserOperation, CommandLineArgs
+from .types import RPCRequest, CommandLineArgs
+from .user_operation_erc4337 import UserOperation
 
 
 @cache
