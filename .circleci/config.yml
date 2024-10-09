@@ -32,6 +32,18 @@ commands:
           key: rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
           paths:
             - "@rip7560/node_modules"
+      - save_cache:
+          key: account-abstraction-git-{{ checksum "@account-abstraction/.git/HEAD" }}
+          paths:
+            - "@account-abstraction"
+      - save_cache:
+          key: spec-git-{{ checksum "spec/.git/HEAD" }}
+          paths:
+            - "spec"
+      - save_cache:
+          key: rip7560-git-{{ checksum "@rip7560/.git/HEAD" }}
+          paths:
+            - "@rip7560"
 jobs:
   common-setup:
     docker:
@@ -77,7 +89,8 @@ jobs:
       - save_cache:
           key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
           paths:
-            - go-ethereum/build
+            - go-ethereum/build/bin
+            - go-ethereum/circleciconfig.toml
       - run:
           name: "Clone bundler"
           command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
@@ -96,7 +109,7 @@ jobs:
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
-          command: test -d node_modules/@account-abstraction && yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+          command: yarn install --frozen-lockfile --ignore-engines && yarn preprocess
       - save_cache:
           key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
           paths:
@@ -109,48 +122,37 @@ jobs:
           key: bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
           paths:
             - bundler/submodules/rip7560/node_modules
-      - persist_to_workspace:
-          root: .
+      - save_cache:
+          key: bundler-git-{{ checksum "bundler/.git/HEAD" }}
           paths:
-            - go-ethereum/build/bin/geth
-            - go-ethereum/circleciconfig.toml
             - bundler
-            - "@account-abstraction"
-            - "spec"
-            - "@rip7560"
+
   test-erc4337-bundler:
     docker:
       - image: shahafn/go-python-node
     steps:
       - checkout
-      - attach_workspace:
-          at: workspace
+      - restore_cache:
+          keys:
+            - account-abstraction-git-
+      - restore_cache:
+          keys:
+            - spec-git-
+      - restore_cache:
+          keys:
+            - rip7560-git-
+      - restore_cache:
+          keys:
+            - go-ethereum-build-
+      - restore_cache:
+          keys:
+            - bundler-git-
       - run:
           name: "Install PDM"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-      - run:
-          name: "Setup submodules"
-          command: |
-            mv workspace/@account-abstraction ./
-            mv workspace/spec ./
-            mv workspace/@rip7560 ./
-      - run:
-          name: "Setup go-ethereum"
-          command: |
-            mkdir -p go-ethereum/build/bin
-            mv workspace/go-ethereum/build/bin/geth go-ethereum/build/bin/
-            mv workspace/go-ethereum/circleciconfig.toml go-ethereum/
-      - run:
-          name: "Setup bundler"
-          command: |
-            mv workspace/bundler bundler
-      - restore_cache:
-          keys:
-            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
-            - bundler-deps-
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -190,34 +192,27 @@ jobs:
       - image: shahafn/go-python-node
     steps:
       - checkout
-      - attach_workspace:
-          at: workspace
+      - restore_cache:
+          keys:
+            - account-abstraction-git-
+      - restore_cache:
+          keys:
+            - spec-git-
+      - restore_cache:
+          keys:
+            - rip7560-git-
+      - restore_cache:
+          keys:
+            - go-ethereum-build-
+      - restore_cache:
+          keys:
+            - bundler-git-
       - run:
           name: "Install PDM"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
-      - run:
-          name: "Setup submodules"
-          command: |
-            mv workspace/@account-abstraction ./
-            mv workspace/spec ./
-            mv workspace/@rip7560 ./
-      - run:
-          name: "Setup go-ethereum"
-          command: |
-            mkdir -p go-ethereum/build/bin
-            mv workspace/go-ethereum/build/bin/geth go-ethereum/build/bin/
-            mv workspace/go-ethereum/circleciconfig.toml go-ethereum/
-      - run:
-          name: "Setup bundler"
-          command: |
-            mv workspace/bundler bundler
-      - restore_cache:
-          keys:
-            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
-            - bundler-deps-
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
