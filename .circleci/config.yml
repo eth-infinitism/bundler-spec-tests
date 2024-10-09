@@ -107,7 +107,7 @@ jobs:
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
-          command: yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+          command: test -d node_modules/@account-abstraction && yarn install --frozen-lockfile --ignore-engines && yarn preprocess
       - save_cache:
           key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
           paths:
