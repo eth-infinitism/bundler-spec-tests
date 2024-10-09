@@ -1,8 +1,8 @@
 from dataclasses import asdict
 import pytest
 
-from tests.types import UserOperation, RPCRequest
-from tests.utils import assert_ok, deploy_contract
+from tests.types import UserOperation, RPCRequest, CommandLineArgs
+from tests.utils import assert_ok, deploy_contract, send_bundle_now, userop_hash
 
 
 # create a copy of a UserOperation object while overriding a 'test_field_name' field with a 'new_value'
@@ -107,4 +107,39 @@ def test_pre_verification_gas_calculation(
     expected_pre_vg = expected_min_pre_verification_gas[dynamic_length_field_name][
         field_length
     ]
+    # pylint: disable=fixme
+    # todo: tighten the 'approx' parameter
     assert min_pre_verification_gas == pytest.approx(expected_pre_vg, 0.1)
+
+
+# pylint: disable=fixme
+# todo: parametrize this test for different bundler 'expectedBundleSize' (requires new 'debug_' RPC API)
+def test_gas_cost_estimate_close_to_reality(wallet_contract, helper_contract):
+    userop = UserOperation(
+        sender=wallet_contract.address,
+        callData=wallet_contract.encode_abi(
+            abi_element_identifier="setState", args=[0]
+        ),
+        signature="0xface",
+    )
+    estimation = RPCRequest(
+        method="eth_estimateUserOperationGas",
+        params=[asdict(userop), CommandLineArgs.entrypoint],
+    ).send()
+    userop.preVerificationGas = estimation.result["preVerificationGas"]
+    userop.verificationGasLimit = estimation.result["verificationGasLimit"]
+    userop.callGasLimit = estimation.result["callGasLimit"]
+    response = userop.send()
+    send_bundle_now()
+    op_hash = userop_hash(helper_contract, userop)
+    assert response.result == op_hash
+    response = RPCRequest(
+        method="eth_getUserOperationReceipt",
+        params=[op_hash],
+    ).send()
+    assert response.result["success"] is True
+    gas_used_handle_ops_tx = int(response.result["receipt"]["gasUsed"], 16)
+    actual_gas_used = int(response.result["actualGasUsed"], 16)
+    # pylint: disable=fixme
+    # todo: tighten the 'approx' parameter
+    assert gas_used_handle_ops_tx == pytest.approx(actual_gas_used, 0.1)
