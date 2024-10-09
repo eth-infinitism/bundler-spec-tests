@@ -89,6 +89,12 @@ jobs:
       - restore_cache:
           keys:
             - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+      - restore_cache:
+          keys:
+            - bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+      - restore_cache:
+          keys:
+            - bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
@@ -97,6 +103,14 @@ jobs:
           key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
           paths:
             - bundler/node_modules
+      - save_cache:
+          key: bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+          paths:
+            - bundler/submodules/account-abstraction/node_modules
+      - save_cache:
+          key: bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+          paths:
+            - bundler/submodules/rip7560/node_modules
       - persist_to_workspace:
           root: .
           paths:
