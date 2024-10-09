@@ -73,7 +73,13 @@ jobs:
       - run:
           name: "Build go-ethereum"
           working_directory: go-ethereum
-          command: test ! -f go-ethereum/build/bin/geth && make geth
+          command: |
+            if [ -f build/bin/geth ]; then
+            echo "geth binary exists, skipping build"
+            else
+            echo "geth binary not found, building..."
+            make geth
+            fi
       - save_cache:
           key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
           paths:
