@@ -112,7 +112,13 @@ jobs:
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
-          command: yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+          command: |
+            if [ -d packages/bundler/dist ]; then
+            echo "bundler cache exists, skipping build"
+            else
+            echo "bundler cache not found, building..."
+            yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+            fi
       - save_cache:
           key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
           paths:
