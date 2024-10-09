@@ -16,3 +16,5 @@ if [ "$3" == "--no-submodules" ]; then
  else
     git submodule update --recursive --init
 fi
+
+git rev-parse HEAD > commit-hash.txt

@@ -33,15 +33,15 @@ commands:
           paths:
             - "@rip7560/node_modules"
       - save_cache:
-          key: account-abstraction-git-{{ checksum "@account-abstraction/.git/HEAD" }}
+          key: account-abstraction-git-{{ .Revision }}
           paths:
             - "@account-abstraction"
       - save_cache:
-          key: spec-git-{{ checksum "spec/.git/HEAD" }}
+          key: spec-git-{{ .Revision }}
           paths:
             - "spec"
       - save_cache:
-          key: rip7560-git-{{ checksum "@rip7560/.git/HEAD" }}
+          key: rip7560-git-{{ .Revision }}
           paths:
             - "@rip7560"
 jobs:
@@ -75,7 +75,7 @@ jobs:
           command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
-            - go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
+            - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
       - run:
           name: "Build go-ethereum"
           working_directory: go-ethereum
@@ -87,7 +87,7 @@ jobs:
             make geth
             fi
       - save_cache:
-          key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
+          key: go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
           paths:
             - go-ethereum/build/bin
             - go-ethereum/circleciconfig.toml
@@ -106,6 +106,9 @@ jobs:
           keys:
             - bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
             - bundler-rip7560-submodule-
+      - restore_cache:
+          keys:
+            - bundler-git-{{ checksum "bundler/commit-hash.txt" }}
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
@@ -123,7 +126,7 @@ jobs:
           paths:
             - bundler/submodules/rip7560/node_modules
       - save_cache:
-          key: bundler-git-{{ checksum "bundler/.git/HEAD" }}
+          key: bundler-git-{{ checksum "bundler/commit-hash.txt" }}
           paths:
             - bundler
 
