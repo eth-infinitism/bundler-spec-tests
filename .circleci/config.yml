@@ -32,12 +32,6 @@ commands:
           key: rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
           paths:
             - "@rip7560/node_modules"
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "@account-abstraction"
-            - "spec"
-            - "@rip7560"
 jobs:
   common-setup:
     docker:
@@ -84,11 +78,6 @@ jobs:
           key: go-ethereum-build-{{ checksum "go-ethereum/.git/HEAD" }}
           paths:
             - go-ethereum/build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - go-ethereum/build/bin/geth
-            - go-ethereum/circleciconfig.toml
       - run:
           name: "Clone bundler"
           command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
@@ -123,7 +112,12 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - go-ethereum/build/bin/geth
+            - go-ethereum/circleciconfig.toml
             - bundler
+            - "@account-abstraction"
+            - "spec"
+            - "@rip7560"
   test-erc4337-bundler:
     docker:
       - image: shahafn/go-python-node
