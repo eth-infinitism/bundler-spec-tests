@@ -95,12 +95,15 @@ jobs:
       - restore_cache:
           keys:
             - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-
       - restore_cache:
           keys:
             - bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+            - bundler-aa-submodule-
       - restore_cache:
           keys:
             - bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+            - bundler-rip7560-submodule-
       - run:
           name: "Install bundler dependencies"
           working_directory: bundler
@@ -154,6 +157,7 @@ jobs:
       - restore_cache:
           keys:
             - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
@@ -221,6 +225,7 @@ jobs:
       - restore_cache:
           keys:
             - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-
       - run:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
