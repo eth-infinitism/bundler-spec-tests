@@ -33,15 +33,15 @@ commands:
           paths:
             - "@rip7560/node_modules"
       - save_cache:
-          key: account-abstraction-git-{{ .Revision }}
+          key: account-abstraction-git-{{ checksum ".git/modules/account-abstraction/HEAD" }}
           paths:
             - "@account-abstraction"
       - save_cache:
-          key: spec-git-{{ .Revision }}
+          key: spec-git-{{ checksum ".git/modules/spec/HEAD" }}
           paths:
             - "spec"
       - save_cache:
-          key: rip7560-git-{{ .Revision }}
+          key: rip7560-git-{{ checksum ".git/modules/@rip7560/HEAD" }}
           paths:
             - "@rip7560"
 jobs:
