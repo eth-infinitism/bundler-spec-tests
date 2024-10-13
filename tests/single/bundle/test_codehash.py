@@ -48,6 +48,8 @@ def test_codehash_changed(w3, entrypoint_contract):
         {"from": w3.eth.accounts[0]}
     )
     w3.eth.wait_for_transaction_receipt(tx_hash)
+    if len(w3.eth.get_code(account0)) != 0:
+        pytest.skip("no self destruct. can't check code change..")
     # Creating account with num == 1
     account1, codehash1 = create_account(
         w3, codehash_factory_contract, entrypoint_contract, 1
