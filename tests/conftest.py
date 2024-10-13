@@ -8,6 +8,9 @@ from solcx import install_solc
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder, ExtraDataToPOAMiddleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
+
+from .user_operation_erc4337 import UserOperation
+
 from .utils import (
     assert_ok,
     deploy_and_deposit,
