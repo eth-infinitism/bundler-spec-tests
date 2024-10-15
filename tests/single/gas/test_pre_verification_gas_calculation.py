@@ -65,7 +65,7 @@ def find_min_value_for_field(
 
 dynamic_length_field_names = ["callData", "signature", "paymasterData"]
 field_lengths = [0, 100, 2000]
-expected_bundle_sizes = [1, 5, 10, 20]
+expected_bundle_sizes = [1, 2, 5, 10, 20]
 
 # note that currently there is no significant difference which field is the long one
 # this may change with signature aggregation but for now this parametrization is unnecessary
@@ -121,8 +121,12 @@ def test_pre_verification_gas_calculation(
 # pylint: disable=fixme
 # todo: parametrize this test for different bundler 'expectedBundleSize' (requires new 'debug_' RPC API)
 @pytest.mark.usefixtures("manual_bundling_mode")
-@pytest.mark.parametrize("expected_bundle_size", expected_bundle_sizes)
-@pytest.mark.parametrize("field_length", field_lengths)
+@pytest.mark.parametrize(
+    "expected_bundle_size", expected_bundle_sizes, ids=lambda val: f"bundle_size={val}"
+)
+@pytest.mark.parametrize(
+    "field_length", field_lengths, ids=lambda val: f"data_len={val}"
+)
 def test_gas_cost_estimate_close_to_reality(
     w3, entrypoint_contract, helper_contract, expected_bundle_size, field_length
 ):
@@ -138,6 +142,9 @@ def test_gas_cost_estimate_close_to_reality(
             sender=wallet.address,
             callData=wallet.encode_abi(abi_element_identifier="setState", args=[0]),
             signature="0x" + "ff" * field_length,
+            preVerificationGas="0xfffff",
+            verificationGasLimit="0xfffff",
+            callGasLimit="0xfffff",
         )
         estimation = RPCRequest(
             method="eth_estimateUserOperationGas",
