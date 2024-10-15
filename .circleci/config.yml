@@ -7,10 +7,6 @@ commands:
           command: pdm run submodule-update
       - restore_cache:
           keys:
-            - account-abstraction-node-modules-{{ checksum "@account-abstraction/yarn.lock" }}
-            - account-abstraction-node-modules-
-      - restore_cache:
-          keys:
             - spec-node-modules-{{ checksum "spec/yarn.lock" }}
             - spec-node-modules-
       - restore_cache:
@@ -20,10 +16,6 @@ commands:
       - run:
           name: "build submodules"
           command: pdm run dep-build
-      - save_cache:
-          key: account-abstraction-node-modules-{{ checksum "@account-abstraction/yarn.lock" }}
-          paths:
-            - "@account-abstraction/node_modules"
       - save_cache:
           key: spec-node-modules-{{ checksum "spec/yarn.lock" }}
           paths:
