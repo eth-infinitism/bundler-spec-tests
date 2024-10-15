@@ -21,7 +21,7 @@ def set_user_op_field_value(user_op_input, test_field_name, new_value):
 
 # perform a binary search for a minimal valid numeric value for a UserOperation field
 def find_min_value_for_field(
-    entrypoint_contract, user_op_input, test_field_name, minimum_value, maximum_value
+    user_op_input, test_field_name, minimum_value, maximum_value
 ):
     # check that maximum value is sufficient
     assert_ok(RPCRequest(method="debug_bundler_clearState").send())
@@ -45,15 +45,9 @@ def find_min_value_for_field(
     high = maximum_value
     while low < high:
         mid = low + (high - low) // 2
-        print(f"low:{low} / high: {high} / mid: {mid}")
         assert_ok(RPCRequest(method="debug_bundler_clearState").send())
-        # operation may have been included - update nonce for the next check
         user_op = set_user_op_field_value(user_op_input, test_field_name, mid)
-        user_op.nonce = hex(
-            entrypoint_contract.functions.getNonce(user_op.sender, 0).call()
-        )
         res = user_op.send()
-        print(res)
         if not hasattr(res, "message") or res.message is None:
             # user operation has been accepted by the bundler
             high = mid
@@ -71,16 +65,32 @@ expected_bundle_sizes = [1, 2, 5, 10, 20]
 # this may change with signature aggregation but for now this parametrization is unnecessary
 # also note that these values are approximate
 expected_min_pre_verification_gas = {
-    "callData": {0: 41536, 100: 43264, 2000: 73888},
-    "paymasterData": {0: 42112, 100: 43720, 2000: 74464},
-    "signature": {0: 41536, 100: 43276, 2000: 73888},
+    "callData": {0: 15124, 100: 16864, 2000: 47464},
+    "paymasterData": {0: 15124, 100: 16864, 2000: 47464},
+    "signature": {0: 15124, 100: 16864, 2000: 47464},
 }
 
 
+@pytest.fixture(scope="session")
+def test_simple_paymaster(w3, entrypoint_contract):
+    return deploy_contract(
+        w3,
+        "TestSimplePaymaster",
+        [entrypoint_contract.address],
+        value=1 * 10**18,
+    )
+
+
+@pytest.mark.usefixtures("manual_bundling_mode")
 @pytest.mark.parametrize("dynamic_length_field_name", dynamic_length_field_names)
 @pytest.mark.parametrize("field_length", field_lengths)
 def test_pre_verification_gas_calculation(
-    w3, entrypoint_contract, wallet_contract, dynamic_length_field_name, field_length
+    w3,
+    entrypoint_contract,
+    test_simple_paymaster,
+    wallet_contract,
+    dynamic_length_field_name,
+    field_length,
 ):
     # this field can be parametrized as well
     # however currently ERC-4337 validates all other fields on-chain so testing them is unnecessary
@@ -96,13 +106,7 @@ def test_pre_verification_gas_calculation(
         case "signature":
             op.signature = "0x" + "ff" * field_length
         case "paymasterData":
-            paymaster = deploy_contract(
-                w3,
-                "TestSimplePaymaster",
-                [entrypoint_contract.address],
-                value=1 * 10**18,
-            )
-            op.paymaster = paymaster.address
+            op.paymaster = test_simple_paymaster.address
             op.paymasterData = "0x" + "ff" * field_length
         case "callData":
             op.callData = "0x" + "ff" * field_length
