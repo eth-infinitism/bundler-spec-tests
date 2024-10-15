@@ -110,9 +110,7 @@ def test_pre_verification_gas_calculation(
             op.paymasterData = "0x" + "ff" * field_length
         case "callData":
             op.callData = "0x" + "ff" * field_length
-    min_pre_verification_gas = find_min_value_for_field(
-        op, test_field_name, 1, 200000
-    )
+    min_pre_verification_gas = find_min_value_for_field(op, test_field_name, 1, 200000)
 
     expected_pre_vg = expected_min_pre_verification_gas[dynamic_length_field_name][
         field_length
