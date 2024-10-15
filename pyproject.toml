@@ -29,10 +29,9 @@ build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
 submodule-update = {shell = "git submodule update --init --recursive"}
-aa-build = {shell = "cd @account-abstraction && yarn && yarn compile" }
 spec-build = {shell = "cd spec && yarn && yarn build"}
 rip7560-build = {shell = "cd @rip7560 && yarn && yarn compile-hardhat" }
-dep-build = {composite = ["aa-build", "spec-build", "rip7560-build"]}
+dep-build = {composite = ["spec-build", "rip7560-build"]}
 update-deps = {composite = ["submodule-update", "dep-build"]}
 update-deps-remote = {shell = "git submodule update --init --recursive --remote && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build && cd ../@rip7560 && yarn && yarn compile-hardhat"}
 test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032  --ethereum-node http://127.0.0.1:8545/ tests/single"
