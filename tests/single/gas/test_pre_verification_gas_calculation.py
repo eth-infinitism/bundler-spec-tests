@@ -65,9 +65,9 @@ expected_bundle_sizes = [1, 2, 5, 10, 20]
 # this may change with signature aggregation but for now this parametrization is unnecessary
 # also note that these values are approximate
 expected_min_pre_verification_gas = {
-    "callData": {0: 15124, 100: 16864, 2000: 47464},
-    "paymasterData": {0: 15124, 100: 16864, 2000: 47464},
-    "signature": {0: 15124, 100: 16864, 2000: 47464},
+    "callData": {0: 51224, 100: 52952, 2000: 83576},
+    "paymasterData": {0: 51224, 100: 52952, 2000: 83576},
+    "signature": {0: 51224, 100: 52952, 2000: 83576},
 }
 
 
@@ -92,6 +92,10 @@ def test_pre_verification_gas_calculation(
     dynamic_length_field_name,
     field_length,
 ):
+    RPCRequest(
+        method="debug_bundler_setConfiguration",
+        params=[{"expectedBundleSize": 1}],
+    ).send()
     # this field can be parametrized as well
     # however currently ERC-4337 validates all other fields on-chain so testing them is unnecessary
     test_field_name = "preVerificationGas"
