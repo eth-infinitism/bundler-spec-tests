@@ -1,8 +1,15 @@
 from dataclasses import asdict
 import pytest
 
+from tests.conftest import wallet_contract
 from tests.types import UserOperation, RPCRequest, CommandLineArgs
-from tests.utils import assert_ok, deploy_contract, send_bundle_now, userop_hash
+from tests.utils import (
+    assert_ok,
+    deploy_contract,
+    send_bundle_now,
+    userop_hash,
+    deploy_wallet_contract,
+)
 
 
 # create a copy of a UserOperation object while overriding a 'test_field_name' field with a 'new_value'
@@ -58,8 +65,7 @@ def find_min_value_for_field(
 
 dynamic_length_field_names = ["callData", "signature", "paymasterData"]
 field_lengths = [0, 100, 2000]
-# dynamic_length_field_names = ["callData"]
-# field_lengths = [0]
+expected_bundle_sizes = [1, 5, 10, 20]
 
 # note that currently there is no significant difference which field is the long one
 # this may change with signature aggregation but for now this parametrization is unnecessary
@@ -114,32 +120,54 @@ def test_pre_verification_gas_calculation(
 
 # pylint: disable=fixme
 # todo: parametrize this test for different bundler 'expectedBundleSize' (requires new 'debug_' RPC API)
-def test_gas_cost_estimate_close_to_reality(wallet_contract, helper_contract):
-    userop = UserOperation(
-        sender=wallet_contract.address,
-        callData=wallet_contract.encode_abi(
-            abi_element_identifier="setState", args=[0]
-        ),
-        signature="0xface",
+@pytest.mark.usefixtures("manual_bundling_mode")
+@pytest.mark.parametrize("expected_bundle_size", expected_bundle_sizes)
+@pytest.mark.parametrize("field_length", field_lengths)
+def test_gas_cost_estimate_close_to_reality(
+    w3, entrypoint_contract, helper_contract, expected_bundle_size, field_length
+):
+    RPCRequest(
+        method="debug_bundler_setConfiguration",
+        params=[{"expectedBundleSize": expected_bundle_size}],
+    ).send()
+    user_op_hashes = []
+    for i in range(0, expected_bundle_size):
+        # creating new wallets to avoid juggling the nonce field
+        wallet = deploy_wallet_contract(w3)
+        user_op = UserOperation(
+            sender=wallet.address,
+            callData=wallet.encode_abi(abi_element_identifier="setState", args=[0]),
+            signature="0x" + "ff" * field_length,
+        )
+        estimation = RPCRequest(
+            method="eth_estimateUserOperationGas",
+            params=[asdict(user_op), CommandLineArgs.entrypoint],
+        ).send()
+
+        user_op.preVerificationGas = estimation.result["preVerificationGas"]
+        user_op.verificationGasLimit = estimation.result["verificationGasLimit"]
+        user_op.callGasLimit = estimation.result["callGasLimit"]
+        response = user_op.send()
+        op_hash = userop_hash(helper_contract, user_op)
+        assert response.result == op_hash
+        user_op_hashes += op_hash
+        # user_op.nonce = hex(int(user_op.nonce, 16) + 1)
+    print(
+        f"bundle: {expected_bundle_size} data: {field_length} estimations: {int(user_op.preVerificationGas, 0)} / {int(user_op.verificationGasLimit, 0)} / {int(user_op.callGasLimit, 0)}"
     )
-    estimation = RPCRequest(
-        method="eth_estimateUserOperationGas",
-        params=[asdict(userop), CommandLineArgs.entrypoint],
-    ).send()
-    userop.preVerificationGas = estimation.result["preVerificationGas"]
-    userop.verificationGasLimit = estimation.result["verificationGasLimit"]
-    userop.callGasLimit = estimation.result["callGasLimit"]
-    response = userop.send()
     send_bundle_now()
-    op_hash = userop_hash(helper_contract, userop)
-    assert response.result == op_hash
-    response = RPCRequest(
-        method="eth_getUserOperationReceipt",
-        params=[op_hash],
-    ).send()
-    assert response.result["success"] is True
+
+    response = {}
+    actual_gas_used = 0
+    for i in range(0, expected_bundle_size):
+        response = RPCRequest(
+            method="eth_getUserOperationReceipt",
+            params=[op_hash],
+        ).send()
+        assert response.result["success"] is True
+        actual_gas_used += int(response.result["actualGasUsed"], 16)
+
     gas_used_handle_ops_tx = int(response.result["receipt"]["gasUsed"], 16)
-    actual_gas_used = int(response.result["actualGasUsed"], 16)
     # pylint: disable=fixme
     # todo: tighten the 'approx' parameter
     assert gas_used_handle_ops_tx == pytest.approx(actual_gas_used, 0.1)
