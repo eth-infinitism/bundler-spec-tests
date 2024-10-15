@@ -135,6 +135,7 @@ def test_gas_cost_estimate_close_to_reality(
         params=[{"expectedBundleSize": expected_bundle_size}],
     ).send()
     user_op_hashes = []
+    estimation = None
     for i in range(0, expected_bundle_size):
         # creating new wallets to avoid juggling the nonce field
         wallet = deploy_wallet_contract(w3)
@@ -146,10 +147,11 @@ def test_gas_cost_estimate_close_to_reality(
             verificationGasLimit="0xfffff",
             callGasLimit="0xfffff",
         )
-        estimation = RPCRequest(
-            method="eth_estimateUserOperationGas",
-            params=[asdict(user_op), CommandLineArgs.entrypoint],
-        ).send()
+        if estimation is None:
+            estimation = RPCRequest(
+                method="eth_estimateUserOperationGas",
+                params=[asdict(user_op), CommandLineArgs.entrypoint],
+            ).send()
 
         user_op.preVerificationGas = estimation.result["preVerificationGas"]
         user_op.verificationGasLimit = estimation.result["verificationGasLimit"]
@@ -158,10 +160,7 @@ def test_gas_cost_estimate_close_to_reality(
         op_hash = userop_hash(helper_contract, user_op)
         assert response.result == op_hash
         user_op_hashes += op_hash
-        # user_op.nonce = hex(int(user_op.nonce, 16) + 1)
-    print(
-        f"bundle: {expected_bundle_size} data: {field_length} estimations: {int(user_op.preVerificationGas, 0)} / {int(user_op.verificationGasLimit, 0)} / {int(user_op.callGasLimit, 0)}"
-    )
+
     send_bundle_now()
 
     response = {}
