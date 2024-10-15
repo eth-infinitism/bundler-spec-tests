@@ -111,7 +111,7 @@ def test_pre_verification_gas_calculation(
         case "callData":
             op.callData = "0x" + "ff" * field_length
     min_pre_verification_gas = find_min_value_for_field(
-        entrypoint_contract, op, test_field_name, 1, 200000
+        op, test_field_name, 1, 200000
     )
 
     expected_pre_vg = expected_min_pre_verification_gas[dynamic_length_field_name][
