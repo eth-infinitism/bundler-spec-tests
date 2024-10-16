@@ -552,6 +552,16 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     assert state_after == 0
 
 
+def encode_validity_range(valid_after, valid_until):
+    return (
+        "0x"
+        + hexbytes.HexBytes(
+            encode(["uint48", "uint48"], [valid_after, valid_until])
+        ).hex()
+    )
+
+
+# pylint: disable=duplicate-code
 def test_account_eth_sendTransaction7560_invalid_time_range(w3, tx_7560):
     account = deploy_contract(
         w3,
@@ -559,12 +569,16 @@ def test_account_eth_sendTransaction7560_invalid_time_range(w3, tx_7560):
         [],
         value=1 * 10**18,
     )
+    paymaster = deploy_contract(
+        w3,
+        "rip7560/RIP7560TestTimeRangePaymaster",
+        [],
+        value=1 * 10**18,
+    )
+
     tx_7560.sender = account.address
-    tx_7560.authorizationData = (
-        "0x"
-        + hexbytes.HexBytes(
-            encode(["uint48", "uint48"], [int(time()) - 2000, int(time()) - 1000])
-        ).hex()
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) - 2000, int(time()) - 1000
     )
     response = tx_7560.send()
     assert_rpc_error(
@@ -573,11 +587,31 @@ def test_account_eth_sendTransaction7560_invalid_time_range(w3, tx_7560):
         RPCErrorCode.INVALID_INPUT,
     )
 
-    tx_7560.authorizationData = (
-        "0x"
-        + hexbytes.HexBytes(
-            encode(["uint48", "uint48"], [int(time()) + 1000, int(time()) + 2000])
-        ).hex()
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) + 1000, int(time()) + 2000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity not reached yet",
+        RPCErrorCode.INVALID_INPUT,
+    )
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) - 2000, int(time()) + 2000
+    )
+    tx_7560.paymaster = paymaster.address
+    tx_7560.paymasterVerificationGasLimit = hex(1000000)
+    tx_7560.paymasterData = encode_validity_range(
+        int(time()) - 2000, int(time()) - 1000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity expired",
+        RPCErrorCode.INVALID_INPUT,
+    )
+    tx_7560.paymasterData = encode_validity_range(
+        int(time()) + 1000, int(time()) + 2000
     )
     response = tx_7560.send()
     assert_rpc_error(
