@@ -1,8 +1,11 @@
+from time import time
+
 import hexbytes
 import pytest
 from eth_utils import event_abi_to_log_topic
 from web3._utils.encoding import hex_encode_abi_type
 from web3.constants import ADDRESS_ZERO
+from eth_abi import encode
 
 from tests.rip7560.test_send_failed import encode_solidity_error
 from tests.single.opbanning.test_op_banning import banned_opcodes
@@ -547,6 +550,75 @@ def test_account_eth_sendTransaction7560_banned_opcode(
     send_bundle_now()
     state_after = wallet_contract_rules.functions.state().call()
     assert state_after == 0
+
+
+def encode_validity_range(valid_after, valid_until):
+    return (
+        "0x"
+        + hexbytes.HexBytes(
+            encode(["uint48", "uint48"], [valid_after, valid_until])
+        ).hex()
+    )
+
+
+# pylint: disable=duplicate-code
+def test_account_eth_sendTransaction7560_invalid_time_range(w3, tx_7560):
+    account = deploy_contract(
+        w3,
+        "rip7560/RIP7560TestTimeRangeAccount",
+        [],
+        value=1 * 10**18,
+    )
+    paymaster = deploy_contract(
+        w3,
+        "rip7560/RIP7560TestTimeRangePaymaster",
+        [],
+        value=1 * 10**18,
+    )
+
+    tx_7560.sender = account.address
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) - 2000, int(time()) - 1000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity expired",
+        RPCErrorCode.INVALID_INPUT,
+    )
+
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) + 1000, int(time()) + 2000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity not reached yet",
+        RPCErrorCode.INVALID_INPUT,
+    )
+    tx_7560.authorizationData = encode_validity_range(
+        int(time()) - 2000, int(time()) + 2000
+    )
+    tx_7560.paymaster = paymaster.address
+    tx_7560.paymasterVerificationGasLimit = hex(1000000)
+    tx_7560.paymasterData = encode_validity_range(
+        int(time()) - 2000, int(time()) - 1000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity expired",
+        RPCErrorCode.INVALID_INPUT,
+    )
+    tx_7560.paymasterData = encode_validity_range(
+        int(time()) + 1000, int(time()) + 2000
+    )
+    response = tx_7560.send()
+    assert_rpc_error(
+        response,
+        "validation phase failed with exception: RIP-7560 transaction validity not reached yet",
+        RPCErrorCode.INVALID_INPUT,
+    )
 
 
 @pytest.mark.parametrize("banned_op", banned_opcodes)
