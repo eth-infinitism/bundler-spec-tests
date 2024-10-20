@@ -4,7 +4,6 @@ from functools import cache
 
 from eth_utils import to_checksum_address
 from eth_abi import decode
-from eth_abi.packed import encode_packed
 from solcx import compile_source
 
 from .rip7560.types import TransactionRIP7560
@@ -119,9 +118,9 @@ def staked_contract(w3, entrypoint_contract, contract):
     return contract
 
 
-def deploy_wallet_contract(w3):
+def deploy_wallet_contract(w3, value=2 * 10**18):
     return deploy_contract(
-        w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=2 * 10**18
+        w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=value
     )
 
 
@@ -136,7 +135,7 @@ def pack_factory(factory, factory_data):
 
 
 def pack_uints(high128, low128):
-    return ((int(str(high128), 16) << 128) + int(str(low128), 16)).to_bytes(32, "big")
+    return to_prefixed_hex((to_number(high128) << 128) + to_number(low128), 32)
 
 
 def pack_paymaster(
@@ -149,24 +148,22 @@ def pack_paymaster(
         return "0x"
     if paymaster_data is None:
         paymaster_data = ""
-    return encode_packed(
-        ["address", "uint256", "string"],
-        [
-            paymaster,
-            pack_uints(paymaster_verification_gas_limit, paymaster_post_op_gas_limit),
-            paymaster_data,
-        ],
+    return hex_concat(
+        paymaster,
+        pack_uints(paymaster_verification_gas_limit, paymaster_post_op_gas_limit),
+        paymaster_data,
     )
 
 
-def userop_hash(helper_contract, userop):
+def pack_user_op(userop):
+
     payload = (
         userop.sender,
         int(userop.nonce, 16),
         pack_factory(userop.factory, userop.factoryData),
         userop.callData,
         pack_uints(userop.verificationGasLimit, userop.callGasLimit),
-        int(userop.preVerificationGas, 16),
+        to_number(userop.preVerificationGas),
         pack_uints(userop.maxPriorityFeePerGas, userop.maxFeePerGas),
         pack_paymaster(
             userop.paymaster,
@@ -176,6 +173,11 @@ def userop_hash(helper_contract, userop):
         ),
         userop.signature,
     )
+    return payload
+
+
+def userop_hash(helper_contract, userop):
+    payload = pack_user_op(userop)
     return (
         "0x"
         + helper_contract.functions.getUserOpHash(CommandLineArgs.entrypoint, payload)
@@ -307,11 +309,21 @@ def set_reputation(address, ops_seen=1, ops_included=2, url=None):
     assert res.result
 
 
-def to_prefixed_hex(s):
-    return "0x" + to_hex(s)
+def hex_concat(*arr):
+    return "0x" + "".join(arr).replace("0x", "")
+
+
+def to_prefixed_hex(s, byte_count=None):
+    string = to_hex(s).replace("0x", "")
+    pad = 0
+    if byte_count:
+        pad = max(byte_count * 2 - len(string), 0)
+    return "0x" + ("0" * pad) + string
 
 
 def to_hex(s):
+    if isinstance(s, (int)):
+        return hex(s)
     return s.encode().hex()
 
 

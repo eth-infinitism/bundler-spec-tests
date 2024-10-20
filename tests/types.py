@@ -90,6 +90,15 @@ class UserOperation:
             method="eth_sendUserOperation", params=[asdict(self), entrypoint]
         ).send(url)
 
+    # send into the mempool without applying tracing/validations
+    def debug_send(self, entrypoint=None, url=None):
+        if entrypoint is None:
+            entrypoint = CommandLineArgs.entrypoint
+        return RPCRequest(
+            method="debug_bundler_sendUserOperationSkipValidation",
+            params=[asdict(self), entrypoint],
+        ).send(url)
+
 
 @dataclass
 class RPCRequest:
@@ -104,13 +113,12 @@ class RPCRequest:
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
             print(">>", url, json.dumps(asdict(self)))
-        res = jsonrpcclient.responses.to_response(
-            requests.post(url, json=asdict(self), timeout=10).json()
-        )
+        postres = requests.post(url, json=asdict(self), timeout=10).json()
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res))
+            print("<<", postres)
+        res = jsonrpcclient.responses.to_response(postres)
         return res
 
 
@@ -128,3 +136,7 @@ class RPCErrorCode(IntEnum):
 
     EXECUTION_REVERTED = -32521
     INVALID_FIELDS = -32602
+
+
+def remove_nulls(obj):
+    return {k: v for k, v in obj.items() if v is not None}
