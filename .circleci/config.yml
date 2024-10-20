@@ -68,6 +68,7 @@ jobs:
       - restore_cache:
           keys:
             - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
+            - go-ethereum-build-
       - run:
           name: "Build go-ethereum"
           working_directory: go-ethereum
