@@ -21,7 +21,7 @@ contract RIP7560TestTimeRangePaymaster is IRip7560Paymaster {
     }
     function postPaymasterTransaction(
         bool success,
-        bytes calldata context,
-        UsedGasBreakdown calldata usedGasBreakdown
+        uint256 actualGasCost,
+        bytes calldata context
     ) external {}
 }
