@@ -24,6 +24,9 @@ def compile_contract(contract):
     allow_paths = aa_relpath + "," + rip7560_relpath
     aa_remap = "@account-abstraction=" + aa_relpath
     rip7560_remap = "@rip7560=" + rip7560_relpath
+    if "@account-abstraction" in contract:
+        contracts_dirname = current_dirname + "/../" + contract_subdir + "/"
+
     with open(
         contracts_dirname + contract_name + ".sol", "r", encoding="utf-8"
     ) as contractfile:
@@ -110,7 +113,7 @@ def staked_contract(w3, entrypoint_contract, contract):
     )
     assert int(tx_hash.hex(), 16), "could not stake contract"
     w3.eth.wait_for_transaction_receipt(tx_hash)
-    info = entrypoint_contract.functions.deposits(contract.address).call()
+    info = entrypoint_contract.functions.getDepositInfo(contract.address).call()
     assert info[1], "could not get deposit information"
     return contract
 
