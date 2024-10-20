@@ -12,20 +12,11 @@ from tests.utils import (
 )
 
 
-# create a copy of a UserOperation object while overriding a 'test_field_name' field with a 'new_value'
-def set_user_op_field_value(user_op_input, test_field_name, new_value):
-    user_op = asdict(user_op_input)
-    user_op[test_field_name] = hex(new_value)
-    return UserOperation(**user_op)
-
-
 # perform a binary search for a minimal valid numeric value for a UserOperation field
-def find_min_value_for_field(
-    user_op_input, test_field_name, minimum_value, maximum_value
-):
+def find_min_value_for_field(user_op, test_field_name, minimum_value, maximum_value):
     # check that maximum value is sufficient
     assert_ok(RPCRequest(method="debug_bundler_clearState").send())
-    user_op = set_user_op_field_value(user_op_input, test_field_name, maximum_value)
+    setattr(user_op, test_field_name, hex(maximum_value))
     res = user_op.send()
     if hasattr(res, "message") and res.message is not None:
         raise ValueError(
@@ -34,7 +25,7 @@ def find_min_value_for_field(
 
     # check that minimum value is insufficient
     assert_ok(RPCRequest(method="debug_bundler_clearState").send())
-    user_op = set_user_op_field_value(user_op, test_field_name, minimum_value)
+    setattr(user_op, test_field_name, hex(minimum_value))
     res = user_op.send()
     if not hasattr(res, "message") or res.message is None:
         raise ValueError(
@@ -46,7 +37,7 @@ def find_min_value_for_field(
     while low < high:
         mid = low + (high - low) // 2
         assert_ok(RPCRequest(method="debug_bundler_clearState").send())
-        user_op = set_user_op_field_value(user_op_input, test_field_name, mid)
+        setattr(user_op, test_field_name, hex(mid))
         res = user_op.send()
         if not hasattr(res, "message") or res.message is None:
             # user operation has been accepted by the bundler
@@ -112,6 +103,8 @@ def test_pre_verification_gas_calculation(
         case "paymasterData":
             op.paymaster = test_simple_paymaster.address
             op.paymasterData = "0x" + "ff" * field_length
+            op.paymasterPostOpGasLimit = "0xffffff"
+            op.paymasterVerificationGasLimit = "0xffffff"
         case "callData":
             op.callData = "0x" + "ff" * field_length
     min_pre_verification_gas = find_min_value_for_field(op, test_field_name, 1, 200000)
