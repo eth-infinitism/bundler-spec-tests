@@ -4,6 +4,7 @@ from web3.constants import ADDRESS_ZERO
 from eth_typing import HexStr
 from eth_utils import to_checksum_address
 from tests.types import RPCRequest
+from tests.types import remove_nulls
 
 
 @dataclass
@@ -80,7 +81,3 @@ class TransactionRIP7560:
             method="debug_bundler_sendTransactionSkipValidation",
             params=[remove_nulls(asdict(self.cleanup()))],
         ).send(url)
-
-
-def remove_nulls(obj):
-    return {k: v for k, v in obj.items() if v is not None}
