@@ -5,7 +5,7 @@ import subprocess
 import pytest
 from solcx import install_solc
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from .types import UserOperation, RPCRequest, CommandLineArgs
 from .utils import (
     deploy_wallet_contract,
@@ -50,7 +50,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereum_node))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
     return w3
 
 
