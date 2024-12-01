@@ -6,6 +6,7 @@ import "../ValidationRules.sol";
 
 import "@rip7560/contracts/utils/RIP7560Utils.sol";
 import "@rip7560/contracts/interfaces/IRip7560Transaction.sol";
+import {UsedGasBreakdown} from "@rip7560/contracts/interfaces/IRIP7560Paymaster.sol";
 import "../Stakable.sol";
 
 interface IRip7560EntryPointWrong {
@@ -45,8 +46,8 @@ contract RIP7560Paymaster is ValidationRulesStorage, Stakable {
 
     function postPaymasterTransaction(
         bool success,
-        uint256 actualGasCost,
-        bytes calldata context
+        bytes calldata context,
+        UsedGasBreakdown calldata usedGasBreakdown
     ) external {
         emit PaymasterPostTxEvent("the-paymaster", pmCounter, context);
     }
