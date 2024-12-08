@@ -2,7 +2,8 @@ import json
 import os
 
 import pytest
-from tests.types import UserOperation
+
+from tests.user_operation_erc4337 import UserOperation
 
 
 @pytest.fixture

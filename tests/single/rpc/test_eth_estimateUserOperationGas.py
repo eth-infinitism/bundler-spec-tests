@@ -6,7 +6,8 @@ See https://github.com/eth-infinitism/bundler
 from dataclasses import asdict
 import pytest
 from jsonschema import validate, Validator
-from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode, UserOperation
+from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import assert_rpc_error
 
 
