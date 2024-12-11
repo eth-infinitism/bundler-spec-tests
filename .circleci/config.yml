@@ -378,3 +378,6 @@ workflows:
   test-bundler-rip7560-workflow:
     jobs:
       - test-rip7560-bundler
+  test-erc4337-with-eip7702-bundler:
+    jobs:
+      - test-erc4337-with-eip7702-bundler
