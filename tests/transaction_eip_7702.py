@@ -55,8 +55,8 @@ class TransactionEIP7702:
     data: HexStr = "0x00"
     nonce: HexStr = hex(0)
     gasLimit: HexStr = hex(1_000_000)  # alias for callGasLimit
-    maxFeePerGas: HexStr = hex(4 * 10 ** 9)
-    maxPriorityFeePerGas: HexStr = hex(3 * 10 ** 9)
+    maxFeePerGas: HexStr = hex(4 * 10**9)
+    maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
     chainId: HexStr = hex(1337)
     value: HexStr = hex(0)
     # pylint: disable=fixme
