@@ -267,12 +267,12 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-#  test-bundler-erc4337-workflow:
-#    jobs:
-#      - test-erc4337-bundler
-#  test-bundler-rip7560-workflow:
-#    jobs:
-#      - test-rip7560-bundler
+  test-bundler-erc4337-workflow:
+    jobs:
+      - test-erc4337-bundler
+  test-bundler-rip7560-workflow:
+    jobs:
+      - test-rip7560-bundler
   test-erc4337-with-eip7702-bundler:
     jobs:
       - test-erc4337-with-eip7702-bundler
