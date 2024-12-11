@@ -1,7 +1,7 @@
 import pytest
 from tests.transaction_eip_7702 import TupleEIP7702
-from tests.types import CommandLineArgs
-from tests.utils import UserOperation, assert_rpc_error, deploy_contract, userop_hash, send_bundle_now
+from tests.types import CommandLineArgs, RPCErrorCode
+from tests.utils import UserOperation, assert_ok, assert_rpc_error, deploy_contract, userop_hash, send_bundle_now
 
 AUTHORIZED_ACCOUNT_PREFIX = "ef0100"
 
@@ -35,6 +35,7 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     assert len(sender_code) == 0
 
     response = userop.send()
+    assert_ok(response)
     send_bundle_now()
 
     assert response.result == userop_hash(helper_contract, userop)
@@ -116,6 +117,6 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
     userop.authorizationList = [auth_tuple]
 
     response = userop.send()
-    assert_rpc_error(response, "test fail", 0)
+    assert_rpc_error(userop.send(), "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
 
 
