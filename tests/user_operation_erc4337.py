@@ -54,3 +54,12 @@ class UserOperation:
         return RPCRequest(
             method="eth_sendUserOperation", params=[asdict(self), entrypoint]
         ).send(url)
+
+    # send into the mempool without applying tracing/validations
+    def debug_send(self, entrypoint=None, url=None):
+        if entrypoint is None:
+            entrypoint = CommandLineArgs.entrypoint
+        return RPCRequest(
+            method="debug_bundler_sendUserOperationSkipValidation",
+            params=[asdict(self), entrypoint],
+        ).send(url)

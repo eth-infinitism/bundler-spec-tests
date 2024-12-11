@@ -52,13 +52,12 @@ class RPCRequest:
         # return requests.post(url, json=asdict(self)).json()
         if CommandLineArgs.log_rpc:
             print(">>", url, json.dumps(asdict(self)))
-        res = jsonrpcclient.responses.to_response(
-            requests.post(url, json=asdict(self), timeout=10).json()
-        )
+        postres = requests.post(url, json=asdict(self), timeout=10).json()
         if CommandLineArgs.log_rpc:
             # https://github.com/pylint-dev/pylint/issues/7891
             # pylint: disable=no-member
-            print("<<", json.dumps(res))
+            print("<<", postres)
+        res = jsonrpcclient.responses.to_response(postres)
         return res
 
 
@@ -76,3 +75,7 @@ class RPCErrorCode(IntEnum):
 
     EXECUTION_REVERTED = -32521
     INVALID_FIELDS = -32602
+
+
+def remove_nulls(obj):
+    return {k: v for k, v in obj.items() if v is not None}

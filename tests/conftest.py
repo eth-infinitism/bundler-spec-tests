@@ -1,5 +1,3 @@
-import json
-import os
 import subprocess
 
 import pytest
@@ -13,6 +11,7 @@ from .user_operation_erc4337 import UserOperation
 
 from .utils import (
     assert_ok,
+    compile_contract,
     deploy_and_deposit,
     deploy_contract,
     deploy_wallet_contract,
@@ -81,16 +80,12 @@ def wallet_contract(w3):
 
 @pytest.fixture(scope="session")
 def entrypoint_contract(w3):
-    current_dirname = os.path.dirname(__file__)
-    entrypoint_path = os.path.realpath(
-        current_dirname
-        + "/../@account-abstraction/artifacts/contracts/core/EntryPoint.sol/EntryPoint.json"
+    entrypoint_interface = compile_contract(
+        "@account-abstraction/contracts/interfaces/IEntryPoint"
     )
-    with open(entrypoint_path, encoding="utf-8") as file:
-        entrypoint = json.load(file)
-        return w3.eth.contract(
-            abi=entrypoint["abi"], address=CommandLineArgs.entrypoint
-        )
+    return w3.eth.contract(
+        abi=entrypoint_interface["abi"], address=CommandLineArgs.entrypoint
+    )
 
 
 @pytest.fixture

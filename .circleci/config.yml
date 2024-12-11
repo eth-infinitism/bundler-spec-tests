@@ -1,136 +1,135 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-orbs:
-  go: circleci/go@1.11.0
-
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+commands:
+  update-and-build-deps-cached:
+    steps:
+      - run:
+          name: "Update submodules"
+          command: pdm run submodule-update
+      - restore_cache:
+          keys:
+            - spec-node-modules-{{ checksum "spec/yarn.lock" }}
+            - spec-node-modules-
+      - restore_cache:
+          keys:
+            - rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
+            - rip7560-node-modules-
+      - run:
+          name: "build submodules"
+          command: pdm run dep-build
+      - save_cache:
+          key: spec-node-modules-{{ checksum "spec/yarn.lock" }}
+          paths:
+            - "spec/node_modules"
+      - save_cache:
+          key: rip7560-node-modules-{{ checksum "@rip7560/yarn.lock" }}
+          paths:
+            - "@rip7560/node_modules"
+      - save_cache:
+          key: account-abstraction-git-{{ checksum ".git/modules/account-abstraction/HEAD" }}
+          paths:
+            - "@account-abstraction"
+      - save_cache:
+          key: spec-git-{{ checksum ".git/modules/spec/HEAD" }}
+          paths:
+            - "spec"
+      - save_cache:
+          key: rip7560-git-{{ checksum ".git/modules/@rip7560/HEAD" }}
+          paths:
+            - "@rip7560"
 jobs:
   test-erc4337-bundler:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: shahafn/go-python-node
-      - image: ethereum/client-go:v1.14.0
-        command: "\
-          --miner.gaslimit 12000000 \
-          --http \
-          --http.api personal,eth,net,web3,debug \
-          --allow-insecure-unlock \
-          --rpc.allow-unprotected-txs \
-          --http.vhosts '*,localhost,host.docker.internal' \
-          --http.corsdomain '*' \
-          --http.addr '0.0.0.0' \
-          --dev \
-          --rpc.txfeecap 0 \
-          --nodiscover --maxpeers 0 --mine \
-          --verbosity 2"
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: "curl pdm"
+          name: "Install PDM"
           command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
       - restore_cache:
           keys:
             - dependency-cache-pdm-{{ checksum "pdm.lock" }}
       - run:
-          name: "update-deps"
-          command: "pdm run update-deps"
-      - run:
-          name: "pdm install"
-          command: "pdm install"
-      - run:
-          name: "lint"
-          command: "pdm run lint"
-      - run:
-          name: "clone bundler"
-          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
-      - restore_cache:
-          keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
-      - run:
-          name: "yarn install for bundler"
-          working_directory: "./bundler"
-          command: yarn install --ignore-engines && yarn preprocess
-      - run:
-          name: "deploy entry point"
-          working_directory: "./bundler"
-          command: yarn hardhat-deploy --network localhost
-      - run:
-          name: "run bundler"
-          working_directory: "./bundler"
-          command: yarn bundler
-          background: true
-      - run:
-          name: "await bundler"
-          working_directory: "./bundler"
-          shell: /bin/sh
-          command: |
-            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
-      - run:
-          name: "pytest"
-          command: "pdm run test"
+          name: "Install dependencies"
+          command: pdm install
       - save_cache:
           key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
           paths:
             - .venv
-      - save_cache:
-          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
-          paths:
-            - ./bundler/node_modules
-
-
-###################################################
-  test-rip7560-bundler:
-    docker:
-      - image: shahafn/go-python-node
-#      - image: shahafn/rip7560-geth
-#        command: "\
-#          --miner.gaslimit 12000000 \
-#          --http \
-#          --http.api personal,eth,net,web3,debug \
-#          --allow-insecure-unlock \
-#          --rpc.allow-unprotected-txs \
-#          --http.vhosts '*,localhost,host.docker.internal' \
-#          --http.corsdomain '*' \
-#          --http.addr '0.0.0.0' \
-#          --dev \
-#          --rpc.txfeecap 0 \
-#          --nodiscover --maxpeers 0 --mine \
-#          --verbosity 2"
-    steps:
-      - checkout
       - run:
-          name: "curl pdm"
-          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+          name: "Run lint"
+          command: pdm run lint
+      - run:
+          name: "Run format check"
+          command: pdm run format --check
+      - update-and-build-deps-cached
+      - run:
+          name: "Clone go-ethereum"
+          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
-            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+            - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
+            - go-ethereum-build-
       - run:
-          name: "update-deps"
-          command: "pdm run update-deps"
+          name: "Build go-ethereum"
+          working_directory: go-ethereum
+          command: |
+            if [ -f build/bin/geth ]; then
+            echo "geth binary exists, skipping build"
+            else
+            echo "geth binary not found, building..."
+            make geth
+            fi
+      - save_cache:
+          key: go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
+          paths:
+            - go-ethereum/build/bin
+            - go-ethereum/circleciconfig.toml
       - run:
-          name: "pdm install"
-          command: "pdm install"
+          name: "Clone bundler"
+          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
+      - restore_cache:
+          keys:
+            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-
+      - restore_cache:
+          keys:
+            - bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+            - bundler-aa-submodule-
+      - restore_cache:
+          keys:
+            - bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+            - bundler-rip7560-submodule-
+      - restore_cache:
+          keys:
+            - bundler-git-{{ checksum "bundler/commit-hash.txt" }}
       - run:
-          name: "lint"
-          command: "pdm run lint"
+          name: "Install bundler dependencies"
+          working_directory: bundler
+          command: |
+            if [ -d packages/bundler/dist ]; then
+            echo "bundler cache exists, skipping build"
+            else
+            echo "bundler cache not found, building..."
+            yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+            fi
+      - save_cache:
+          key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
+          paths:
+            - bundler/node_modules
+      - save_cache:
+          key: bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+          paths:
+            - bundler/submodules/account-abstraction/node_modules
+      - save_cache:
+          key: bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+          paths:
+            - bundler/submodules/rip7560/node_modules
+      - save_cache:
+          key: bundler-git-{{ checksum "bundler/commit-hash.txt" }}
+          paths:
+            - bundler
       - run:
-          name: "format check"
-          command: "pdm run format --check"
-      - run:
-          name: "clone go-ethereum from infinitism"
-          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
-      - run:
-          name: "build go-ethereum"
-          working_directory: "./go-ethereum"
-          command: make geth
-      - run:
-          name: "run go-ethereum"
+          name: "Run go-ethereum"
           working_directory: "./go-ethereum"
           command: "\
           ./build/bin/geth \
@@ -148,59 +147,166 @@ jobs:
           "
           background: true
       - run:
-          name: "clone bundler"
-          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
-      - restore_cache:
-          keys:
-            - dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
-      - run:
-          name: "yarn install for bundler"
+          name: "Run bundler (ERC4337)"
           working_directory: "./bundler"
-          command: yarn install --ignore-engines && yarn preprocess
-      - run:
-          name: "run bundler"
-          working_directory: "./bundler"
-          command: yarn bundler-rip7560
+          command: "yarn bundler"
           background: true
       - run:
-          name: "await bundler"
+          name: "Await bundler (ERC4337)"
           working_directory: "./bundler"
           shell: /bin/sh
           command: |
-            wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
+            wget --post-data='{"method": "eth_supportedEntryPoints"}' \
+              --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
+              http://localhost:3000/rpc
       - run:
-          name: "pytest"
-          command: "pdm run test-rip7560"
+          name: "Run pytest"
+          command: pdm run test
+  test-rip7560-bundler:
+    docker:
+      - image: shahafn/go-python-node
+    steps:
+      - checkout
+      - run:
+          name: "Install PDM"
+          command: "curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -"
+      - restore_cache:
+          keys:
+            - dependency-cache-pdm-{{ checksum "pdm.lock" }}
+      - run:
+          name: "Install dependencies"
+          command: pdm install
       - save_cache:
           key: dependency-cache-pdm-{{ checksum "pdm.lock" }}
           paths:
             - .venv
+      - run:
+          name: "Run lint"
+          command: pdm run lint
+      - run:
+          name: "Run format check"
+          command: pdm run format --check
+      - update-and-build-deps-cached
+      - run:
+          name: "Clone go-ethereum"
+          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
+      - restore_cache:
+          keys:
+            - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
+      - run:
+          name: "Build go-ethereum"
+          working_directory: go-ethereum
+          command: |
+            if [ -f build/bin/geth ]; then
+            echo "geth binary exists, skipping build"
+            else
+            echo "geth binary not found, building..."
+            make geth
+            fi
       - save_cache:
-          key: dependency-cache-yarn-{{ checksum "./bundler/yarn.lock" }}
+          key: go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
           paths:
-            - ./bundler/node_modules
+            - go-ethereum/build/bin
+            - go-ethereum/circleciconfig.toml
+      - run:
+          name: "Clone bundler"
+          command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
+      - restore_cache:
+          keys:
+            - bundler-deps-{{ checksum "bundler/yarn.lock" }}
+            - bundler-deps-
+      - restore_cache:
+          keys:
+            - bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+            - bundler-aa-submodule-
+      - restore_cache:
+          keys:
+            - bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+            - bundler-rip7560-submodule-
+      - restore_cache:
+          keys:
+            - bundler-git-{{ checksum "bundler/commit-hash.txt" }}
+      - run:
+          name: "Install bundler dependencies"
+          working_directory: bundler
+          command: |
+            if [ -d packages/bundler/dist ]; then
+            echo "bundler cache exists, skipping build"
+            else
+            echo "bundler cache not found, building..."
+            yarn install --frozen-lockfile --ignore-engines && yarn preprocess
+            fi
+      - save_cache:
+          key: bundler-deps-{{ checksum "bundler/yarn.lock" }}
+          paths:
+            - bundler/node_modules
+      - save_cache:
+          key: bundler-aa-submodule-{{ checksum "bundler/submodules/account-abstraction/yarn.lock" }}
+          paths:
+            - bundler/submodules/account-abstraction/node_modules
+      - save_cache:
+          key: bundler-rip7560-submodule-{{ checksum "bundler/submodules/rip7560/yarn.lock" }}
+          paths:
+            - bundler/submodules/rip7560/node_modules
+      - save_cache:
+          key: bundler-git-{{ checksum "bundler/commit-hash.txt" }}
+          paths:
+            - bundler
+      - run:
+          name: "Run go-ethereum"
+          working_directory: "./go-ethereum"
+          command: "\
+          ./build/bin/geth \
+          --dev \
+          --dev.gaslimit \
+          30000000 \
+          --http \
+          --http.api \
+          'eth,net,web3,personal,debug' \
+          --http.port \
+          8545 \
+          --rpc.allow-unprotected-txs \
+          --config \
+          circleciconfig.toml \
+          "
+          background: true
+      - run:
+          name: "Run bundler (RIP7560)"
+          working_directory: bundler
+          command: yarn bundler-rip7560
+          background: true
+      - run:
+          name: "Await bundler (RIP7560)"
+          working_directory: "./bundler"
+          shell: /bin/sh
+          command: |
+            wget --post-data='{"method": "eth_supportedEntryPoints"}' \
+              --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
+              http://localhost:3000/rpc
+      - run:
+          name: "Run pytest (RIP7560)"
+          command: "pdm run test-rip7560"
 
-# TODO: extract all the shared boilerplate stuff, pdm and bundler compilation
-
+  # TODO: extract all the shared boilerplate stuff, pdm and bundler compilation
   test-erc4337-with-eip7702-bundler:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: shahafn/go-python-node
-#      - image: ethpandaops/geth:prague-devnet-3-effcd38
-#        command: "\
-#          --miner.gaslimit 12000000 \
-#          --http \
-#          --http.api personal,eth,net,web3,debug \
-#          --allow-insecure-unlock \
-#          --rpc.allow-unprotected-txs \
-#          --http.vhosts '*,localhost,host.docker.internal' \
-#          --http.corsdomain '*' \
-#          --http.addr '0.0.0.0' \
-#          --dev \
-#          --rpc.txfeecap 0 \
-#          --nodiscover --maxpeers 0 --mine \
-#          --verbosity 2"
+    #      - image: ethpandaops/geth:prague-devnet-3-effcd38
+    #        command: "\
+    #          --miner.gaslimit 12000000 \
+    #          --http \
+    #          --http.api personal,eth,net,web3,debug \
+    #          --allow-insecure-unlock \
+    #          --rpc.allow-unprotected-txs \
+    #          --http.vhosts '*,localhost,host.docker.internal' \
+    #          --http.corsdomain '*' \
+    #          --http.addr '0.0.0.0' \
+    #          --dev \
+    #          --rpc.txfeecap 0 \
+    #          --nodiscover --maxpeers 0 --mine \
+    #          --verbosity 2"
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -264,15 +370,11 @@ jobs:
           name: "pytest"
           command: "pdm run test-eip7702"
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
+  version: 2
   test-bundler-erc4337-workflow:
     jobs:
       - test-erc4337-bundler
   test-bundler-rip7560-workflow:
     jobs:
       - test-rip7560-bundler
-  test-erc4337-with-eip7702-bundler:
-    jobs:
-      - test-erc4337-with-eip7702-bundler
