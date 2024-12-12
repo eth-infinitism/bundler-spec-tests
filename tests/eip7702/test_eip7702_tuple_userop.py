@@ -37,7 +37,6 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     userop.sender = acc.address
     userop.authorizationList = [auth_tuple]
 
-    # note that ADDRESS used here is hard-coded so the test will only pass once!
     sender_code = w3.eth.get_code(acc.address)
     assert len(sender_code) == 0
 
@@ -109,7 +108,6 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
         {"from": w3.eth.accounts[0], "to": acc.address, "value": 10**18}
     )
 
-    # note that ADDRESS used here is hard-coded so the test will only pass once!
     assert len(w3.eth.get_code(acc.address)) == 0
 
     # create an EIP-7702 authorization tuple, with wrong nonce
