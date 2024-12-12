@@ -25,7 +25,7 @@ class UserOperation:
     paymasterData: HexStr = None
     paymasterVerificationGasLimit: HexStr = None
     paymasterPostOpGasLimit: HexStr = None
-    authorizationList: list[TupleEIP7702] = ()
+    authorizationList: list[TupleEIP7702] = None
 
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)

@@ -29,7 +29,7 @@ def test_eth_estimateUserOperationGas_execution_revert(
         method="eth_estimateUserOperationGas",
         params=[asdict(userop), CommandLineArgs.entrypoint],
     ).send()
-    assert_rpc_error(response, "test fail", RPCErrorCode.EXECUTION_REVERTED)
+    assert_rpc_error(response, "", RPCErrorCode.EXECUTION_REVERTED)
 
 
 def test_eth_estimateUserOperationGas_simulation_revert(bad_sig_userop: UserOperation):

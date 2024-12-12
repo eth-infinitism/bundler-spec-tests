@@ -2,7 +2,8 @@ from dataclasses import asdict
 import pytest
 
 from tests.conftest import wallet_contract
-from tests.types import UserOperation, RPCRequest, CommandLineArgs
+from tests.types import RPCRequest, CommandLineArgs
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     assert_ok,
     deploy_contract,
