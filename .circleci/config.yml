@@ -132,6 +132,7 @@ jobs:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
           command: "\
+          ./build/bin/geth version ; \
           ./build/bin/geth \
           --dev \
           --dev.gaslimit \
@@ -256,6 +257,7 @@ jobs:
           name: "Run go-ethereum"
           working_directory: "./go-ethereum"
           command: "\
+          ./build/bin/geth version ; \
           ./build/bin/geth \
           --dev \
           --dev.gaslimit \
@@ -327,23 +329,17 @@ jobs:
       - run:
           name: "pdm install"
           command: "pdm install"
-
       - run:
-          name: "clone go-ethereum"
-          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git
-      - run:
-          name: "build go-ethereum"
-          working_directory: "./go-ethereum"
-          command: make geth
-      - run:
-          name: "run go-ethereum"
+          name: "run prague devnet geth"
           working_directory: "./go-ethereum"
           command: "\
-          ./build/bin/geth \
+            docker run --rm ethpandaops/geth:lightclient-prague-devnet-4 version ;
+            docker run -d   ethpandaops/geth:lightclient-prague-devnet-4 \
           --dev \
           --dev.gaslimit \
           30000000 \
           --http \
+          --http.addr 0.0.0.0 \
           --http.api \
           'eth,net,web3,personal,debug' \
           --http.port \
