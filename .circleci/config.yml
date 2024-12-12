@@ -364,7 +364,7 @@ jobs:
             wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
       - run:
           name: "pytest"
-          command: "pdm run test-eip7702"
+          command: "pdm run test-eip7702 --log-rpc -v "
 
 workflows:
   version: 2
