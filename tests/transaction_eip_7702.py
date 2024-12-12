@@ -22,18 +22,18 @@ class TupleEIP7702:
     r: Optional[HexStr] = None
     s: Optional[HexStr] = None
 
-    def __post_init__(self):
-        if self.nonce == "0x0":
-            self.nonce = "0x"
-
     def sign(self, private_key: str):
         pk = keys.PrivateKey(bytes.fromhex(private_key))
+        nonce = self.nonce
+        if nonce == "0x0":
+            nonce = "0x"
+
         rlp_encode = bytearray(
             rlp.encode(
                 [
                     to_bytes(hexstr=self.chainId),
                     to_bytes(hexstr=self.address),
-                    to_bytes(hexstr=self.nonce),
+                    to_bytes(hexstr=nonce),
                 ]
             )
         )
