@@ -4,6 +4,7 @@ from functools import cache
 
 from eth_utils import to_checksum_address
 from eth_abi import decode
+import jsonrpcclient
 from solcx import compile_source
 
 from .rip7560.types import TransactionRIP7560
@@ -187,6 +188,9 @@ def userop_hash(helper_contract, userop):
 
 
 def assert_ok(response):
+    if isinstance(response, jsonrpcclient.responses.Error):
+        raise AssertionError(response.message, response.code)
+
     try:
         assert response.result
     except AttributeError as exc:
