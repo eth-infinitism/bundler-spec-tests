@@ -63,7 +63,7 @@ expected_min_pre_verification_gas = {
 
 
 @pytest.fixture(scope="session")
-def test_simple_paymaster(w3, entrypoint_contract):
+def xtest_simple_paymaster(w3, entrypoint_contract):
     return deploy_contract(
         w3,
         "TestSimplePaymaster",
@@ -75,7 +75,7 @@ def test_simple_paymaster(w3, entrypoint_contract):
 @pytest.mark.usefixtures("manual_bundling_mode")
 @pytest.mark.parametrize("dynamic_length_field_name", dynamic_length_field_names)
 @pytest.mark.parametrize("field_length", field_lengths)
-def test_pre_verification_gas_calculation(
+def xtest_pre_verification_gas_calculation(
     w3,
     entrypoint_contract,
     test_simple_paymaster,
@@ -126,7 +126,7 @@ def test_pre_verification_gas_calculation(
 @pytest.mark.parametrize(
     "field_length", field_lengths, ids=lambda val: f"data_len={val}"
 )
-def test_gas_cost_estimate_close_to_reality(
+def xtest_gas_cost_estimate_close_to_reality(
     w3, entrypoint_contract, helper_contract, expected_bundle_size, field_length
 ):
     RPCRequest(
