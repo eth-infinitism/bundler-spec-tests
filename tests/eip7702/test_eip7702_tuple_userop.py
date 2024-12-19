@@ -15,11 +15,6 @@ AUTHORIZED_ACCOUNT_PREFIX = "ef0100"
 last_account = None
 
 
-@pytest.fixture
-def impl7702(w3):
-    return deploy_contract(w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint])
-
-
 def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract):
     acc = w3.eth.account.create()
     # fund the EOA address
