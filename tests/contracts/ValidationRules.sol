@@ -99,7 +99,7 @@ library ValidationRules {
         else if (eq(rule, "CALL_undeployed_contract")) { address(100100).call(""); return 0; }
         else if (eq(rule, "CALL_undeployed_contract_allowed_precompile")) {
             for (uint160 i = 1; i < 10; i++){
-                address(i).call{gas: 1000}("");
+                address(i).call{gas: 100000}("");
             }
             return 0;
         }
