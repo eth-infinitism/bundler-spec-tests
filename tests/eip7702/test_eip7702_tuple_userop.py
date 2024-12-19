@@ -12,8 +12,6 @@ from tests.utils import (
 
 AUTHORIZED_ACCOUNT_PREFIX = "ef0100"
 
-last_account = None
-
 
 def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract):
     acc = w3.eth.account.create()
@@ -53,8 +51,6 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
         address=acc.address,
     )
 
-    global last_account
-    last_account = acc
     # delegated EOA account can actually have a state
     state_after = eoa_with_authorization.functions.state().call()
     assert state_after == 1111111
@@ -63,14 +59,25 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
 # #normal transaction, using the same sender
 # TODO: must follow previous test, which deploys this account
 def test_send_post_eip_7702_tx(
-    w3, wallet_contract, helper_contract, entrypoint_contract
+    w3, userop, impl7702, wallet_contract, helper_contract, entrypoint_contract
 ):
-    global last_account
-    if last_account is None:
-        pytest.skip("(previous test test_send_eip_7702_tx wasn't executed)")
+    # first deploy a EIP-7702 address
+    acc = w3.eth.account.create()
+    w3.eth.send_transaction(
+        {"from": w3.eth.accounts[0], "to": acc.address, "value": 10**18}
+    )
+    nonce = w3.eth.get_transaction_count(acc.address)
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337), address=impl7702.address, nonce=hex(nonce)
+    )
+    auth_tuple.sign(acc._private_key.hex())
+    userop.sender = acc.address
+    userop.authorizationList = [auth_tuple]
+    response = userop.send()
+    assert_ok(response)
+    send_bundle_now()
 
-    acc = last_account
-
+    # use this address in a different UserOp
     account = w3.eth.contract(
         abi=wallet_contract.abi,
         address=acc.address,
