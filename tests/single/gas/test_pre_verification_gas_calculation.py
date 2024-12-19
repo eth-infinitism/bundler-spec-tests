@@ -11,6 +11,8 @@ from tests.utils import (
     deploy_wallet_contract,
 )
 
+pytest.skip("Slow and requires fixing", allow_module_level=True)
+
 
 # perform a binary search for a minimal valid numeric value for a UserOperation field
 def find_min_value_for_field(user_op, test_field_name, minimum_value, maximum_value):
@@ -63,7 +65,7 @@ expected_min_pre_verification_gas = {
 
 
 @pytest.fixture(scope="session")
-def xtest_simple_paymaster(w3, entrypoint_contract):
+def test_simple_paymaster(w3, entrypoint_contract):
     return deploy_contract(
         w3,
         "TestSimplePaymaster",
@@ -75,7 +77,7 @@ def xtest_simple_paymaster(w3, entrypoint_contract):
 @pytest.mark.usefixtures("manual_bundling_mode")
 @pytest.mark.parametrize("dynamic_length_field_name", dynamic_length_field_names)
 @pytest.mark.parametrize("field_length", field_lengths)
-def xtest_pre_verification_gas_calculation(
+def test_pre_verification_gas_calculation(
     w3,
     entrypoint_contract,
     test_simple_paymaster,
@@ -126,7 +128,7 @@ def xtest_pre_verification_gas_calculation(
 @pytest.mark.parametrize(
     "field_length", field_lengths, ids=lambda val: f"data_len={val}"
 )
-def xtest_gas_cost_estimate_close_to_reality(
+def test_gas_cost_estimate_close_to_reality(
     w3, entrypoint_contract, helper_contract, expected_bundle_size, field_length
 ):
     RPCRequest(
