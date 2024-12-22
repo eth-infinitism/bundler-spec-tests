@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:a30aa083a90c12283f76498fae69ff004e51475f799613aca5764e9388a95289"
+content_hash = "sha256:ff261bc19e9c41c84b78aba00c8cd726643f53b6ec16f0d17fbffb2e1f43500e"
 
 [[package]]
 name = "aiohttp"
@@ -907,7 +907,6 @@ dependencies = [
     "platformdirs>=2.2.0",
     "tomli>=1.1.0; python_version < \"3.11\"",
     "tomlkit>=0.10.1",
-    "typing-extensions>=3.10.0; python_version < \"3.10\"",
 ]
 files = [
     {file = "pylint-3.2.6-py3-none-any.whl", hash = "sha256:03c8e3baa1d9fb995b12c1dbe00aa6c4bcef210c2a2634374aedeb22fb4a8f8f"},
