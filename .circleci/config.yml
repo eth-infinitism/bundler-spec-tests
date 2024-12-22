@@ -335,7 +335,7 @@ jobs:
       - run:
           name: "run 7702 bundler"
           working_directory: "./bundler"
-          command: yarn bundler-7702
+          command: yarn bundler-eip7702
           background: true
       - run:
           name: "await bundler"
