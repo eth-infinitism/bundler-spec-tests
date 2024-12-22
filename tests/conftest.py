@@ -5,7 +5,10 @@ from eth_account import Account
 from solcx import install_solc
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder, ExtraDataToPOAMiddleware
-from .types import UserOperation, RPCRequest, CommandLineArgs
+from .types import RPCRequest, CommandLineArgs
+
+from .user_operation_erc4337 import UserOperation
+
 from .utils import (
     assert_ok,
     compile_contract,
@@ -166,3 +169,8 @@ def set_reputation(reputations):
             params=[reputations, CommandLineArgs.entrypoint],
         ).send()
     )
+
+
+@pytest.fixture
+def impl7702(w3):
+    return deploy_contract(w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint])

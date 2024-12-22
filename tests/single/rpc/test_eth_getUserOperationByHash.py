@@ -1,6 +1,7 @@
 import pytest
 from jsonschema import validate, Validator
-from tests.types import RPCRequest, CommandLineArgs, UserOperation, RPCErrorCode
+from tests.types import RPCRequest, CommandLineArgs, RPCErrorCode
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import userop_hash, assert_rpc_error
 
 

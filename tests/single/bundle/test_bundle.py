@@ -2,7 +2,8 @@ import collections
 import pytest
 
 from eth_utils import to_hex
-from tests.types import UserOperation, RPCErrorCode, RPCRequest
+from tests.types import RPCErrorCode, RPCRequest
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     assert_ok,
     fund,

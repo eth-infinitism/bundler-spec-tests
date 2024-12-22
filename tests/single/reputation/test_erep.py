@@ -1,10 +1,8 @@
 # extended reputation rules
 
-import pytest
 from dataclasses import dataclass
 
-from tests.single.bundle.test_storage_rules import deploy_staked_rule_factory
-from tests.types import UserOperation
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     deploy_contract,
     deploy_and_deposit,
