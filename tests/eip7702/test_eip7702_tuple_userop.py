@@ -56,8 +56,7 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     assert state_after == 1111111
 
 
-# #normal transaction, using the same sender
-# TODO: must follow previous test, which deploys this account
+# normal transaction, using the same sender
 def test_send_post_eip_7702_tx(
     w3, userop, impl7702, wallet_contract, helper_contract, entrypoint_contract
 ):

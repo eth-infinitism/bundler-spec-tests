@@ -328,24 +328,6 @@ jobs:
       - run:
           name: "pdm install"
           command: "pdm install"
-      # - run:
-      #     name: "run prague devnet geth"
-      #     working_directory: "./go-ethereum"
-      #     command: "\
-      #       docker run --rm ethpandaops/geth:lightclient-prague-devnet-4 version ;
-      #       docker run -d   ethpandaops/geth:lightclient-prague-devnet-4 \
-      #     --dev \
-      #     --dev.gaslimit \
-      #     30000000 \
-      #     --http \
-      #     --http.addr 0.0.0.0 \
-      #     --http.api \
-      #     'eth,net,web3,personal,debug' \
-      #     --http.port \
-      #     8545 \
-      #     --rpc.allow-unprotected-txs \
-      #     "
-      #     background: true
       - run:
           name: "deploy entry point"
           working_directory: "./bundler"
