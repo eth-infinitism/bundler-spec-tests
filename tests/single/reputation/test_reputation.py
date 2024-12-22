@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
-from tests.types import UserOperation
+
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     assert_ok,
     clear_mempool,

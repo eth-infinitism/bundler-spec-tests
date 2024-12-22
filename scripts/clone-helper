@@ -18,3 +18,4 @@ if [ "$3" == "--no-submodules" ]; then
 fi
 
 git rev-parse HEAD > commit-hash.txt
+echo == commit-hash.txt = $(cat commit-hash.txt)
