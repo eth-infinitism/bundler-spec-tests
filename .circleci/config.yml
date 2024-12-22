@@ -333,9 +333,9 @@ jobs:
           working_directory: "./bundler"
           command: yarn hardhat-deploy --network localhost
       - run:
-          name: "run bundler"
+          name: "run 7702 bundler"
           working_directory: "./bundler"
-          command: yarn bundler
+          command: yarn bundler-7702
           background: true
       - run:
           name: "await bundler"
