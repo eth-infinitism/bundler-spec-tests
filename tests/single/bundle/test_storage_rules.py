@@ -1,7 +1,8 @@
 import collections
 
 import pytest
-from tests.types import UserOperation, RPCErrorCode
+from tests.types import RPCErrorCode
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     assert_ok,
     assert_rpc_error,

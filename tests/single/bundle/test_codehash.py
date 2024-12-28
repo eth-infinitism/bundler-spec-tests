@@ -1,5 +1,6 @@
 import pytest
-from tests.types import UserOperation
+
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     dump_mempool,
     send_bundle_now,
