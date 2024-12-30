@@ -1,6 +1,7 @@
 # extended reputation rules
 
 from dataclasses import dataclass
+import pytest
 
 from tests.single.bundle.test_storage_rules import deploy_staked_rule_factory
 from tests.conftest import rules_staked_account_contract
@@ -48,6 +49,7 @@ def get_reputation(addr, reputations=None):
         rep = Reputation(**reps[0])
 
     return rep
+
 
 def get_reputations(addrs):
     reputations = dump_reputation()
@@ -124,8 +126,12 @@ def test_staked_factory_on_account_failure(
 
 # EREP-030 A Staked Account is accountable for failures in other entities (`paymaster`, `aggregator`) even if they are staked.
 @pytest.mark.parametrize("staked_acct", ["staked", "unstaked"])
-def test_account_on_entity_failure(staked_acct,
-    w3, rules_staked_account_contract, entrypoint_contract, manual_bundling_mode
+def test_account_on_entity_failure(
+    staked_acct,
+    w3,
+    rules_staked_account_contract,
+    entrypoint_contract,
+    manual_bundling_mode,
 ):
     clear_reputation()
     # userop with staked account, and a paymaster.
@@ -133,7 +139,7 @@ def test_account_on_entity_failure(staked_acct,
     # (the simplest way to make the paymaster fail is withdraw its deposit)
     sender = rules_staked_account_contract
     if staked_acct == "staked":
-         staked_contract(w3, entrypoint_contract, sender)
+        staked_contract(w3, entrypoint_contract, sender)
 
     paymaster = deploy_and_deposit(
         w3, entrypoint_contract, "TestSimplePaymaster", False
@@ -158,7 +164,7 @@ def test_account_on_entity_failure(staked_acct,
             Reputation(address=paymaster.address, opsSeen=0),
         ]
     else:
-        assert  get_reputations([sender.address, paymaster.address]) == [
+        assert get_reputations([sender.address, paymaster.address]) == [
             Reputation(address=sender.address, opsSeen=1),
             Reputation(address=paymaster.address, opsSeen=1),
         ]
