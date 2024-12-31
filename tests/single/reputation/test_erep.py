@@ -1,5 +1,5 @@
 # extended reputation rules
-
+import pytest
 from dataclasses import dataclass
 import pytest
 
@@ -127,44 +127,58 @@ def test_staked_factory_on_account_failure(
 # EREP-030 A Staked Account is accountable for failures in other entities (`paymaster`, `aggregator`) even if they are staked.
 @pytest.mark.parametrize("staked_acct", ["staked", "unstaked"])
 def test_account_on_entity_failure(
-    staked_acct,
-    w3,
-    rules_staked_account_contract,
-    entrypoint_contract,
-    manual_bundling_mode,
+    w3, entrypoint_contract, manual_bundling_mode, staked_acct, rules_account_contract
 ):
     clear_reputation()
     # userop with staked account, and a paymaster.
     # after submission to mempool, we will make paymaster fail 2nd validation
     # (the simplest way to make the paymaster fail is withdraw its deposit)
-    sender = rules_staked_account_contract
+    sender = rules_account_contract
     if staked_acct == "staked":
+        print("staking account", sender)
         staked_contract(w3, entrypoint_contract, sender)
+    else:
+        print("unstaked account", sender)
 
     paymaster = deploy_and_deposit(
         w3, entrypoint_contract, "TestSimplePaymaster", False
     )
 
+    assert get_reputations([sender.address, paymaster.address]) == [
+        Reputation(address=sender.address, opsSeen=0),
+        Reputation(address=paymaster.address, opsSeen=0),
+    ], "pre: no reputation"
+
     assert_ok(UserOperation(sender=sender.address, paymaster=paymaster.address).send())
 
-    assert get_reputation(paymaster.address) == Reputation(
-        address=paymaster.address, opsSeen=1, opsIncluded=0, status="0x0"
-    )
+    if staked_acct == "staked":
+        assert get_reputations([sender.address, paymaster.address]) == [
+            Reputation(address=sender.address, opsSeen=1),
+            Reputation(address=paymaster.address, opsSeen=1),
+        ], "valid userop. both staked account and paymaster have opsSeen increment"
+    else:
+        assert get_reputations([sender.address, paymaster.address]) == [
+            Reputation(address=sender.address, opsSeen=0),
+            Reputation(address=paymaster.address, opsSeen=1),
+        ], "valid userop. staked paymaster should have opsSeen increment"
 
-    pmBalance = entrypoint_contract.functions.balanceOf(paymaster.address).call()
-    paymaster.functions.withdrawTo(sender.address, pmBalance).transact(
+    # drain paymaster, so it would revert
+    pm_balance = entrypoint_contract.functions.balanceOf(paymaster.address).call()
+    paymaster.functions.withdrawTo(sender.address, pm_balance).transact(
         {"from": w3.eth.default_account}
     )
 
+    bn = w3.eth.block_number
     send_bundle_now()
-    reps = dump_reputation()
+    assert w3.eth.block_number == bn, "bundle should revert, and not submitted"
+
     if staked_acct == "staked":
         assert get_reputations([sender.address, paymaster.address]) == [
             Reputation(address=sender.address, opsSeen=1),
             Reputation(address=paymaster.address, opsSeen=0),
-        ]
+        ], "staked account should be blamed instead of paymaster"
     else:
         assert get_reputations([sender.address, paymaster.address]) == [
-            Reputation(address=sender.address, opsSeen=1),
+            Reputation(address=sender.address, opsSeen=0),
             Reputation(address=paymaster.address, opsSeen=1),
         ]
