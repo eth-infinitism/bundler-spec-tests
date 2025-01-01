@@ -164,9 +164,11 @@ def test_account_on_entity_failure(
 
     # drain paymaster, so it would revert
     pm_balance = entrypoint_contract.functions.balanceOf(paymaster.address).call()
-    paymaster.functions.withdrawTo(sender.address, pm_balance).transact(
+
+    tx_hash = paymaster.functions.withdrawTo(sender.address, pm_balance).transact(
         {"from": w3.eth.default_account}
     )
+    w3.eth.wait_for_transaction_receipt(tx_hash)
 
     bn = w3.eth.block_number
     send_bundle_now()
