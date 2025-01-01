@@ -1,11 +1,9 @@
 # extended reputation rules
-import pytest
 from dataclasses import dataclass
-import pytest
 
-from tests.single.bundle.test_storage_rules import deploy_staked_rule_factory
-from tests.conftest import rules_staked_account_contract
-from tests.single.bundle.test_storage_rules import deploy_staked_rule_factory
+import pytest
+from eth_utils import to_hex
+
 from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     deploy_contract,
@@ -17,10 +15,8 @@ from tests.utils import (
     staked_contract,
     to_number,
     send_bundle_now,
-    dump_mempool,
     to_prefixed_hex,
 )
-from eth_utils import to_hex
 
 
 @dataclass
