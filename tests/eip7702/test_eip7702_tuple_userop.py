@@ -28,7 +28,7 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     auth_tuple.sign(acc._private_key.hex())
 
     userop.sender = acc.address
-    userop.authorizationList = [auth_tuple]
+    userop.eip7702auth = auth_tuple
 
     sender_code = w3.eth.get_code(acc.address)
     assert len(sender_code) == 0
@@ -71,7 +71,7 @@ def test_send_post_eip_7702_tx(
     )
     auth_tuple.sign(acc._private_key.hex())
     userop.sender = acc.address
-    userop.authorizationList = [auth_tuple]
+    userop.eip7702auth = auth_tuple
     response = userop.send()
     assert_ok(response)
     send_bundle_now()
@@ -119,7 +119,7 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
     auth_tuple.sign(acc._private_key.hex())
 
     userop.sender = acc.address
-    userop.authorizationList = [auth_tuple]
+    userop.eip7702auth = auth_tuple
 
     response = userop.send()
     assert_rpc_error(userop.send(), "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
