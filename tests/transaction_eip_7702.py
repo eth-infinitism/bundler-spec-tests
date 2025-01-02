@@ -1,6 +1,7 @@
 from dataclasses import dataclass, asdict
 from typing import Optional
 
+import regex
 import rlp
 from eth_keys import keys
 from eth_typing import HexStr
@@ -28,10 +29,14 @@ class TupleEIP7702:
         if nonce == "0x0":
             nonce = "0x"
 
+        chainId = self.chainId
+        if chainId == "0x0":
+            chainId = "0x"
+
         rlp_encode = bytearray(
             rlp.encode(
                 [
-                    to_bytes(hexstr=self.chainId),
+                    to_bytes(hexstr=chainId),
                     to_bytes(hexstr=self.address),
                     to_bytes(hexstr=nonce),
                 ]

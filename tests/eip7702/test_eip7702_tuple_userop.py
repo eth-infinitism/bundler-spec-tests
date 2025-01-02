@@ -57,8 +57,9 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
 
 
 # normal transaction, using the same sender
+@pytest.mark.parametrize("chainid", [0, 1337])
 def test_send_post_eip_7702_tx(
-    w3, userop, impl7702, wallet_contract, helper_contract, entrypoint_contract
+    w3, userop, impl7702, wallet_contract, helper_contract, entrypoint_contract, chainid
 ):
     # first deploy a EIP-7702 address
     acc = w3.eth.account.create()
@@ -67,7 +68,7 @@ def test_send_post_eip_7702_tx(
     )
     nonce = w3.eth.get_transaction_count(acc.address)
     auth_tuple = TupleEIP7702(
-        chainId=hex(1337), address=impl7702.address, nonce=hex(nonce)
+        chainId=hex(chainid), address=impl7702.address, nonce=hex(nonce)
     )
     auth_tuple.sign(acc._private_key.hex())
     userop.sender = acc.address
@@ -123,3 +124,27 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
 
     response = userop.send()
     assert_rpc_error(userop.send(), "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+
+def test_send_nonsender_eip_7702_drop_userop(w3, impl7702, userop):
+    another_account = w3.eth.account.create()
+
+    # create an EIP-7702 authorization tuple, with wrong nonce
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337), address=impl7702.address, nonce="0x0"
+    )
+    auth_tuple.sign(another_account._private_key.hex())
+    userop.eip7702auth = auth_tuple
+
+    assert_rpc_error(userop.send(), "sender", RPCErrorCode.INVALID_FIELDS)
+
+def test_send_wrongchain_eip_7702_drop_userop(w3, impl7702, userop):
+    another_account = w3.eth.account.create()
+
+    # create an EIP-7702 authorization tuple, with wrong nonce
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1234), address=impl7702.address, nonce="0x0"
+    )
+    auth_tuple.sign(another_account._private_key.hex())
+    userop.eip7702auth = auth_tuple
+
+    assert_rpc_error(userop.send(), "chainid", RPCErrorCode.INVALID_FIELDS)
