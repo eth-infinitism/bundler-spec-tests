@@ -1,7 +1,6 @@
 from dataclasses import dataclass, asdict
 from typing import Optional
 
-import regex
 import rlp
 from eth_keys import keys
 from eth_typing import HexStr
