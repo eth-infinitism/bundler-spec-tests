@@ -125,25 +125,23 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
     response = userop.send()
     assert_rpc_error(userop.send(), "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
 
+
 def test_send_nonsender_eip_7702_drop_userop(w3, impl7702, userop):
     another_account = w3.eth.account.create()
 
     # create an EIP-7702 authorization tuple, with wrong nonce
-    auth_tuple = TupleEIP7702(
-        chainId=hex(1337), address=impl7702.address, nonce="0x0"
-    )
+    auth_tuple = TupleEIP7702(chainId=hex(1337), address=impl7702.address, nonce="0x0")
     auth_tuple.sign(another_account._private_key.hex())
     userop.eip7702auth = auth_tuple
 
     assert_rpc_error(userop.send(), "sender", RPCErrorCode.INVALID_FIELDS)
 
+
 def test_send_wrongchain_eip_7702_drop_userop(w3, impl7702, userop):
     another_account = w3.eth.account.create()
 
     # create an EIP-7702 authorization tuple, with wrong nonce
-    auth_tuple = TupleEIP7702(
-        chainId=hex(1234), address=impl7702.address, nonce="0x0"
-    )
+    auth_tuple = TupleEIP7702(chainId=hex(1234), address=impl7702.address, nonce="0x0")
     auth_tuple.sign(another_account._private_key.hex())
     userop.eip7702auth = auth_tuple
 
