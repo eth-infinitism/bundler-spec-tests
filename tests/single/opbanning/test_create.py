@@ -17,13 +17,14 @@
 from dataclasses import asdict, dataclass
 import pytest
 from tests.conftest import assert_ok, deploy_contract
-from tests.types import RPCErrorCode, UserOperation
+from tests.types import RPCErrorCode
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     assert_rpc_error,
     deposit_to_undeployed_sender,
     staked_contract,
     to_hex,
-    to_prefixed_hex,
+    to_prefixed_hex, pack_user_op,
 )
 
 
@@ -45,6 +46,7 @@ def test_paymaster_banned_create(paymaster_contract, wallet_contract, create_op)
         sender=wallet_contract.address,
         paymaster=paymaster_contract.address,
         paymasterData="0x" + to_hex(create_op),
+        paymasterVerificationGasLimit=hex(200_000),
     )
     assert_rpc_error(
         userop.send(),
@@ -53,9 +55,12 @@ def test_paymaster_banned_create(paymaster_contract, wallet_contract, create_op)
     )
 
 
+def callHandleOps(entrypoint_contract, userop):
+    print("==tx=", entrypoint_contract.functions.handleOps([pack_user_op(userop)], userop.sender)
+                    .transact({"from": w3.eth.default_account, "gas": 5000000}))
 # OP-031 CREATE2 is allowed exactly once in the deployment phase.
 # (so we check that it fails if it called more than once)
-def test_account_create2_once(w3, factory_contract, entrypoint_contract, banned_op):
+def test_account_create2_once(w3, factory_contract, entrypoint_contract):
     factoryData = factory_contract.functions.create(
         123, "CREATE2", entrypoint_contract.address
     ).build_transaction()["data"]
@@ -72,7 +77,7 @@ def test_account_create2_once(w3, factory_contract, entrypoint_contract, banned_
     )
     assert_rpc_error(
         response,
-        banned_op,
+        "CREATE2",
         RPCErrorCode.BANNED_OPCODE,
     )
 
@@ -88,7 +93,8 @@ class Case:
     def str(self):
         return ",".join([k + "=" + str(v) for k, v in self.__dict__.items()])
 
-
+# [OP-031] `CREATE2` is allowed exactly once in the deployment phase and must deploy code for the "sender" address.
+# [OP-032] If there is a `factory` (even unstaked), the `sender` contract is allowed to use `CREATE` opcode
 op_032_cases = [
     Case(factory="unstaked", op="CREATE", expect="ok"),
     Case(factory="unstaked", op="CREATE2", expect="err"),
