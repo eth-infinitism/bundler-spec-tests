@@ -9,8 +9,8 @@ from tests.types import remove_nulls
 
 @dataclass
 class TransactionRIP7560:
-    Type = 5
     # pylint: disable=too-many-instance-attributes, invalid-name
+    Type = 5
     sender: HexStr
     nonceKey: HexStr = hex(0)
     nonce: HexStr = hex(0)
