@@ -14,9 +14,10 @@
  "blame" another userop, which we can't link back to this one)
 """
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import pytest
 from tests.conftest import assert_ok, deploy_contract
+from tests.force_userop import force_userop
 from tests.types import RPCErrorCode
 from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
@@ -24,12 +25,12 @@ from tests.utils import (
     deposit_to_undeployed_sender,
     staked_contract,
     to_hex,
-    to_prefixed_hex, pack_user_op,
+    to_prefixed_hex
 )
 
 
 @pytest.mark.parametrize("create_op", ["CREATE", "CREATE2"])
-def test_account_banned_create(rules_account_contract, create_op):
+def test_account_no_factory(rules_account_contract, create_op):
     userop = UserOperation(
         sender=rules_account_contract.address, signature=to_prefixed_hex(create_op)
     )
@@ -46,7 +47,7 @@ def test_paymaster_banned_create(paymaster_contract, wallet_contract, create_op)
         sender=wallet_contract.address,
         paymaster=paymaster_contract.address,
         paymasterData="0x" + to_hex(create_op),
-        paymasterVerificationGasLimit=hex(200_000),
+        paymasterVerificationGasLimit=hex(300_000),
     )
     assert_rpc_error(
         userop.send(),
@@ -55,9 +56,6 @@ def test_paymaster_banned_create(paymaster_contract, wallet_contract, create_op)
     )
 
 
-def callHandleOps(entrypoint_contract, userop):
-    print("==tx=", entrypoint_contract.functions.handleOps([pack_user_op(userop)], userop.sender)
-                    .transact({"from": w3.eth.default_account, "gas": 5000000}))
 # OP-031 CREATE2 is allowed exactly once in the deployment phase.
 # (so we check that it fails if it called more than once)
 def test_account_create2_once(w3, factory_contract, entrypoint_contract):
@@ -93,17 +91,23 @@ class Case:
     def str(self):
         return ",".join([k + "=" + str(v) for k, v in self.__dict__.items()])
 
+
 # [OP-031] `CREATE2` is allowed exactly once in the deployment phase and must deploy code for the "sender" address.
 # [OP-032] If there is a `factory` (even unstaked), the `sender` contract is allowed to use `CREATE` opcode
-op_032_cases = [
-    Case(factory="unstaked", op="CREATE", expect="ok"),
-    Case(factory="unstaked", op="CREATE2", expect="err"),
-    Case(factory="staked", op="CREATE", expect="ok"),
-    Case(factory="staked", op="CREATE2", expect="ok"),
+
+# [EREP-060] If the factory is staked, either the factory itself or the sender may use the CREATE2 and CREATE opcode
+# [EREP-061] A staked factory may also use a utility contract that calls the `CREATE`
+account_cases = [
+    Case(factory="unstaked", op="CREATE", expect="ok", rule="OP-032"),
+    Case(factory="unstaked", op="CREATE2", expect="err", rule="OP-032"),
+    Case(factory="staked", op="CREATE", expect="ok", rule="EREP-060"),
+    Case(factory="staked", op="nested-CREATE", expect="err", rule="EREP-060"),
+    Case(factory="staked", op="nested-CREATE2", expect="err", rule="EREP-060"),
+    Case(factory="staked", op="CREATE2", expect="ok", rule="EREP-060"),
 ]
 
 
-@pytest.mark.parametrize("case", op_032_cases, ids=Case.str)
+@pytest.mark.parametrize("case", account_cases, ids=Case.str)
 def test_account_create_with_factory(w3, entrypoint_contract, case):
     factory = deploy_contract(
         w3, "TestRulesAccountFactory", ctrparams=[entrypoint_contract.address]
@@ -119,18 +123,19 @@ def test_account_create_with_factory(w3, entrypoint_contract, case):
         w3, entrypoint_contract, factory.address, factoryData
     )
 
-    response = UserOperation(
+    userop = UserOperation(
         sender=sender,
         signature=to_prefixed_hex(case.op),
         factory=factory.address,
         factoryData=factoryData,
         verificationGasLimit=hex(5000000),
-    ).send()
+    )
+    response = userop.send()
     if case.expect == "ok":
         assert_ok(response)
     else:
         assert_rpc_error(
             response,
-            "account uses banned opcode: " + case.op,
+            "account uses banned opcode: " + case.op.replace("nested-", ""),
             RPCErrorCode.BANNED_OPCODE,
         )

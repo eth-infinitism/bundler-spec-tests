@@ -28,10 +28,14 @@ class TupleEIP7702:
         if nonce == "0x0":
             nonce = "0x"
 
+        chainId = self.chainId
+        if chainId == "0x0":
+            chainId = "0x"
+
         rlp_encode = bytearray(
             rlp.encode(
                 [
-                    to_bytes(hexstr=self.chainId),
+                    to_bytes(hexstr=chainId),
                     to_bytes(hexstr=self.address),
                     to_bytes(hexstr=nonce),
                 ]
