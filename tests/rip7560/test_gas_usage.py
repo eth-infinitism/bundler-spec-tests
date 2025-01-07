@@ -63,7 +63,7 @@ def send_and_check_payment(w3, tx: TransactionRIP7560):
             )
             used = 21000
 
-        if rcpt.type == 4:
+        if rcpt.type == TransactionRIP7560.Type:
             tx_cost = used * rcpt.effectiveGasPrice
             total_tx_cost = total_tx_cost + tx_cost
 
