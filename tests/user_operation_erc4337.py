@@ -25,7 +25,6 @@ class UserOperation:
     paymasterData: HexStr = None
     paymasterVerificationGasLimit: HexStr = None
     paymasterPostOpGasLimit: HexStr = None
-    # authorizationList: list[TupleEIP7702] = None
     eip7702auth: TupleEIP7702 = None
 
     def __post_init__(self):
