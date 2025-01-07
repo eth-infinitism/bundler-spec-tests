@@ -20,6 +20,10 @@ contract TestSimplePaymaster is IPaymaster {
 
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost, uint) external {}
 
+    function withdrawTo(address payable to, uint256 amount) external {
+        entryPoint.withdrawTo(to, amount);
+    }
+
     receive() external payable {
         entryPoint.depositTo{value: msg.value}(address(this));
     }
