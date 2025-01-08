@@ -64,7 +64,7 @@ jobs:
       - update-and-build-deps-cached
       - run:
           name: "Clone go-ethereum"
-          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
+          command: ./scripts/clone-helper RIP-7560-revision-3 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
             - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
@@ -189,7 +189,7 @@ jobs:
       - update-and-build-deps-cached
       - run:
           name: "Clone go-ethereum"
-          command: ./scripts/clone-helper RIP-7560-revision-2 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
+          command: ./scripts/clone-helper RIP-7560-revision-3 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
             - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
