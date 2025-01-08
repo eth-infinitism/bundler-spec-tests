@@ -25,7 +25,7 @@ from tests.utils import (
     deposit_to_undeployed_sender,
     staked_contract,
     to_hex,
-    to_prefixed_hex
+    to_prefixed_hex,
 )
 
 
