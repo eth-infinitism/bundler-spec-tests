@@ -8,6 +8,9 @@ from tests.utils import (
     deploy_contract,
     userop_hash,
     send_bundle_now,
+    to_prefixed_hex,
+    fund,
+    to_hex,
 )
 
 AUTHORIZED_ACCOUNT_PREFIX = "ef0100"
@@ -15,17 +18,15 @@ AUTHORIZED_ACCOUNT_PREFIX = "ef0100"
 
 def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract):
     acc = w3.eth.account.create()
-    # fund the EOA address
-    w3.eth.send_transaction(
-        {"from": w3.eth.accounts[0], "to": acc.address, "value": 10**18}
-    )
+    fund(w3, acc.address)
 
     # create an EIP-7702 authorization tuple
-    nonce = w3.eth.get_transaction_count(acc.address)
     auth_tuple = TupleEIP7702(
-        chainId=hex(1337), address=impl7702.address, nonce=hex(nonce)
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+        signer_private_key=acc._private_key.hex(),
     )
-    auth_tuple.sign(acc._private_key.hex())
 
     userop.sender = acc.address
     userop.eip7702auth = auth_tuple
@@ -85,6 +86,7 @@ def test_send_post_eip_7702_tx(
 
     state_before = account.functions.state().call()
 
+    # non-7702 userop, that uses previously created account.
     userop = UserOperation(
         sender=acc.address,
         nonce=hex(entrypoint_contract.functions.getNonce(acc.address, 0).call()),
@@ -115,34 +117,67 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
     # create an EIP-7702 authorization tuple, with wrong nonce
     nonce = w3.eth.get_transaction_count(acc.address)
     auth_tuple = TupleEIP7702(
-        chainId=hex(1337), address=impl7702.address, nonce=hex(nonce + 2)
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce=hex(nonce + 2),
+        signer_private_key=acc._private_key.hex(),
     )
-    auth_tuple.sign(acc._private_key.hex())
 
     userop.sender = acc.address
     userop.eip7702auth = auth_tuple
 
     response = userop.send()
-    assert_rpc_error(userop.send(), "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
+    assert_rpc_error(response, "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
 
 
 def test_send_nonsender_eip_7702_drop_userop(w3, impl7702, userop):
     another_account = w3.eth.account.create()
 
-    # create an EIP-7702 authorization tuple, with wrong nonce
-    auth_tuple = TupleEIP7702(chainId=hex(1337), address=impl7702.address, nonce="0x0")
-    auth_tuple.sign(another_account._private_key.hex())
+    # create an EIP-7702 authorization tuple, with different signer
+    auth_tuple = TupleEIP7702(
+        signer_private_key=another_account._private_key.hex(),
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+    )
     userop.eip7702auth = auth_tuple
 
     assert_rpc_error(userop.send(), "sender", RPCErrorCode.INVALID_FIELDS)
 
 
-def test_send_wrongchain_eip_7702_drop_userop(w3, impl7702, userop):
-    another_account = w3.eth.account.create()
+def test_send_wrongchain_eip_7702_drop_userop(
+    w3, entrypoint_contract, impl7702, userop
+):
+    # first, create an account:
+    acc = w3.eth.account.create()
+    fund(w3, acc.address)
 
-    # create an EIP-7702 authorization tuple, with wrong nonce
-    auth_tuple = TupleEIP7702(chainId=hex(1234), address=impl7702.address, nonce="0x0")
-    auth_tuple.sign(another_account._private_key.hex())
+    # create an EIP-7702 authorization tuple
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+        signer_private_key=acc._private_key.hex(),
+    )
+
+    userop.sender = acc.address
     userop.eip7702auth = auth_tuple
+
+    assert_ok(userop.send())
+    send_bundle_now()
+    assert len(w3.eth.get_code(acc.address)) == 23
+
+    # submit a UserOp with wrong chainId:
+    sender_nonce = entrypoint_contract.functions.getNonce(acc.address, 0).call()
+    userop.nonce = to_hex(sender_nonce)
+
+    auth_nonce = w3.eth.get_transaction_count(acc.address)
+    # create an EIP-7702 authorization tuple, with wrong chain
+    userop.eip7702auth = TupleEIP7702(
+        chainId=hex(1234),
+        address=impl7702.address,
+        nonce=hex(auth_nonce),
+        signer_private_key=acc._private_key.hex(),
+    )
 
     assert_rpc_error(userop.send(), "chainid", RPCErrorCode.INVALID_FIELDS)
