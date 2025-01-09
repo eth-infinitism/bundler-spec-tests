@@ -17,7 +17,6 @@
 from dataclasses import dataclass
 import pytest
 from tests.conftest import assert_ok, deploy_contract
-from tests.force_userop import force_userop
 from tests.types import RPCErrorCode
 from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
