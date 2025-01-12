@@ -84,7 +84,7 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
         rcpt = w3.eth.get_transaction_receipt(block.transactions[i])
         assert rcpt.status == 1
         assert rcpt.blockHash == block.hash
-        if rcpt.type == 4:
+        if rcpt.type == TransactionRIP7560.Type:
             assert rcpt.gasUsed == 96183
         else:
             assert rcpt.gasUsed == 21000
@@ -343,7 +343,7 @@ def test_getTransaction(w3, wallet_contract, tx_7560):
     block = w3.eth.get_block("latest")
 
     expected_ret_fields = dict(
-        type=4,
+        type=TransactionRIP7560.Type,
         blockHash=block["hash"],
         blockNumber=block["number"],
         gasPrice=min(
@@ -504,7 +504,7 @@ def test_bundle_with_events(w3, wallet_contract):
         assert tx.hash.hex() == hashes[i].result[2:]
         assert rcpt.transactionHash.hex() == hashes[i].result[2:]
         assert rcpt.transactionIndex == i
-        assert rcpt.type == 4
+        assert rcpt.type == TransactionRIP7560.Type
         assert tx.transactionIndex == i
 
         c = w3.eth.contract(abi=icontract["abi"], address=txs[i].sender)

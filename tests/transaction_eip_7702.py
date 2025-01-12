@@ -21,6 +21,12 @@ class TupleEIP7702:
     yParity: Optional[HexStr] = None
     r: Optional[HexStr] = None
     s: Optional[HexStr] = None
+    signer_private_key: Optional[HexStr] = None
+
+    def __post_init__(self):
+        if self.signer_private_key:
+            self.sign(self.signer_private_key)
+            self.signer_private_key = None
 
     def sign(self, private_key: str):
         pk = keys.PrivateKey(bytes.fromhex(private_key))
