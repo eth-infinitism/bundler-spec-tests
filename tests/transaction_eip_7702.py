@@ -21,6 +21,12 @@ class TupleEIP7702:
     yParity: Optional[HexStr] = None
     r: Optional[HexStr] = None
     s: Optional[HexStr] = None
+    signer_private_key: Optional[HexStr] = None
+
+    def __post_init__(self):
+        if self.signer_private_key:
+            self.sign(self.signer_private_key)
+            self.signer_private_key = None
 
     def sign(self, private_key: str):
         pk = keys.PrivateKey(bytes.fromhex(private_key))
@@ -28,10 +34,14 @@ class TupleEIP7702:
         if nonce == "0x0":
             nonce = "0x"
 
+        chainId = self.chainId
+        if chainId == "0x0":
+            chainId = "0x"
+
         rlp_encode = bytearray(
             rlp.encode(
                 [
-                    to_bytes(hexstr=self.chainId),
+                    to_bytes(hexstr=chainId),
                     to_bytes(hexstr=self.address),
                     to_bytes(hexstr=nonce),
                 ]
