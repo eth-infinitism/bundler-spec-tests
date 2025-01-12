@@ -4,6 +4,7 @@ See https://github.com/eth-infinitism/bundler
 """
 
 import pytest
+from tests.conftest import entrypoint_contract
 
 from tests.types import RPCErrorCode
 from tests.user_operation_erc4337 import UserOperation
@@ -30,8 +31,8 @@ banned_opcodes = [
     "BALANCE",
     "ORIGIN",
     "BLOCKHASH",
-    "CREATE",
-    "CREATE2",
+    # "CREATE", # TODO: requires special tests (with new parser), see test_create.py for erc-4337
+    # "CREATE2",
     # "SELFDESTRUCT",
 ]
 
@@ -77,7 +78,7 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
         sender=wallet_contract.address,
         paymaster=paymaster_contract.address,
         paymasterData="0x" + to_hex(banned_op),
-        paymasterVerificationGasLimit=hex(200000),
+        paymasterVerificationGasLimit=hex(300000),
     ).send()
     assert_rpc_error(
         response,

@@ -5,8 +5,21 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./ITestAccount.sol";
 import "./TestCoin.sol";
 
+
+contract Dummy2 {}
+
 contract Dummy {
-    uint public value = 1;
+    uint public immutable value = 1;
+
+    function create() public returns (uint) {
+        new Dummy2();
+        return 0;
+    }
+
+    function create2() public returns (uint) {
+        new Dummy2{salt: bytes32(uint(0x1))}();
+        return 0;
+    }
 }
 
 contract ValidationRulesStorage is IState {
@@ -90,6 +103,8 @@ library ValidationRules {
         else if (eq(rule, "BALANCE")) return uint160(address(msg.sender).balance);
         else if (eq(rule, "ORIGIN")) return uint160(address(tx.origin));
         else if (eq(rule, "BLOCKHASH")) return uint(blockhash(0));
+        else if (eq(rule, "nested-CREATE")) return new Dummy().create();
+        else if (eq(rule, "nested-CREATE2")) return new Dummy().create2();
         else if (eq(rule, "CREATE")) return new Dummy().value();
         else if (eq(rule, "CREATE2")) return new Dummy{salt : bytes32(uint(0x1))}().value();
         else if (eq(rule, "SELFDESTRUCT")) {
@@ -104,11 +119,11 @@ library ValidationRules {
             return 0;
         }
         else if (eq(rule, "SELFBALANCE")) {
-            uint256 self;
+            uint256 selfb;
             assembly {
-                self :=selfbalance()
+                selfb := selfbalance()
             }
-            return self;
+            return selfb;
         }
         else if (eq(rule, "CALLCODE_undeployed_contract")) {
             assembly {

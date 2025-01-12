@@ -132,7 +132,7 @@ def deploy_state_contract(w3):
 def pack_factory(factory, factory_data):
     if factory is None:
         return "0x"
-    return to_prefixed_hex(factory) + to_hex(factory_data)
+    return hex_concat(factory, factory_data)
 
 
 def pack_uints(high128, low128):
@@ -323,7 +323,9 @@ def to_prefixed_hex(s, byte_count=None):
 
 
 def to_hex(s):
-    if isinstance(s, (int)):
+    if isinstance(s, str) and s.startswith("0x"):
+        return s
+    if isinstance(s, int):
         return hex(s)
     return s.encode().hex()
 
