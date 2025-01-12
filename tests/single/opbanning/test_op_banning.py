@@ -31,8 +31,8 @@ banned_opcodes = [
     "BALANCE",
     "ORIGIN",
     "BLOCKHASH",
-    "CREATE",
-    "CREATE2",
+    # "CREATE", # TODO: requires special tests (with new parser), see test_create.py for erc-4337
+    # "CREATE2",
     # "SELFDESTRUCT",
 ]
 
