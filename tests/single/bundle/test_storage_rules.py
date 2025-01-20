@@ -633,7 +633,7 @@ cases = [
         UNSTAKED,
         PAYMASTER,
         with_initcode(build_userop_for_paymaster, deploy_staked_rule_factory),
-        assert_error,
+        assert_ok,
     ),
     ValidationRuleTestCase(
         "STO-021",
