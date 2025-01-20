@@ -27,6 +27,7 @@ from tests.utils import (
     to_prefixed_hex,
 )
 
+
 # OP-031
 # OP-032
 @pytest.mark.parametrize("create_op", ["CREATE", "CREATE2"])
