@@ -1,4 +1,3 @@
-
 # EIP4337 bundler compatibility tests.
 
 ## Version 0.7
