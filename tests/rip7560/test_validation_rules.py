@@ -124,7 +124,7 @@ def get_build_func(entity, rule, assert_func, stake_manager):
         pass
     if rule.find("init_code") > 0:
         # STO-022 factory must be staked
-        if entity == SENDER and assert_func is assert_ok:
+        if assert_func is assert_ok:
             build_func = with_initcode(build_func, stake_manager, deploy_staked_factory)
         else:
             build_func = with_initcode(build_func, stake_manager)
