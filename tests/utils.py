@@ -7,6 +7,7 @@ from eth_utils import to_checksum_address
 from solcx import compile_source
 
 from .rip7560.types import TransactionRIP7560
+from .single.opbanning.alt_mempool_cases import AltMempoolConfig
 from .types import RPCRequest, CommandLineArgs
 from .user_operation_erc4337 import UserOperation
 
@@ -232,6 +233,12 @@ def set_manual_bundling_mode(url=None):
 def get_rip7560_debug_info(tx_hash, url=None):
     return RPCRequest(
         method="eth_getRip7560TransactionDebugInfo", params=[tx_hash]
+    ).send(url)
+
+
+def debug_set_alt_mempool_config(config: AltMempoolConfig, url=None):
+    return RPCRequest(
+        method="debug_bundler_setAltMempoolConfig", params=[config]
     ).send(url)
 
 
