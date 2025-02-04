@@ -847,6 +847,8 @@ def test_rule(w3, entrypoint_contract, case, frame_entry_opcode):
     entity_contract = deploy_and_deposit(
         w3, entrypoint_contract, entity_contract_name, case.staked
     )
-    userop = case.op_build_func(w3, entrypoint_contract, entity_contract, frame_entry_opcode + case.rule)
+    userop = case.op_build_func(
+        w3, entrypoint_contract, entity_contract, frame_entry_opcode + case.rule
+    )
     response = userop.send()
     case.assert_func(response)
