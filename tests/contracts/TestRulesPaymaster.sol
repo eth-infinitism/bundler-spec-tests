@@ -11,6 +11,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
     using ValidationRules for string;
 
     TestCoin immutable public coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 //    IEntryPoint public entryPoint;
 
     constructor(address _ep) payable {
@@ -35,7 +36,7 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
         } else if (rule.eq("nothing")) {
             return ("", 0);
         } else {
-            ValidationRules.runRule(rule, ITestAccount(userOp.sender), coin, this);
+            ValidationRules.runRule(rule, ITestAccount(userOp.sender), coin, this, target);
             return ("", 0);
         }
     }

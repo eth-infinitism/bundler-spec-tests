@@ -11,7 +11,8 @@ contract TestRulesFactory is Stakable, ValidationRulesStorage {
 
     using ValidationRules for string;
 
-    TestCoin immutable coin = new TestCoin();
+    TestCoin private immutable coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 
     constructor(address _entryPoint) {
         entryPoint = IEntryPoint(_entryPoint);
@@ -51,7 +52,7 @@ contract TestRulesFactory is Stakable, ValidationRulesStorage {
         // do not revert on rules checked before account creation
         if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {}
         else {
-            ValidationRules.runRule(rule, account, coin, this);
+            ValidationRules.runRule(rule, account, coin, this, target);
         }
         return account;
     }

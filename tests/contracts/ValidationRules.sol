@@ -2,8 +2,11 @@
 pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+
+import "./ValidationRulesStorage.sol";
 import "./ITestAccount.sol";
 import "./TestCoin.sol";
+import {TestRulesTarget} from "./TestRulesTarget.sol";
 
 
 contract Dummy2 {}
@@ -22,52 +25,6 @@ contract Dummy {
     }
 }
 
-contract ValidationRulesStorage is IState {
-    IEntryPoint public entryPoint;
-    uint256 public state;
-
-    function funTSTORE() external override returns(uint256) {
-        assembly {
-            tstore(0, 1)
-        }
-        return 0;
-    }
-
-    function funSSTORE() external returns(uint256) {
-        assembly {
-            sstore(0, 1)
-        }
-        return 0;
-    }
-
-
-    function funTLOAD() external returns(uint256) {
-        uint256 tval;
-        assembly {
-            tval := tload(0)
-        }
-        emit State(tval, tval);
-        return tval;
-    }
-
-    event State(uint oldState, uint newState);
-
-    function setState(uint _state) public {
-        emit State(state, _state);
-        state = _state;
-    }
-
-    function revertOOG() public {
-        uint256 i = 0;
-        while(true) {
-            keccak256(abi.encode(i++));
-        }
-    }
-
-    function revertOOGSSTORE() public {
-        state = state;
-    }
-}
 
 library ValidationRules {
 
@@ -75,12 +32,36 @@ library ValidationRules {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
+    function startsWith(string memory str, string memory prefix) public pure returns (bool) {
+        bytes memory strBytes = bytes(str);
+        bytes memory prefixBytes = bytes(prefix);
+        if (prefixBytes.length > strBytes.length) {
+            return false;
+        }
+        for (uint256 i = 0; i < prefixBytes.length; i++) {
+            if (strBytes[i] != prefixBytes[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function slice(string memory str, uint256 start, uint256 length) public pure returns (string memory) {
+        bytes memory strBytes = bytes(str);
+        require(start + length <= strBytes.length, "Out of bounds");
+        bytes memory result = new bytes(length);
+        for (uint256 i = 0; i < length; i++) {
+            result[i] = strBytes[start + i];
+        }
+        return string(result);
+    }
+
     //return by runRule if string is unknown.
     uint constant public UNKNOWN = type(uint).max;
 
     error CustomError(string error, uint256 code);
 
-    function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self) internal returns (uint) {
+    function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self, TestRulesTarget target) internal returns (uint) {
         if (eq(rule, "")) return 0;
         else if (eq(rule, "revert-msg")) {
             revert("on-chain revert message string");
@@ -161,11 +142,12 @@ library ValidationRules {
             // 'GAS CALL' sequence is what solidity does anyway
             // this test makes it explicit so we know for sure nothing changes here
             address addr = address(coin);
+            address acc = address(account);
             bytes4 sig = coin.balanceOf.selector;
             assembly {
                     let x := mload(0x40)
                     mstore(x, sig)
-                    mstore(add(x, 0x04), address())
+                    mstore(add(x, 0x04), acc)
                     let success := call(
                         gas(), // GAS opcode
                         addr,
@@ -179,11 +161,12 @@ library ValidationRules {
         }
         else if (eq(rule, "GAS DELEGATECALL")) {
             address addr = address(coin);
+            address acc = address(account);
             bytes4 sig = coin.balanceOf.selector;
             assembly {
                 let x := mload(0x40)
                 mstore(x, sig)
-                mstore(add(x, 0x04), address())
+                mstore(add(x, 0x04), acc)
                 let success := delegatecall(
                     gas(), // GAS opcode
                     addr,
@@ -232,6 +215,17 @@ library ValidationRules {
         else if (eq(rule, "sstore_out_of_gas")) {
             (bool success,) = address(this).call{gas:2299}(abi.encodeWithSelector(self.revertOOGSSTORE.selector));
             require(!success, "reverting pseudo oog");
+            return 0;
+        }
+        else if (startsWith(rule, "DELEGATECALL:>")){
+            string memory innerRule = slice(rule, 14, bytes(rule).length - 14);
+            bytes memory callData = abi.encodeCall(target.runRule, (innerRule, account, coin, self, TestRulesTarget(address(0))));
+            address(target).delegatecall(callData);
+            return 0;
+        }
+        else if (startsWith(rule, "CALL:>")){
+            string memory innerRule = slice(rule, 6, bytes(rule).length - 6);
+            target.runRule(innerRule, account, coin, self, TestRulesTarget(address(0)));
             return 0;
         }
         revert(string.concat("unknown rule: ", rule));

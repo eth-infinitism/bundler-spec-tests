@@ -15,6 +15,7 @@ interface IRip7560EntryPointWrong {
 contract RIP7560Paymaster is ValidationRulesStorage, Stakable {
     using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 
     uint256 public pmCounter = 0;
 
@@ -38,7 +39,7 @@ contract RIP7560Paymaster is ValidationRulesStorage, Stakable {
             return;
         }
         if (!rule.eq("context")) {
-            ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this);
+            ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this, target);
         }
         RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
     }

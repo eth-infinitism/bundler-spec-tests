@@ -840,12 +840,13 @@ def case_id_function(case):
     return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{case.entity}][{case.rule}][{result}"
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("case", cases, ids=case_id_function)
-def test_rule(w3, entrypoint_contract, case):
+def test_rule(w3, entrypoint_contract, case, frame_entry_opcode):
     entity_contract_name = entity_to_contract_name(case.entity)
     entity_contract = deploy_and_deposit(
         w3, entrypoint_contract, entity_contract_name, case.staked
     )
-    userop = case.op_build_func(w3, entrypoint_contract, entity_contract, case.rule)
+    userop = case.op_build_func(w3, entrypoint_contract, entity_contract, frame_entry_opcode + case.rule)
     response = userop.send()
     case.assert_func(response)

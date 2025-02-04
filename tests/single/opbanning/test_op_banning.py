@@ -43,41 +43,45 @@ allowed_opcode_sequences = ["GAS CALL", "GAS DELEGATECALL"]
 allowed_opcodes_when_staked = ["BALANCE", "SELFBALANCE"]
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("banned_op", banned_opcodes)
-def test_account_banned_opcode(rules_account_contract, banned_op):
+def test_account_banned_opcode(rules_account_contract, banned_op, frame_entry_opcode):
     response = UserOperation(
-        sender=rules_account_contract.address, signature=to_prefixed_hex(banned_op)
+        sender=rules_account_contract.address, signature=to_prefixed_hex(frame_entry_opcode + banned_op)
     ).send()
     assert_rpc_error(
         response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
     )
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("op", allowed_opcodes_when_staked)
-def test_account_allowed_opcode_when_staked(rules_staked_account_contract, op):
+def test_account_allowed_opcode_when_staked(rules_staked_account_contract, op, frame_entry_opcode):
     response = UserOperation(
         sender=rules_staked_account_contract.address,
-        signature=to_prefixed_hex(op),
+        signature=to_prefixed_hex(frame_entry_opcode + op),
     ).send()
     assert_ok(response)
 
 
 # OP-012
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("allowed_op_sequence", allowed_opcode_sequences)
-def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequence):
+def test_account_allowed_opcode_sequence(rules_account_contract, allowed_op_sequence, frame_entry_opcode):
     response = UserOperation(
         sender=rules_account_contract.address,
-        signature=to_prefixed_hex(allowed_op_sequence),
+        signature=to_prefixed_hex(frame_entry_opcode + allowed_op_sequence),
     ).send()
     assert_ok(response)
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("banned_op", banned_opcodes)
-def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op):
+def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op, frame_entry_opcode):
     response = UserOperation(
         sender=wallet_contract.address,
         paymaster=paymaster_contract.address,
-        paymasterData="0x" + to_hex(banned_op),
+        paymasterData="0x" + to_hex(frame_entry_opcode + banned_op),
         paymasterVerificationGasLimit=hex(300000),
     ).send()
     assert_rpc_error(
@@ -87,15 +91,16 @@ def test_paymaster_banned_opcode(paymaster_contract, wallet_contract, banned_op)
     )
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("op", allowed_opcodes_when_staked)
 def test_paymaster_allowed_opcode_when_staked(
-    staked_paymaster_contract, wallet_contract, op
+        staked_paymaster_contract, wallet_contract, op, frame_entry_opcode
 ):
     response = UserOperation(
         sender=wallet_contract.address,
         paymaster=staked_paymaster_contract.address,
         paymasterVerificationGasLimit=hex(50000),
-        paymasterData=to_prefixed_hex(op),
+        paymasterData=to_prefixed_hex(frame_entry_opcode + op),
     ).send()
     assert_ok(response)
 
@@ -125,7 +130,7 @@ def test_factory_banned_opcode(w3, factory_contract, entrypoint_contract, banned
 
 @pytest.mark.parametrize("op", allowed_opcodes_when_staked)
 def test_factory_allowed_opcode_when_staked(
-    w3, staked_factory_contract, entrypoint_contract, op
+        w3, staked_factory_contract, entrypoint_contract, op
 ):
     factory_data = staked_factory_contract.functions.create(
         123, op, entrypoint_contract.address

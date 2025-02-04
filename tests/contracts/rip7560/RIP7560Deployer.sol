@@ -11,6 +11,7 @@ import "../Stakable.sol";
 contract RIP7560Deployer is ValidationRulesStorage, Stakable  {
     using ValidationRules for string;
     TestCoin immutable public coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 
     event DeployerEvent(string name, uint256 counter, address deployed);
     event Uint(uint);
@@ -45,7 +46,7 @@ contract RIP7560Deployer is ValidationRulesStorage, Stakable  {
         }
         ret = address(new TestAccount{salt : bytes32(salt)}());
         if (!rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
-            ValidationRules.runRule(rule, ITestAccount(ret), coin, this);
+            ValidationRules.runRule(rule, ITestAccount(ret), coin, this, target);
         }
     }
 

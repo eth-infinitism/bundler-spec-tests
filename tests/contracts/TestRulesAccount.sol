@@ -11,6 +11,7 @@ contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
     using ValidationRules for string;
 
     TestCoin public coin;
+    TestRulesTarget private immutable target = new TestRulesTarget();
 
     function setCoin(TestCoin _coin) public {
         coin = _coin;
@@ -38,7 +39,7 @@ contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
             success;
         }
         string memory rule = string(userOp.signature);
-        ValidationRules.runRule(rule, this, coin, this);
+        ValidationRules.runRule(rule, this, coin, this, target);
         return 0;
     }
 }
