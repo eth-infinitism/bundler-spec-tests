@@ -1,6 +1,7 @@
 import collections
 
 import pytest
+
 from tests.types import RPCErrorCode
 from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
@@ -12,6 +13,7 @@ from tests.utils import (
     deploy_and_deposit,
     deposit_to_undeployed_sender,
     staked_contract,
+    with_proxy,
 )
 
 
@@ -69,6 +71,7 @@ def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rul
 def build_userop_for_sender(w3, _entrypoint_contract, rules_account_contract, rule):
     call_data = deploy_state_contract(w3).address
     signature = "0x" + rule.encode().hex()
+    rules_account_contract = with_proxy(w3, rules_account_contract)
     return UserOperation(
         sender=rules_account_contract.address, callData=call_data, signature=signature
     )

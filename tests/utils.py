@@ -119,6 +119,17 @@ def staked_contract(w3, entrypoint_contract, contract):
     return contract
 
 
+# delpoy a proxy to wrap the given contract. expose the contract ABI, not the proxy's
+def with_proxy(w3, contract):
+    proxy = deploy_contract(w3, "TestProxy", ctrparams=[contract.address])
+    # fund proxy if original account was funded:
+    if w3.eth.get_balance(contract.address) > 0:
+        fund(w3, proxy.address)
+
+    proxy_contract = w3.eth.contract(address=proxy.address, abi=contract.abi)
+    return proxy_contract
+
+
 def deploy_wallet_contract(w3, value=2 * 10**18):
     return deploy_contract(
         w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint], value=value
