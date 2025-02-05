@@ -70,7 +70,9 @@ def deploy_contract(
     )
     codesize = len(interface["bin-runtime"]) / 2
     if codesize >= 24576:
-        raise RuntimeError(f"ERROR! Contract exceed size limit! {contractname} is {codesize} bytes")
+        raise RuntimeError(
+            f"ERROR! Contract exceed size limit! {contractname} is {codesize} bytes"
+        )
     if account is None:
         account = w3.eth.default_account
     tx_hash = contract.constructor(*ctrparams).transact(
