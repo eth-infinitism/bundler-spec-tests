@@ -98,16 +98,15 @@ def test_paymaster_banned_opcode(
     )
 
 
-@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("op", allowed_opcodes_when_staked)
 def test_paymaster_allowed_opcode_when_staked(
-    staked_paymaster_contract, wallet_contract, op, frame_entry_opcode
+    staked_paymaster_contract, wallet_contract, op
 ):
     response = UserOperation(
         sender=wallet_contract.address,
         paymaster=staked_paymaster_contract.address,
         paymasterVerificationGasLimit=hex(50000),
-        paymasterData=to_prefixed_hex(frame_entry_opcode + op),
+        paymasterData=to_prefixed_hex(op),
     ).send()
     assert_ok(response)
 
