@@ -45,7 +45,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage, Stakable {
             ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptAccountWrongSig, (666, 777)));
             return;
         }
-        ValidationRules.runRule(rule, this, coin, this, target);
+        ValidationRules.runRule(rule, this, address(0), address(0), coin, this, target);
         setState(1);
         RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }

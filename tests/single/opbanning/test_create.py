@@ -110,8 +110,11 @@ account_cases = [
 
 @pytest.mark.parametrize("case", account_cases, ids=Case.str)
 def test_account_create_with_factory(w3, entrypoint_contract, case):
+    test_coin = deploy_contract(w3, "TestCoin")
     factory = deploy_contract(
-        w3, "TestRulesAccountFactory", ctrparams=[entrypoint_contract.address]
+        w3,
+        "TestRulesAccountFactory",
+        ctrparams=[entrypoint_contract.address, test_coin.address],
     )
     if case.factory == "staked":
         staked_contract(w3, entrypoint_contract, factory)

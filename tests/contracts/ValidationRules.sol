@@ -3,11 +3,11 @@ pragma solidity ^0.8.25;
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
-import "./ValidationRulesStorage.sol";
+import "./Create2.sol";
 import "./ITestAccount.sol";
 import "./TestCoin.sol";
-import {TestRulesTarget} from "./TestRulesTarget.sol";
-
+import "./TestRulesTarget.sol";
+import "./ValidationRulesStorage.sol";
 
 contract Dummy2 {}
 
@@ -27,12 +27,14 @@ contract Dummy {
 
 
 library ValidationRules {
+    using ValidationRules for string;
+    event Uint(uint);
 
     function eq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
-    function startsWith(string memory str, string memory prefix) public pure returns (bool) {
+    function startsWith(string memory str, string memory prefix) internal pure returns (bool) {
         bytes memory strBytes = bytes(str);
         bytes memory prefixBytes = bytes(prefix);
         if (prefixBytes.length > strBytes.length) {
@@ -46,7 +48,7 @@ library ValidationRules {
         return true;
     }
 
-    function slice(string memory str, uint256 start, uint256 length) public pure returns (string memory) {
+    function slice(string memory str, uint256 start, uint256 length) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         require(start + length <= strBytes.length, "Out of bounds");
         bytes memory result = new bytes(length);
@@ -56,12 +58,64 @@ library ValidationRules {
         return string(result);
     }
 
+    function includes(string memory str, string memory substr) internal pure returns (bool) {
+        bytes memory strBytes = bytes(str);
+        bytes memory substrBytes = bytes(substr);
+        if (substrBytes.length > strBytes.length) {
+            return false;
+        }
+        for (uint256 i = 0; i <= strBytes.length - substrBytes.length; i++) {
+            bool matchFound = true;
+            for (uint256 j = 0; j < substrBytes.length; j++) {
+                if (strBytes[i + j] != substrBytes[j]) {
+                    matchFound = false;
+                    break;
+                }
+            }
+            if (matchFound) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     //return by runRule if string is unknown.
     uint constant public UNKNOWN = type(uint).max;
 
     error CustomError(string error, uint256 code);
 
-    function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self, TestRulesTarget target) internal returns (uint) {
+    function runFactorySpecificRule(uint nonce, string memory rule, address _entryPoint, address create2address) internal {
+        if (eq(rule, "EXTCODEx_CALLx_undeployed_sender")) {
+            // CALL
+            create2address.call("");
+            // CALLCODE
+            assembly {
+                let res := callcode(5000, create2address, 0, 0, 0, 0, 0)
+            }
+            // DELEGATECALL
+            create2address.delegatecall("");
+            // STATICCALL
+            create2address.staticcall("");
+            // EXTCODESIZE
+            emit Uint(create2address.code.length);
+            // EXTCODEHASH
+            emit Uint(uint256(create2address.codehash));
+            // EXTCODECOPY
+            assembly {
+                extcodecopy(create2address, 0, 0, 2)
+            }
+        }
+    }
+
+    function runRule(
+        string memory rule,
+        IState account,
+        address paymaster,
+        address factory,
+        TestCoin coin,
+        ValidationRulesStorage self,
+        TestRulesTarget target
+    ) internal returns (uint) {
         if (eq(rule, "")) return 0;
         else if (eq(rule, "revert-msg")) {
             revert("on-chain revert message string");
@@ -181,14 +235,18 @@ library ValidationRules {
         else if (eq(rule, "no_storage")) return 0;
         else if (eq(rule, "storage_read")) return self.state();
         else if (eq(rule, "storage_write")) return self.funSSTORE();
-        else if (eq(rule, "reference_storage")) return coin.mint(address (this));
-        else if (eq(rule, "reference_storage_struct")) return coin.setStructMember(address(this));
         else if (eq(rule, "account_storage")) return account.state();
 
         else if (eq(rule, "account_reference_storage")) return coin.balanceOf(address(account));
-
         else if (eq(rule, "account_reference_storage_struct")) return coin.setStructMember(address(account));
         else if (eq(rule, "account_reference_storage_init_code")) return coin.balanceOf(address(account));
+
+        else if (eq(rule, "paymaster_reference_storage")) return coin.mint(paymaster);
+        else if (eq(rule, "paymaster_reference_storage_struct")) return coin.setStructMember(paymaster);
+
+        else if (eq(rule, "factory_reference_storage")) return coin.mint(factory);
+        else if (eq(rule, "factory_reference_storage_struct")) return coin.setStructMember(factory);
+
         else if (eq(rule, "external_storage_read")) return coin.balanceOf(address(0xdeadcafe));
         else if (eq(rule, "external_storage_write")) return coin.mint(address(0xdeadcafe));
 
@@ -217,15 +275,16 @@ library ValidationRules {
             require(!success, "reverting pseudo oog");
             return 0;
         }
-        else if (startsWith(rule, "DELEGATECALL:>")){
-            string memory innerRule = slice(rule, 14, bytes(rule).length - 14);
-            bytes memory callData = abi.encodeCall(target.runRule, (innerRule, account, coin, self, TestRulesTarget(address(0))));
-            address(target).delegatecall(callData);
+        else if (startsWith(rule, "DELEGATECALL:>")) {
+            string memory innerRule = rule.slice(14, bytes(rule).length - 14);
+            bytes memory callData = abi.encodeCall(target.runRule, (innerRule, account, paymaster, factory, coin, self, TestRulesTarget(payable(0))));
+            (bool success, bytes memory ret) = address(target).delegatecall(callData);
+            require(success, string(abi.encodePacked("DELEGATECALL rule reverted", ret)));
             return 0;
         }
-        else if (startsWith(rule, "CALL:>")){
-            string memory innerRule = slice(rule, 6, bytes(rule).length - 6);
-            target.runRule(innerRule, account, coin, self, TestRulesTarget(address(0)));
+        else if (startsWith(rule, "CALL:>")) {
+            string memory innerRule = rule.slice(6, bytes(rule).length - 6);
+            target.runRule{value: msg.value}(innerRule, account, paymaster, factory, coin, self, TestRulesTarget(payable(0)));
             return 0;
         }
         revert(string.concat("unknown rule: ", rule));

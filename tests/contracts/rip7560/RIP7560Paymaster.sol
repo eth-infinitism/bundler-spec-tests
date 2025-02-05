@@ -39,7 +39,7 @@ contract RIP7560Paymaster is ValidationRulesStorage, Stakable {
             return;
         }
         if (!rule.eq("context")) {
-            ValidationRules.runRule(rule, ITestAccount(txStruct.sender), coin, this, target);
+            ValidationRules.runRule(rule, ITestAccount(txStruct.sender), address(0), address(0), coin, this, target);
         }
         RIP7560Utils.paymasterAcceptTransaction(context, 1, type(uint48).max -1 );
     }

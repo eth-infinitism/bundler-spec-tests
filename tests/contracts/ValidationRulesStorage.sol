@@ -47,6 +47,6 @@ contract ValidationRulesStorage is IState {
     }
 
     function revertOOGSSTORE() public {
-        state = state;
+        state += 1;
     }
 }

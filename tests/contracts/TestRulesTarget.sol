@@ -2,25 +2,33 @@
 pragma solidity ^0.8.12;
 
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "./TestRulesTarget.sol";
 import "./ValidationRulesStorage.sol";
 import "./ValidationRules.sol";
 import "./TestCoin.sol";
 
-contract TestRulesTarget is IState {
-    uint256 public state;
+contract TestRulesTarget is ValidationRulesStorage {
 
-    function setState(uint _state) external {
-        state = _state;
+    receive() external payable {}
+
+    function runFactorySpecificRule(
+        uint nonce,
+        string memory rule,
+        address _entryPoint,
+        address create2address
+    ) external payable {
+        return ValidationRules.runFactorySpecificRule(nonce, rule, _entryPoint, create2address);
     }
 
-    function runRule(string memory rule, IState account, TestCoin coin, ValidationRulesStorage self, TestRulesTarget target) external returns (uint) {
-        return ValidationRules.runRule(rule, account, coin, self, target);
-    }
-
-    function funTSTORE() external returns(uint256) {
-        assembly {
-            tstore(0, 1)
-        }
-        return 0;
+    function runRule(
+        string memory rule,
+        IState account,
+        address paymaster,
+        address factory,
+        TestCoin coin,
+        ValidationRulesStorage self,
+        TestRulesTarget target
+    ) external payable returns (uint) {
+        return ValidationRules.runRule(rule, account, paymaster, factory, coin, self, target);
     }
 }
