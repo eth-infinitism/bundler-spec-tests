@@ -103,7 +103,7 @@ def contract_from_artifact(w3, artifact_path, contract_address):
     current_dirname = os.path.dirname(__file__)
     artifact_realpath = os.path.realpath(current_dirname + artifact_path)
     code = w3.eth.get_code(contract_address)
-    assert len(code) > 2, "contract not deployed: " + contract_address
+    assert len(code) > 2, "contract not deployed: " + contract_address + artifact_path
     with open(artifact_realpath, encoding="utf-8") as file:
         json_file = json.load(file)
         return w3.eth.contract(abi=json_file["abi"], address=contract_address)
