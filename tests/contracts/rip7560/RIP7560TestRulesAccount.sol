@@ -18,7 +18,6 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage, Stakable {
     using ValidationRules for string;
 
     TestCoin public coin;
-    TestRulesTarget private immutable target = new TestRulesTarget();
 
     constructor() payable {
         // true only when deploying through TestRulesAccountFactory, in which case the factory sets the coin
@@ -45,7 +44,7 @@ contract RIP7560TestRulesAccount is ValidationRulesStorage, Stakable {
             ENTRY_POINT.call(abi.encodeCall(IRip7560EntryPointWrong.acceptAccountWrongSig, (666, 777)));
             return;
         }
-        ValidationRules.runRule(rule, this, address(0), address(0), coin, this, target);
+        ValidationRules.runRule(rule, this, address(0), address(0), coin, this, TestRulesTarget(payable(0)));
         setState(1);
         RIP7560Utils.accountAcceptTransaction(1, type(uint48).max - 1);
     }
