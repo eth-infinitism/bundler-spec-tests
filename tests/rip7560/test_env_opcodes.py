@@ -49,7 +49,8 @@ def test_environment_introspection_opcodes(w3):
     assert len(factory_opcode_events) == 1
 
     tmp_deployment_gas_cost = (
-        540000  # we should expose these values in the receipt and use the real ones
+        230000  # we should expose these values in the receipt and use the real ones
+        # for now the value is extracted from the geth code manually
     )
     pre_charge = get_rip7560_tx_max_cost(tx)
     # paymaster balance should not change within the transaction runtime
@@ -121,7 +122,7 @@ def validate_event(
     tx_maxfee = int(tx.maxFeePerGas, 16)
     block_basefee = block.baseFeePerGas
 
-    assert struct == {
+    expected_struct = {
         "TIMESTAMP": block.timestamp,
         "NUMBER": block.number,
         "CHAINID": 1337,
@@ -137,3 +138,4 @@ def validate_event(
         "BASEFEE": block.baseFeePerGas,
         "CALLVALUE": 0,
     }
+    assert struct == expected_struct

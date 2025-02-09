@@ -46,7 +46,7 @@ contract RIP7560Deployer is ValidationRulesStorage, Stakable  {
         }
         ret = address(new TestAccount{salt : bytes32(salt)}());
         if (!rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
-            ValidationRules.runRule(rule, ITestAccount(ret), address(0), address(0), coin, this, target);
+            ValidationRules.runRule(rule, ITestAccount(ret), address(0), address(this), coin, this, target);
         }
     }
 
