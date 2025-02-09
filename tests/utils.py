@@ -237,9 +237,9 @@ def get_rip7560_debug_info(tx_hash, url=None):
 
 
 def debug_set_alt_mempool_config(config: AltMempoolConfig, url=None):
-    return RPCRequest(
-        method="debug_bundler_setAltMempoolConfig", params=[config]
-    ).send(url)
+    return RPCRequest(method="debug_bundler_setAltMempoolConfig", params=[config]).send(
+        url
+    )
 
 
 def dump_mempool(url=None):

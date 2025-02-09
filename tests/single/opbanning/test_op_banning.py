@@ -5,7 +5,10 @@ See https://github.com/eth-infinitism/bundler
 
 import pytest
 from tests.conftest import entrypoint_contract
-from tests.single.opbanning.alt_mempool_cases import alt_mempool_cases, alt_mempool_case_id_function
+from tests.single.opbanning.alt_mempool_cases import (
+    alt_mempool_cases,
+    alt_mempool_case_id_function,
+)
 
 from tests.types import RPCErrorCode
 from tests.user_operation_erc4337 import UserOperation
@@ -45,16 +48,23 @@ allowed_opcode_sequences = ["GAS CALL", "GAS DELEGATECALL"]
 allowed_opcodes_when_staked = ["BALANCE", "SELFBALANCE"]
 
 
-@pytest.mark.parametrize("alt_mempool", alt_mempool_cases, ids=alt_mempool_case_id_function)
+@pytest.mark.parametrize(
+    "alt_mempool", alt_mempool_cases, ids=alt_mempool_case_id_function
+)
 @pytest.mark.parametrize("banned_op", banned_opcodes)
 def test_account_banned_opcode(rules_account_contract, banned_op, alt_mempool):
     debug_set_alt_mempool_config(alt_mempool.config)
     response = UserOperation(
         sender=rules_account_contract.address, signature=to_prefixed_hex(banned_op)
     ).send()
-    assert_rpc_error(
-        response, "account uses banned opcode: " + banned_op, RPCErrorCode.BANNED_OPCODE
-    )
+    if alt_mempool.assert_revert:
+        assert_rpc_error(
+            response,
+            "account uses banned opcode: " + banned_op,
+            RPCErrorCode.BANNED_OPCODE,
+        )
+    else:
+        assert_ok(response)
 
 
 @pytest.mark.parametrize("op", allowed_opcodes_when_staked)

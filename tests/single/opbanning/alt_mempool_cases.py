@@ -24,6 +24,7 @@ AltMempoolConfig: TypeAlias = Dict[str, Dict[str, AltMempoolConfigRule]]
 class AltMempoolCase:
     name: str
     config: AltMempoolConfig
+    assert_revert: bool
 
 
 def alt_mempool_case_id_function(case: AltMempoolCase):
@@ -39,8 +40,11 @@ def alt_mempool_case_id_function(case: AltMempoolCase):
 alt_mempool_cases = [
     AltMempoolCase(
         name="JustTestingCase",
-        config={"1": {
-            "OP-011": AltMempoolConfigRule(True, [AltMempoolException("account")]),
-        }}
+        config={
+            "1": {
+                "OP-011": AltMempoolConfigRule(True, [AltMempoolException("account")]),
+            }
+        },
+        assert_revert=False,
     )
 ]
