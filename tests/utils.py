@@ -255,7 +255,7 @@ def dump_alt_mempools(url=None):
         .send(url)
         .result
     )
-    for mempool_id, mempool in mempool_dump.items():
+    for mempool in mempool_dump.values():
         for i, entry in enumerate(mempool):
             if "executionData" in entry:
                 mempool[i] = TransactionRIP7560(**entry)
