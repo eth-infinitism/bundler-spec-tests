@@ -34,10 +34,10 @@ rip7560-build = {shell = "cd @rip7560 && yarn && yarn compile-hardhat" }
 dep-build = {composite = ["spec-build", "rip7560-build"]}
 update-deps = {composite = ["submodule-update", "dep-build"]}
 update-deps-remote = {shell = "git submodule update --init --recursive --remote && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build && cd ../@rip7560 && yarn && yarn compile-hardhat"}
-test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032  --ethereum-node http://127.0.0.1:8545/ tests/single"
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --query-ep --ethereum-node http://127.0.0.1:8545/ tests/single"
 test-rip7560 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --nonce-manager 0x3D45A0363baBA693432f9Cb82c60BE9410A5Fd8f  --stake-manager 0x2F9d2b9Af343dA0288Fc8270354e4c47b63817f3 --ethereum-node http://127.0.0.1:8545/ tests/rip7560"
-test-eip7702 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --nonce-manager 0x63f63e798f5F6A934Acf0a3FD1C01f3Fac851fF0  --stake-manager 0x570Aa568b6cf62ff08c6C3a3b3DB1a0438E871Fb --ethereum-node http://127.0.0.1:8545/ tests/eip7702"
-p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
+test-eip7702 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --query-ep --nonce-manager 0x63f63e798f5F6A934Acf0a3FD1C01f3Fac851fF0  --stake-manager 0x570Aa568b6cf62ff08c6C3a3b3DB1a0438E871Fb --ethereum-node http://127.0.0.1:8545/ tests/eip7702"
+p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --query-ep --ethereum-node http://127.0.0.1:8545/ tests/p2p"
 lint = "pylint tests"
 format = "black tests"
 

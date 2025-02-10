@@ -161,7 +161,7 @@ jobs:
               http://localhost:3000/rpc
       - run:
           name: "Run pytest"
-          command: pdm run test
+          command: pdm run test --query-ep
   test-rip7560-bundler:
     docker:
       - image: shahafn/go-python-node
@@ -345,7 +345,7 @@ jobs:
             wget --post-data="{\"method\": \"eth_supportedEntryPoints\"}" --retry-connrefused --waitretry=2 --timeout=60 --tries=30 http://localhost:3000/rpc
       - run:
           name: "pytest"
-          command: "pdm run test-eip7702 --log-rpc -v "
+          command: "pdm run test-eip7702 --log-rpc -v --query-ep"
 
 workflows:
   version: 2

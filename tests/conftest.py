@@ -24,6 +24,7 @@ def pytest_configure(config):
     CommandLineArgs.configure(
         url=config.getoption("--url"),
         entrypoint=config.getoption("--entry-point"),
+        query_ep=config.getoption("--query-ep"),
         nonce_manager=config.getoption("--nonce-manager"),
         stake_manager=config.getoption("--stake-manager"),
         ethereum_node=config.getoption("--ethereum-node"),
@@ -53,6 +54,7 @@ def pytest_addoption(parser):
     parser.addoption("--ethereum-node", action="store")
     parser.addoption("--launcher-script", action="store")
     parser.addoption("--log-rpc", action="store_true", default=False)
+    parser.addoption("--query-ep", action="store_true", default=False)
 
 
 @pytest.fixture(scope="session")
