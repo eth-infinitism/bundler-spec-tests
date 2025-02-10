@@ -5,12 +5,16 @@ import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "@account-abstraction/contracts/core/UserOperationLib.sol";
 import "./ValidationRules.sol";
+import "./UserOpGetters.sol";
+import "./TestRulesTarget.sol";
 import "./SimpleWallet.sol";
 
 contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
     using ValidationRules for string;
+    using UserOpGetters for PackedUserOperation;
 
     TestCoin immutable public coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 //    IEntryPoint public entryPoint;
 
     constructor(address _ep) payable {
@@ -30,12 +34,20 @@ contract TestRulesPaymaster is IPaymaster, ValidationRulesStorage {
 
         //first byte after paymaster address.
         string memory rule = string(userOp.paymasterAndData[UserOperationLib.PAYMASTER_DATA_OFFSET:]);
-        if (rule.eq("context")) {
+        if (rule.includes("context")) {
             return ("this is a context", 0);
-        } else if (rule.eq("nothing")) {
+        } else if (rule.includes("nothing")) {
             return ("", 0);
         } else {
-            ValidationRules.runRule(rule, ITestAccount(userOp.sender), coin, this);
+            ValidationRules.runRule(
+                rule,
+                ITestAccount(userOp.sender),
+                userOp.getPaymaster(),
+                userOp.getFactory(),
+                coin,
+                this,
+                target
+            );
             return ("", 0);
         }
     }

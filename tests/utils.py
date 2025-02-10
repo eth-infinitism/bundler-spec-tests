@@ -41,9 +41,11 @@ def compile_contract(contract):
             + "/",
             allow_paths=allow_paths,
             import_remappings=[aa_remap, rip7560_remap],
-            output_values=["abi", "bin"],
+            output_values=["abi", "bin", "bin-runtime"],
             solc_version="0.8.25",
             evm_version="cancun",
+            optimize=True,
+            optimize_runs=1,
             via_ir=True,
         )
         return compiled_sol["<stdin>:" + contract_name]
@@ -66,6 +68,11 @@ def deploy_contract(
         abi=interface["abi"],
         bytecode=interface["bin"],
     )
+    codesize = len(interface["bin-runtime"]) / 2
+    if codesize >= 24576:
+        raise RuntimeError(
+            f"ERROR! Contract exceed size limit! {contractname} is {codesize} bytes"
+        )
     if account is None:
         account = w3.eth.default_account
     tx_hash = contract.constructor(*ctrparams).transact(

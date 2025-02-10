@@ -12,6 +12,8 @@ from tests.utils import (
     deploy_and_deposit,
     deposit_to_undeployed_sender,
     staked_contract,
+    to_hex,
+    fund,
 )
 
 
@@ -61,6 +63,7 @@ def build_userop_for_paymaster(w3, _entrypoint_contract, paymaster_contract, rul
     wallet = deploy_wallet_contract(w3)
     return UserOperation(
         sender=wallet.address,
+        paymasterVerificationGasLimit=to_hex(1000000),
         paymaster=paymaster_contract.address,
         paymasterData="0x" + rule.encode().hex(),
     )
@@ -154,7 +157,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage",
+        "paymaster_reference_storage",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -162,7 +165,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage_struct",
+        "paymaster_reference_storage_struct",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -267,7 +270,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage",
+        "paymaster_reference_storage",
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -275,7 +278,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage_struct",
+        "paymaster_reference_storage_struct",
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -283,7 +286,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-033",
-        "reference_storage_struct",
+        "paymaster_reference_storage_struct",
         STAKED,
         PAYMASTER,
         build_userop_for_paymaster,
@@ -383,7 +386,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-000",
-        "reference_storage",
+        "factory_reference_storage",
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
@@ -391,7 +394,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage_struct",
+        "factory_reference_storage_struct",
         UNSTAKED,
         FACTORY,
         build_userop_for_factory,
@@ -521,7 +524,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage",
+        "factory_reference_storage",
         STAKED,
         FACTORY,
         build_userop_for_factory,
@@ -529,7 +532,7 @@ cases = [
     ),
     ValidationRuleTestCase(
         "STO-032",
-        "reference_storage_struct",
+        "factory_reference_storage_struct",
         STAKED,
         FACTORY,
         build_userop_for_factory,
@@ -840,12 +843,22 @@ def case_id_function(case):
     return f"[{case.ruleId}]{'staked' if case.staked else 'unstaked'}][{case.entity}][{case.rule}][{result}"
 
 
+@pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("case", cases, ids=case_id_function)
-def test_rule(w3, entrypoint_contract, case):
+def test_rule(w3, entrypoint_contract, case, frame_entry_opcode):
     entity_contract_name = entity_to_contract_name(case.entity)
     entity_contract = deploy_and_deposit(
         w3, entrypoint_contract, entity_contract_name, case.staked
     )
-    userop = case.op_build_func(w3, entrypoint_contract, entity_contract, case.rule)
+
+    # need to prepare the balance for "target" cases as the value cannot be coming from the msg.value
+    if frame_entry_opcode == "CALL:>" and case.entity == SENDER:
+        test_rules_target = entity_contract.functions.target.call()
+        print("CALL:> funding test_rules_target", test_rules_target)
+        fund(w3, test_rules_target, 10000)
+
+    userop = case.op_build_func(
+        w3, entrypoint_contract, entity_contract, frame_entry_opcode + case.rule
+    )
     response = userop.send()
     case.assert_func(response)

@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.25;
 
-import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "./Create2.sol";
-import "./ValidationRules.sol";
 import "./SimpleWallet.sol";
 import "./Stakable.sol";
+import "./ValidationRules.sol";
+import "@account-abstraction/contracts/interfaces/IAccount.sol";
 
 contract TestRulesFactory is Stakable, ValidationRulesStorage {
 
     using ValidationRules for string;
 
-    TestCoin immutable coin = new TestCoin();
+    TestCoin private immutable coin = new TestCoin();
+    TestRulesTarget private immutable target = new TestRulesTarget();
 
     constructor(address _entryPoint) {
         entryPoint = IEntryPoint(_entryPoint);
@@ -26,32 +27,25 @@ contract TestRulesFactory is Stakable, ValidationRulesStorage {
         // note that the 'EXT*'/'CALL*' opcodes are allowed on the zero code address if it is later deployed
         address create2address = getAddress(nonce, _entryPoint);
         if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {
-            // CALL
-            create2address.call("");
-            // CALLCODE
-            assembly {
-                let res := callcode(5000, create2address, 0, 0, 0, 0, 0)
-            }
-            // DELEGATECALL
-            create2address.delegatecall("");
-            // STATICCALL
-            create2address.staticcall("");
-            // EXTCODESIZE
-            emit Uint(create2address.code.length);
-            // EXTCODEHASH
-            emit Uint(uint256(create2address.codehash));
-            // EXTCODECOPY
-            assembly {
-                extcodecopy(create2address, 0, 0, 2)
-            }
+            ValidationRules.runFactorySpecificRule(nonce, rule, _entryPoint, create2address);
+        }
+        else if (rule.eq("DELEGATECALL:>EXTCODEx_CALLx_undeployed_sender")) {
+            string memory innerRule = rule.slice(14, bytes(rule).length - 14);
+            bytes memory callData = abi.encodeCall(target.runFactorySpecificRule, (nonce, innerRule, _entryPoint, create2address));
+            (bool success, bytes memory ret) = address(target).delegatecall(callData);
+            require(success, string(abi.encodePacked("DELEGATECALL rule reverted", ret)));
+        }
+        else if (rule.eq("CALL:>EXTCODEx_CALLx_undeployed_sender")) {
+            string memory innerRule = rule.slice(6, bytes(rule).length - 6);
+            target.runFactorySpecificRule(nonce, innerRule, _entryPoint, create2address);
         }
 
-        account = new SimpleWallet{salt : bytes32(nonce)}(_entryPoint);
+        account = new SimpleWallet{salt: bytes32(nonce)}(_entryPoint);
         require(address(account) != address(0), "create failed");
         // do not revert on rules checked before account creation
-        if (rule.eq("EXTCODEx_CALLx_undeployed_sender")) {}
+        if (rule.includes("EXTCODEx_CALLx_undeployed_sender")) {}
         else {
-            ValidationRules.runRule(rule, account, coin, this);
+            ValidationRules.runRule(rule, account, address(0), address(this), coin, this, target);
         }
         return account;
     }

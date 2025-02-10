@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.25;
 
-import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
-import "./Stakable.sol";
 import "./ITestAccount.sol";
+import "./Stakable.sol";
+import "./TestRulesTarget.sol";
+import "./UserOpGetters.sol";
 import "./ValidationRules.sol";
+import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
 
     using ValidationRules for string;
+    using UserOpGetters for PackedUserOperation;
 
     TestCoin public coin;
+    TestRulesTarget public immutable target = new TestRulesTarget();
 
     function setCoin(TestCoin _coin) public {
         coin = _coin;
@@ -38,7 +42,7 @@ contract TestRulesAccount is Stakable, ValidationRulesStorage, ITestAccount {
             success;
         }
         string memory rule = string(userOp.signature);
-        ValidationRules.runRule(rule, this, coin, this);
+        ValidationRules.runRule(rule, this, userOp.getPaymaster(), userOp.getFactory(), coin, this, target);
         return 0;
     }
 }
