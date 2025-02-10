@@ -244,7 +244,7 @@ def debug_set_alt_mempool_config(config: AltMempoolConfig, url=None):
 
 def dump_mempool(url=None):
     alt_mempools = dump_alt_mempools(url)
-    return alt_mempools['0']
+    return alt_mempools["0"]
 
 
 def dump_alt_mempools(url=None):
