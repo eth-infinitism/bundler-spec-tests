@@ -243,19 +243,25 @@ def debug_set_alt_mempool_config(config: AltMempoolConfig, url=None):
 
 
 def dump_mempool(url=None):
-    mempool = (
+    alt_mempools = dump_alt_mempools(url)
+    return alt_mempools['0']
+
+
+def dump_alt_mempools(url=None):
+    mempool_dump = (
         RPCRequest(
             method="debug_bundler_dumpMempool", params=[CommandLineArgs.entrypoint]
         )
         .send(url)
         .result
     )
-    for i, entry in enumerate(mempool):
-        if "executionData" in entry:
-            mempool[i] = TransactionRIP7560(**entry)
-        else:
-            mempool[i] = UserOperation(**entry)
-    return mempool
+    for mempool_id, mempool in mempool_dump.items():
+        for i, entry in enumerate(mempool):
+            if "executionData" in entry:
+                mempool[i] = TransactionRIP7560(**entry)
+            else:
+                mempool[i] = UserOperation(**entry)
+    return mempool_dump
 
 
 # wait for mempool propagation.
