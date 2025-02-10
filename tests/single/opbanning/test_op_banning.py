@@ -53,7 +53,9 @@ allowed_opcodes_when_staked = ["BALANCE", "SELFBALANCE"]
 )
 @pytest.mark.parametrize("frame_entry_opcode", ["", "CALL:>", "DELEGATECALL:>"])
 @pytest.mark.parametrize("banned_op", banned_opcodes)
-def test_account_banned_opcode(rules_account_contract, banned_op, frame_entry_opcode, alt_mempool):
+def test_account_banned_opcode(
+    rules_account_contract, banned_op, frame_entry_opcode, alt_mempool
+):
     debug_set_alt_mempool_config(alt_mempool.config)
 
     response = UserOperation(
