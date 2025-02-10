@@ -31,13 +31,13 @@ contract TestRulesFactory is Stakable, ValidationRulesStorage {
         }
         else if (rule.eq("DELEGATECALL:>EXTCODEx_CALLx_undeployed_sender")) {
             string memory innerRule = rule.slice(14, bytes(rule).length - 14);
-            bytes memory callData = abi.encodeCall(target.runFactorySpecificRule, (nonce, rule, _entryPoint, create2address));
+            bytes memory callData = abi.encodeCall(target.runFactorySpecificRule, (nonce, innerRule, _entryPoint, create2address));
             (bool success, bytes memory ret) = address(target).delegatecall(callData);
             require(success, string(abi.encodePacked("DELEGATECALL rule reverted", ret)));
         }
         else if (rule.eq("CALL:>EXTCODEx_CALLx_undeployed_sender")) {
             string memory innerRule = rule.slice(6, bytes(rule).length - 6);
-            target.runFactorySpecificRule(nonce, rule, _entryPoint, create2address);
+            target.runFactorySpecificRule(nonce, innerRule, _entryPoint, create2address);
         }
 
         account = new SimpleWallet{salt: bytes32(nonce)}(_entryPoint);
