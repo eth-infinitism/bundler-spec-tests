@@ -21,13 +21,13 @@ from tests.utils import (
 
 @dataclass
 class Reputation:
-    address: str
+    entryId: str
     opsSeen: int = 0
     opsIncluded: int = 0
     status: int = 0
 
     def __post_init__(self):
-        self.address = self.address.lower()
+        self.entryId = self.entryId.lower()
         self.opsSeen = to_number(self.opsSeen)
         self.opsIncluded = to_number(self.opsIncluded)
         self.status = to_number(self.status)
@@ -37,10 +37,10 @@ def get_reputation(addr, reputations=None):
     if reputations is None:
         reputations = dump_reputation()
     addr = addr.lower()
-    reps = [rep for rep in reputations if rep["address"].lower() == addr]
+    reps = [rep for rep in reputations if rep["entryId"].lower() == addr]
 
     if len(reps) == 0:
-        rep = Reputation(address=addr, opsSeen=0, opsIncluded=0, status=0)
+        rep = Reputation(entryId=addr, opsSeen=0, opsIncluded=0, status=0)
     else:
         rep = Reputation(**reps[0])
 
@@ -141,21 +141,21 @@ def test_account_on_entity_failure(
     )
 
     assert get_reputations([sender.address, paymaster.address]) == [
-        Reputation(address=sender.address, opsSeen=0),
-        Reputation(address=paymaster.address, opsSeen=0),
+        Reputation(entryId=sender.address, opsSeen=0),
+        Reputation(entryId=paymaster.address, opsSeen=0),
     ], "pre: no reputation"
 
     assert_ok(UserOperation(sender=sender.address, paymaster=paymaster.address).send())
 
     if staked_acct == "staked":
         assert get_reputations([sender.address, paymaster.address]) == [
-            Reputation(address=sender.address, opsSeen=1),
-            Reputation(address=paymaster.address, opsSeen=1),
+            Reputation(entryId=sender.address, opsSeen=1),
+            Reputation(entryId=paymaster.address, opsSeen=1),
         ], "valid userop. both staked account and paymaster have opsSeen increment"
     else:
         assert get_reputations([sender.address, paymaster.address]) == [
-            Reputation(address=sender.address, opsSeen=0),
-            Reputation(address=paymaster.address, opsSeen=1),
+            Reputation(entryId=sender.address, opsSeen=0),
+            Reputation(entryId=paymaster.address, opsSeen=1),
         ], "valid userop. staked paymaster should have opsSeen increment"
 
     # drain paymaster, so it would revert
@@ -172,11 +172,11 @@ def test_account_on_entity_failure(
 
     if staked_acct == "staked":
         assert get_reputations([sender.address, paymaster.address]) == [
-            Reputation(address=sender.address, opsSeen=1),
-            Reputation(address=paymaster.address, opsSeen=0),
+            Reputation(entryId=sender.address, opsSeen=1),
+            Reputation(entryId=paymaster.address, opsSeen=0),
         ], "staked account should be blamed instead of paymaster"
     else:
         assert get_reputations([sender.address, paymaster.address]) == [
-            Reputation(address=sender.address, opsSeen=0),
-            Reputation(address=paymaster.address, opsSeen=1),
+            Reputation(entryId=sender.address, opsSeen=0),
+            Reputation(entryId=paymaster.address, opsSeen=1),
         ]

@@ -311,7 +311,7 @@ def set_reputation(address, ops_seen=1, ops_included=2, url=None):
         params=[
             [
                 {
-                    "address": address,
+                    "entryId": address,
                     "opsSeen": hex(ops_seen),
                     "opsIncluded": hex(ops_included),
                 }
