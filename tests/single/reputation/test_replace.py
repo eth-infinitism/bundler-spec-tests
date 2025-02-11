@@ -13,7 +13,7 @@ def bump_gas_fees(userop):
 def pm_opsSeen(pmAddr):
     reputation = dump_reputation()
     for entry in reputation:
-        if entry["address"].lower() == pmAddr.lower():
+        if entry["entryId"].lower() == pmAddr.lower():
             return to_number(entry["opsSeen"])
 
 
