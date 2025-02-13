@@ -87,7 +87,6 @@ jobs:
           key: go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
           paths:
             - go-ethereum/build/bin
-            - go-ethereum/circleciconfig.toml
       - run:
           name: "Clone bundler"
           command: ./scripts/clone-helper master https://github.com/eth-infinitism/bundler.git
@@ -147,9 +146,8 @@ jobs:
           --http.port \
           8545 \
           --rpc.allow-unprotected-txs \
-          --config \
-          circleciconfig.toml \
           "
+
           background: true
       - run:
           name: "Run bundler (ERC4337)"
