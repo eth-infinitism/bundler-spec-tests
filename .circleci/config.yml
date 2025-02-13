@@ -1,4 +1,9 @@
 version: 2.1
+
+executors:
+  my-executor:
+    docker:
+      - image: shahafn/go-python-node
 commands:
   update-and-build-deps-cached:
     steps:
@@ -38,8 +43,7 @@ commands:
             - "@rip7560"
 jobs:
   test-erc4337-bundler:
-    docker:
-      - image: shahafn/go-python-node
+    executor: my-executor
     steps:
       - checkout
       - run:
@@ -162,9 +166,11 @@ jobs:
       - run:
           name: "Run pytest"
           command: pdm run test --query-ep
+      - run:
+          name: "pytest 7702"
+          command: "pdm run test-eip7702 --log-rpc -v --query-ep"
   test-rip7560-bundler:
-    docker:
-      - image: shahafn/go-python-node
+    executor: my-executor
     steps:
       - checkout
       - run:
@@ -189,7 +195,8 @@ jobs:
       - update-and-build-deps-cached
       - run:
           name: "Clone go-ethereum"
-          command: ./scripts/clone-helper RIP-7560-revision-3 https://github.com/eth-infinitism/go-ethereum.git --no-submodules
+          # NOTE: using plain geth + native tracer (no need for eip7560)
+          command: ./scripts/clone-helper geth-with-erc7562-tracer https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
             - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
@@ -292,8 +299,8 @@ jobs:
   test-erc4337-with-eip7702-bundler:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    executor: my-executor
     docker:
-      - image: shahafn/go-python-node
       - image: ethpandaops/geth:lightclient-prague-devnet-4
         command: "\
           --miner.gaslimit 12000000 \
