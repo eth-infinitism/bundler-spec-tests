@@ -69,7 +69,8 @@ jobs:
       - run:
           name: "Clone go-ethereum"
           # NOTE: using plain geth + native tracer (no need for eip7560)
-          command: ./scripts/clone-helper geth-with-erc7562-tracer https://github.com/eth-infinitism/go-ethereum.git --no-submodules
+          # temp: avoid current-branch checkout, and force geth-with-tracer
+          command: CIRCLE_BRANCH=master ./scripts/clone-helper geth-with-erc7562-tracer https://github.com/eth-infinitism/go-ethereum.git --no-submodules
       - restore_cache:
           keys:
             - go-ethereum-build-{{ checksum "go-ethereum/commit-hash.txt" }}
