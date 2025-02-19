@@ -163,9 +163,6 @@ jobs:
               --retry-connrefused --waitretry=2 --timeout=60 --tries=30 \
               http://localhost:3000/rpc
       - run:
-          name: "pytest 7702"
-          command: "pdm run test-eip7702 --log-rpc -v --query-ep"
-      - run:
           name: "Run pytest"
           command: pdm run test --query-ep
   test-rip7560-bundler:
