@@ -294,7 +294,10 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: shahafn/go-python-node
-      - image: ethpandaops/geth:lightclient-prague-devnet-4
+      
+      - image: dtr22/geth-7702-23
+      # devnet-6 should fully support 7702. temporarily building an image out of PR branch https://github.com/lightclient/go-ethereum/tree/eip-7702-txpool
+      #- image: ethpandaops/geth:lightclient-prague-devnet-4
         command: "\
           --miner.gaslimit 12000000 \
           --http \

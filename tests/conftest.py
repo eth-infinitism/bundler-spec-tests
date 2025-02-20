@@ -173,4 +173,4 @@ def set_reputation(reputations):
 
 @pytest.fixture
 def impl7702(w3):
-    return deploy_contract(w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint])
+    return deploy_contract(w3, "Test7702Wallet", ctrparams=[CommandLineArgs.entrypoint])
