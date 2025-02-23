@@ -146,6 +146,8 @@ library ValidationRules {
             coin.destruct();
             return 0;
         }
+        else if (eq(rule, "BLOBHASH")) return uint(blobhash(0));
+        else if (eq(rule, "BLOBBASEFEE")) return block.blobbasefee;
         else if (eq(rule, "CALL_undeployed_contract")) { address(100100).call(""); return 0; }
         else if (eq(rule, "CALL_undeployed_contract_allowed_precompile")) {
             for (uint160 i = 1; i < 10; i++){
