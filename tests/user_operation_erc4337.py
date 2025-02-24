@@ -25,7 +25,7 @@ class UserOperation:
     paymasterData: HexStr = None
     paymasterVerificationGasLimit: HexStr = None
     paymasterPostOpGasLimit: HexStr = None
-    eip7702auth: TupleEIP7702 = None
+    eip7702Auth: TupleEIP7702 = None
 
     def __post_init__(self):
         self.sender = to_checksum_address(self.sender)
