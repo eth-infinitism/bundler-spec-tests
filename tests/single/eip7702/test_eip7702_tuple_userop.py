@@ -1,4 +1,5 @@
 import pytest
+import time
 from tests.transaction_eip_7702 import TupleEIP7702
 from tests.types import CommandLineArgs, RPCErrorCode
 from tests.utils import (
@@ -165,6 +166,7 @@ def test_send_wrongchain_eip_7702_drop_userop(
 
     assert_ok(userop.send())
     send_bundle_now()
+    time.sleep(0.5)
     assert len(w3.eth.get_code(acc.address)) == 23
 
     # submit a UserOp with wrong chainId:
