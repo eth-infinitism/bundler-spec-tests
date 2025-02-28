@@ -115,9 +115,11 @@ def test_send_post_eip_7702_tx(
     )
     nonce = w3.eth.get_transaction_count(acc.address)
     auth_tuple = TupleEIP7702(
-        chainId=hex(chainid), address=impl7702.address, nonce=hex(nonce)
+        chainId=hex(chainid),
+        address=impl7702.address,
+        nonce=hex(nonce),
+        signer_private_key=acc._private_key.hex(),
     )
-    auth_tuple.sign(acc._private_key.hex())
     userop.sender = acc.address
     userop.eip7702Auth = auth_tuple
     response = userop.send()
