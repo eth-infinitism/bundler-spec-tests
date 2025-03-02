@@ -81,9 +81,6 @@ def test_send_eip_7702_tx_with_initcode(
     sender_code = w3.eth.get_code(acc.address)
     assert len(sender_code) == 0
 
-    print("userop=")
-    print(userop)
-
     response = userop.send()
     assert_ok(response)
     send_bundle_now()
@@ -101,6 +98,39 @@ def test_send_eip_7702_tx_with_initcode(
     # delegated EOA account can actually have a state
     state_after = eoa_with_authorization.functions.state().call()
     assert state_after == 7702
+
+
+def test_send_eip_7702_tx_with_flag_no_initcode(
+    w3, userop, impl7702, wallet_contract, helper_contract
+):
+    acc = w3.eth.account.create()
+    fund(w3, acc.address)
+
+    # create an EIP-7702 authorization tuple
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+        signer_private_key=acc._private_key.hex(),
+    )
+
+    userop.sender = acc.address
+    userop.eip7702Auth = auth_tuple
+    userop.factory = "0x7702"
+    # making execution frame revert to make sure 'factoryData' was applied as initCode during validation
+    userop.callData = impl7702.encode_abi(abi_element_identifier="fail")
+
+    sender_code = w3.eth.get_code(acc.address)
+    assert len(sender_code) == 0
+
+    response = userop.send()
+    assert_ok(response)
+    send_bundle_now()
+
+    sender_code = w3.eth.get_code(acc.address)
+
+    # delegated EOA code is always 23 bytes long
+    assert len(sender_code) == 23
 
 
 # normal transaction, using the same sender
