@@ -25,23 +25,23 @@ class TupleEIP7702:
 
     def __post_init__(self):
         if self.signer_private_key:
-            self.sign(self.signer_private_key)
+            self._sign(self.signer_private_key)
             self.signer_private_key = None
 
-    def sign(self, private_key: str):
+    def _sign(self, private_key: str):
         pk = keys.PrivateKey(bytes.fromhex(private_key))
         nonce = self.nonce
         if nonce == "0x0":
             nonce = "0x"
 
-        chainId = self.chainId
-        if chainId == "0x0":
-            chainId = "0x"
+        chain_id = self.chainId
+        if chain_id == "0x0":
+            chain_id = "0x"
 
         rlp_encode = bytearray(
             rlp.encode(
                 [
-                    to_bytes(hexstr=chainId),
+                    to_bytes(hexstr=chain_id),
                     to_bytes(hexstr=self.address),
                     to_bytes(hexstr=nonce),
                 ]
