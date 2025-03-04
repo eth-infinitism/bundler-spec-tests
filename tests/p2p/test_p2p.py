@@ -3,7 +3,7 @@ import pytest
 import os
 import time
 
-from tests.types import UserOperation
+from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     clear_mempool,
     deploy_and_deposit,
