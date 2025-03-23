@@ -46,7 +46,7 @@ def compile_contract(contract):
             evm_version="cancun",
             optimize=True,
             optimize_runs=1,
-            via_ir=True,
+            via_ir=False,
         )
         return compiled_sol["<stdin>:" + contract_name]
 
