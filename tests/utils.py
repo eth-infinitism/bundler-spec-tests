@@ -42,7 +42,7 @@ def compile_contract(contract):
             allow_paths=allow_paths,
             import_remappings=[aa_remap, rip7560_remap],
             output_values=["abi", "bin", "bin-runtime"],
-            solc_version="0.8.25",
+            solc_version="0.8.28",
             evm_version="cancun",
             optimize=True,
             optimize_runs=1,
