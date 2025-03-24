@@ -4,7 +4,7 @@ from eth_typing import HexStr
 from eth_utils import to_checksum_address
 
 from tests.transaction_eip_7702 import TupleEIP7702
-from tests.types import RPCRequest, CommandLineArgs
+from tests.types import RPCRequest, CommandLineArgs, remove_nulls
 
 
 @dataclass
@@ -52,7 +52,7 @@ class UserOperation:
         if entrypoint is None:
             entrypoint = CommandLineArgs.entrypoint
         return RPCRequest(
-            method="eth_sendUserOperation", params=[asdict(self), entrypoint]
+            method="eth_sendUserOperation", params=[remove_nulls(asdict(self)), entrypoint]
         ).send(url)
 
     # send into the mempool without applying tracing/validations

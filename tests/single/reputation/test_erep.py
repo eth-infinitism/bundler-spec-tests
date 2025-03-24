@@ -9,8 +9,8 @@ from tests.utils import (
     deploy_contract,
     deploy_and_deposit,
     assert_ok,
+    clear_state,
     dump_reputation,
-    clear_reputation,
     set_reputation,
     staked_contract,
     to_number,
@@ -67,7 +67,7 @@ def test_paymaster_on_account_failure(w3, entrypoint_contract, manual_bundling_m
     paymaster = deploy_and_deposit(
         w3, entrypoint_contract, "TestRulesPaymaster", staked=True
     )
-    clear_reputation()
+    clear_state()
     set_reputation(paymaster.address, ops_seen=5, ops_included=2)
     pre = get_reputation(paymaster.address)
     assert_ok(
@@ -125,7 +125,7 @@ def test_staked_factory_on_account_failure(
 def test_account_on_entity_failure(
     w3, entrypoint_contract, manual_bundling_mode, staked_acct, rules_account_contract
 ):
-    clear_reputation()
+    clear_state()
     # userop with staked account, and a paymaster.
     # after submission to mempool, we will make paymaster fail 2nd validation
     # (the simplest way to make the paymaster fail is withdraw its deposit)

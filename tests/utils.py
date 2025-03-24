@@ -277,6 +277,10 @@ def clear_mempool(url=None):
     return RPCRequest(method="debug_bundler_clearMempool").send(url)
 
 
+def clear_state():
+    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
+
+
 def get_stake_status(address, entry_point):
     return (
         RPCRequest(method="debug_bundler_getStakeStatus", params=[address, entry_point])
