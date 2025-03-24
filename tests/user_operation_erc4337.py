@@ -52,7 +52,8 @@ class UserOperation:
         if entrypoint is None:
             entrypoint = CommandLineArgs.entrypoint
         return RPCRequest(
-            method="eth_sendUserOperation", params=[remove_nulls(asdict(self)), entrypoint]
+            method="eth_sendUserOperation",
+            params=[remove_nulls(asdict(self)), entrypoint],
         ).send(url)
 
     # send into the mempool without applying tracing/validations
