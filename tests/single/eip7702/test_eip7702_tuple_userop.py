@@ -6,10 +6,8 @@ from tests.utils import (
     UserOperation,
     assert_ok,
     assert_rpc_error,
-    deploy_contract,
     userop_hash,
     send_bundle_now,
-    to_prefixed_hex,
     fund,
     to_hex,
 )
@@ -30,7 +28,7 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     )
 
     userop.sender = acc.address
-    userop.eip7702auth = auth_tuple
+    userop.eip7702Auth = auth_tuple
 
     sender_code = w3.eth.get_code(acc.address)
     assert len(sender_code) == 0
@@ -58,6 +56,84 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
     assert state_after == 1111111
 
 
+def test_send_eip_7702_tx_with_initcode(
+    w3, userop, impl7702, wallet_contract, helper_contract
+):
+    acc = w3.eth.account.create()
+    fund(w3, acc.address)
+
+    # create an EIP-7702 authorization tuple
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+        signer_private_key=acc._private_key.hex(),
+    )
+
+    userop.sender = acc.address
+    userop.eip7702Auth = auth_tuple
+    userop.factory = "0x7702"
+    # making execution frame revert to make sure 'factoryData' was applied as initCode during validation
+    userop.callData = impl7702.encode_abi(abi_element_identifier="fail")
+    userop.factoryData = impl7702.encode_abi(
+        abi_element_identifier="setState", args=[7702]
+    )
+
+    sender_code = w3.eth.get_code(acc.address)
+    assert len(sender_code) == 0
+
+    response = userop.send()
+    assert_ok(response)
+    send_bundle_now()
+
+    sender_code = w3.eth.get_code(acc.address)
+
+    # delegated EOA code is always 23 bytes long
+    assert len(sender_code) == 23
+
+    eoa_with_authorization = w3.eth.contract(
+        abi=wallet_contract.abi,
+        address=acc.address,
+    )
+
+    # delegated EOA account can actually have a state
+    state_after = eoa_with_authorization.functions.state().call()
+    assert state_after == 7702
+
+
+def test_send_eip_7702_tx_with_flag_no_initcode(
+    w3, userop, impl7702, wallet_contract, helper_contract
+):
+    acc = w3.eth.account.create()
+    fund(w3, acc.address)
+
+    # create an EIP-7702 authorization tuple
+    auth_tuple = TupleEIP7702(
+        chainId=hex(1337),
+        address=impl7702.address,
+        nonce="0x0",
+        signer_private_key=acc._private_key.hex(),
+    )
+
+    userop.sender = acc.address
+    userop.eip7702Auth = auth_tuple
+    userop.factory = "0x7702"
+    # making execution frame revert to make sure 'factoryData' was applied as initCode during validation
+    userop.callData = impl7702.encode_abi(abi_element_identifier="fail")
+
+    sender_code = w3.eth.get_code(acc.address)
+    assert len(sender_code) == 0
+
+    response = userop.send()
+    assert_ok(response)
+    send_bundle_now()
+
+    sender_code = w3.eth.get_code(acc.address)
+
+    # delegated EOA code is always 23 bytes long
+    assert len(sender_code) == 23
+
+
 # normal transaction, using the same sender
 @pytest.mark.parametrize("chainid", [0, 1337])
 def test_send_post_eip_7702_tx(
@@ -70,11 +146,13 @@ def test_send_post_eip_7702_tx(
     )
     nonce = w3.eth.get_transaction_count(acc.address)
     auth_tuple = TupleEIP7702(
-        chainId=hex(chainid), address=impl7702.address, nonce=hex(nonce)
+        chainId=hex(chainid),
+        address=impl7702.address,
+        nonce=hex(nonce),
+        signer_private_key=acc._private_key.hex(),
     )
-    auth_tuple.sign(acc._private_key.hex())
     userop.sender = acc.address
-    userop.eip7702auth = auth_tuple
+    userop.eip7702Auth = auth_tuple
     response = userop.send()
     assert_ok(response)
     send_bundle_now()
@@ -125,7 +203,7 @@ def test_send_bad_eip_7702_drop_userop(w3, impl7702, userop):
     )
 
     userop.sender = acc.address
-    userop.eip7702auth = auth_tuple
+    userop.eip7702Auth = auth_tuple
 
     response = userop.send()
     assert_rpc_error(response, "", RPCErrorCode.REJECTED_BY_EP_OR_ACCOUNT)
@@ -141,7 +219,7 @@ def test_send_nonsender_eip_7702_drop_userop(w3, impl7702, userop):
         address=impl7702.address,
         nonce="0x0",
     )
-    userop.eip7702auth = auth_tuple
+    userop.eip7702Auth = auth_tuple
 
     assert_rpc_error(userop.send(), "sender", RPCErrorCode.INVALID_FIELDS)
 
@@ -162,7 +240,7 @@ def test_send_wrongchain_eip_7702_drop_userop(
     )
 
     userop.sender = acc.address
-    userop.eip7702auth = auth_tuple
+    userop.eip7702Auth = auth_tuple
 
     assert_ok(userop.send())
     send_bundle_now()
@@ -175,7 +253,7 @@ def test_send_wrongchain_eip_7702_drop_userop(
 
     auth_nonce = w3.eth.get_transaction_count(acc.address)
     # create an EIP-7702 authorization tuple, with wrong chain
-    userop.eip7702auth = TupleEIP7702(
+    userop.eip7702Auth = TupleEIP7702(
         chainId=hex(1234),
         address=impl7702.address,
         nonce=hex(auth_nonce),
