@@ -24,6 +24,7 @@ class CommandLineArgs:
         cls,
         url,
         entrypoint,
+        query_ep,
         nonce_manager,
         stake_manager,
         ethereum_node,
@@ -37,6 +38,10 @@ class CommandLineArgs:
         cls.ethereum_node = ethereum_node
         cls.launcher_script = launcher_script
         cls.log_rpc = log_rpc
+        if query_ep:
+            cls.entrypoint = (
+                RPCRequest(method="eth_supportedEntryPoints").send(cls.url).result[0]
+            )
 
 
 @dataclass
