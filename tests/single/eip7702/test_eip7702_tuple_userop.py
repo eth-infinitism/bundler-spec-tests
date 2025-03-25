@@ -39,6 +39,7 @@ def test_send_eip_7702_tx(w3, userop, impl7702, wallet_contract, helper_contract
 
     assert response.result == userop_hash(helper_contract, userop)
 
+    time.sleep(.1)
     sender_code = w3.eth.get_code(acc.address)
 
     # delegated EOA code is always 23 bytes long
@@ -86,6 +87,7 @@ def test_send_eip_7702_tx_with_initcode(
     assert_ok(response)
     send_bundle_now()
 
+    time.sleep(.1)
     sender_code = w3.eth.get_code(acc.address)
 
     # delegated EOA code is always 23 bytes long
@@ -128,6 +130,7 @@ def test_send_eip_7702_tx_with_flag_no_initcode(
     assert_ok(response)
     send_bundle_now()
 
+    time.sleep(.1)
     sender_code = w3.eth.get_code(acc.address)
 
     # delegated EOA code is always 23 bytes long
@@ -244,7 +247,7 @@ def test_send_wrongchain_eip_7702_drop_userop(
 
     assert_ok(userop.send())
     send_bundle_now()
-    time.sleep(0.5)
+    time.sleep(.1)
     assert len(w3.eth.get_code(acc.address)) == 23
 
     # submit a UserOp with wrong chainId:
