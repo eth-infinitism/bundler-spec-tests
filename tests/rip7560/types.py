@@ -42,6 +42,7 @@ class TransactionRIP7560:
     value: HexStr = hex(0)
     accessList = "0x"
     builderFee: HexStr = hex(0)
+    authorizationList = []
 
     def __post_init__(self):
         # pylint: disable=duplicate-code
@@ -102,11 +103,12 @@ class TransactionRIP7560:
                 hex_to_int(self.paymasterPostOpGasLimit),
                 hex_to_int(self.callGasLimit),
                 [],
-                hex_to_bytes(self.authorizationData),
-                hex_to_int(self.value),
+                # hex_to_bytes(self.authorizationData),
+                self.authorizationList,
+                # hex_to_int(self.value),
             ]
         )
-        return "0x05" + encoded_tx.hex()
+        return "0x0500" + encoded_tx.hex()
 
     def send_raw(self, url=None):
         encoded_tx = self.rlp_encode()
