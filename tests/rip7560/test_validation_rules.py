@@ -133,6 +133,10 @@ def get_build_func(entity, rule, assert_func, stake_manager):
 
 @pytest.mark.parametrize("case", cases, ids=case_id_function)
 def test_rule(w3, stake_manager, case):
+    # skip unimplemented EREP-050 (was fixed only for 4337)
+    if case.ruleId == "EREP-050":
+        pytest.skip("EREP-050 is not implemented yet")
+
     # EntryPoint rules are mostly irrelevant
     if case.rule == "entryPoint_call_balanceOf" or case.rule in (
         "eth_value_transfer_entryPoint",
