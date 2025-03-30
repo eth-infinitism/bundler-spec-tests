@@ -5,6 +5,7 @@ from eth_typing import HexStr
 from eth_utils import to_checksum_address
 from tests.types import RPCRequest
 from tests.types import remove_nulls
+from rlp import encode
 
 
 @dataclass
@@ -48,15 +49,15 @@ class TransactionRIP7560:
             self.gas = None
         if self.paymaster is not None:
             if (
-                self.paymasterVerificationGasLimit is None
-                or self.paymasterVerificationGasLimit == "0x0"
+                    self.paymasterVerificationGasLimit is None
+                    or self.paymasterVerificationGasLimit == "0x0"
             ):
-                self.paymasterVerificationGasLimit = hex(10**6)
+                self.paymasterVerificationGasLimit = hex(10 ** 6)
             if (
-                self.paymasterPostOpGasLimit is None
-                or self.paymasterPostOpGasLimit == "0x0"
+                    self.paymasterPostOpGasLimit is None
+                    or self.paymasterPostOpGasLimit == "0x0"
             ):
-                self.paymasterPostOpGasLimit = hex(10**6)
+                self.paymasterPostOpGasLimit = hex(10 ** 6)
             if self.paymasterData is None:
                 self.paymasterData = "0x"
 
@@ -72,7 +73,40 @@ class TransactionRIP7560:
             self.factoryData = None
         return self
 
+    def send_raw(self, url=None):
+        encoded_tx = encode(
+            [
+                self.sender,
+                self.nonceKey,
+                self.nonce,
+                self.factory,
+                self.factoryData,
+                self.executionData,
+                self.callGasLimit,
+                self.verificationGasLimit,
+                self.maxFeePerGas,
+                self.maxPriorityFeePerGas,
+                self.authorizationData,
+                self.paymaster,
+                self.paymasterData,
+                self.paymasterVerificationGasLimit,
+                self.paymasterPostOpGasLimit,
+                self.chainId,
+                self.value,
+                self.accessList,
+                self.builderFee
+            ]
+        )
+        hex_tx = "0x" + encoded_tx.hex()
+        return RPCRequest(
+            method="eth_sendRawTransaction", params=[hex_tx]
+        ).send(url)
+
     def send(self, url=None):
+        bal = RPCRequest(
+            method="eth_getBalance", params=["0x67b1d87101671b127f5f8714789C7192f7ad340e", "latest"]
+        ).send(url)
+        print("large balance here should be", bal)
         return RPCRequest(
             method="eth_sendTransaction", params=[remove_nulls(asdict(self.cleanup()))]
         ).send(url)

@@ -75,9 +75,9 @@ def w3():
     return w3
 
 
-@pytest.fixture
-def wallet_contract(w3):
-    return deploy_wallet_contract(w3)
+# @pytest.fixture
+# def wallet_contract(w3):
+#     return deploy_wallet_contract(w3)
 
 
 @pytest.fixture(scope="session")

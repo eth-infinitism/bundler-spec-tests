@@ -51,7 +51,7 @@ def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_756
     nonce = w3.eth.get_transaction_count(tx_7560.sender)
     # created contract has nonce==1
     assert nonce == 1
-    res = tx_7560.send()
+    res = tx_7560.send_raw()
     rethash = res.result
     send_bundle_now()
     state_after = wallet_contract_erigon.functions.state().call()

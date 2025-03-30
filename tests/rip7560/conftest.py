@@ -12,14 +12,14 @@ from tests.utils import (
 )
 
 
-@pytest.fixture
-def wallet_contract(w3):
-    contract = deploy_contract(
-        w3,
-        "rip7560/TestAccount",
-        value=10**18,
-    )
-    return contract
+# @pytest.fixture
+# def wallet_contract(w3):
+#     contract = deploy_contract(
+#         w3,
+#         "rip7560/TestAccount",
+#         value=10**18,
+#     )
+#     return contract
 
 
 @pytest.fixture
@@ -70,15 +70,15 @@ def wallet_contract_rules(w3):
 
 
 @pytest.fixture
-def tx_7560(wallet_contract):
+def tx_7560(wallet_contract_erigon):
     return TransactionRIP7560(
-        sender=wallet_contract.address,
+        sender=wallet_contract_erigon.address,
         nonceKey=hex(0),
         nonce=hex(1),
         maxFeePerGas=hex(100000000000),
         maxPriorityFeePerGas=hex(100000000000),
         verificationGasLimit=hex(2000000),
-        executionData=wallet_contract.encode_abi(
+        executionData=wallet_contract_erigon.encode_abi(
             abi_element_identifier="anyExecutionFunction"
         ),
         authorizationData="0xface",
