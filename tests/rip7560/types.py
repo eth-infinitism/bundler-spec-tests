@@ -2,10 +2,18 @@ from dataclasses import dataclass, asdict
 
 from web3.constants import ADDRESS_ZERO
 from eth_typing import HexStr
-from eth_utils import to_checksum_address
+from eth_utils import to_checksum_address, to_bytes
 from tests.types import RPCRequest
 from tests.types import remove_nulls
 from rlp import encode
+
+
+def hex_to_int(h: str) -> int:
+    return int(h, 16)
+
+
+def hex_to_bytes(h: str) -> bytes:
+    return b'' if h == "0x" else bytes.fromhex(h[2:])
 
 
 @dataclass
@@ -20,11 +28,11 @@ class TransactionRIP7560:
     factoryData: HexStr = "0x"
     deployerData: HexStr = None  # alias for factoryData
     executionData: HexStr = "0x"
-    callGasLimit: HexStr = hex(3 * 10**5)
+    callGasLimit: HexStr = hex(3 * 10 ** 5)
     gas: HexStr = None  # alias for callGasLimit
-    verificationGasLimit: HexStr = hex(10**6)
-    maxFeePerGas: HexStr = hex(4 * 10**9)
-    maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
+    verificationGasLimit: HexStr = hex(10 ** 6)
+    maxFeePerGas: HexStr = hex(4 * 10 ** 9)
+    maxPriorityFeePerGas: HexStr = hex(3 * 10 ** 9)
     authorizationData: HexStr = "0x"
     paymaster: HexStr = "0x0000000000000000000000000000000000000000"
     paymasterData: HexStr = "0x"
@@ -73,33 +81,38 @@ class TransactionRIP7560:
             self.factoryData = None
         return self
 
-    def send_raw(self, url=None):
+    def rlp_encode(self):
+        # Convert and set defaults
         encoded_tx = encode(
             [
-                self.sender,
-                self.nonceKey,
-                self.nonce,
-                self.factory,
-                self.factoryData,
-                self.executionData,
-                self.callGasLimit,
-                self.verificationGasLimit,
-                self.maxFeePerGas,
-                self.maxPriorityFeePerGas,
-                self.authorizationData,
-                self.paymaster,
-                self.paymasterData,
-                self.paymasterVerificationGasLimit,
-                self.paymasterPostOpGasLimit,
-                self.chainId,
-                self.value,
-                self.accessList,
-                self.builderFee
+                hex_to_bytes(self.sender),
+                hex_to_int(self.nonceKey),
+                hex_to_int(self.nonce),
+                hex_to_bytes(self.factory),
+                hex_to_bytes(self.factoryData),
+                hex_to_bytes(self.executionData),
+                hex_to_int(self.callGasLimit),
+                hex_to_int(self.verificationGasLimit),
+                hex_to_int(self.maxFeePerGas),
+                hex_to_int(self.maxPriorityFeePerGas),
+                hex_to_bytes(self.authorizationData),
+                hex_to_bytes(self.paymaster),
+                hex_to_bytes(self.paymasterData),
+                hex_to_int(self.paymasterVerificationGasLimit),
+                hex_to_int(self.paymasterPostOpGasLimit),
+                hex_to_int(self.chainId),
+                hex_to_int(self.value),
+                [],
+                hex_to_int(self.builderFee)
             ]
         )
-        hex_tx = "0x" + encoded_tx.hex()
+        return "0x05" + encoded_tx.hex()
+
+    def send_raw(self, url=None):
+        encoded_tx = self.rlp_encode()
+        print("RLP ENCODED", encoded_tx)
         return RPCRequest(
-            method="eth_sendRawTransaction", params=[hex_tx]
+            method="eth_sendRawTransaction", params=[encoded_tx]
         ).send(url)
 
     def send(self, url=None):
