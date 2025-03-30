@@ -31,7 +31,7 @@ def pytest_configure(config):
         launcher_script=config.getoption("--launcher-script"),
         log_rpc=config.getoption("--log-rpc"),
     )
-    install_solc(version="0.8.25")
+    install_solc(version="0.8.19")
 
 
 def pytest_sessionstart():
@@ -62,7 +62,7 @@ def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereum_node))
     if len(w3.eth.accounts) == 0:
         private_key = (
-            "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"
+            "0x26e86e45f6fc45ec6e2ecd128cec80fa1d1505e5507dcd2ae58c3130a7a97b48"
         )
         # pylint doesn't deal with @combomethod well
         # pylint: disable = no-value-for-parameter
@@ -146,9 +146,9 @@ def execute_user_operation(userop):
 
 
 # applied to all tests: clear mempool, reputation before each test
-@pytest.fixture(autouse=True)
-def clear_state_before_each_test():
-    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
+# @pytest.fixture(autouse=True)
+# def clear_state_before_each_test():
+#     assert_ok(RPCRequest(method="debug_bundler_clearState").send())
 
 
 @pytest.fixture

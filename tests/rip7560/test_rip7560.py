@@ -45,6 +45,28 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
     w3.eth.get_transaction(rethash)
 
 
+def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_7560):
+    state_before = wallet_contract_erigon.functions.state().call()
+    assert state_before == 0
+    nonce = w3.eth.get_transaction_count(tx_7560.sender)
+    # created contract has nonce==1
+    assert nonce == 1
+    res = tx_7560.send()
+    rethash = res.result
+    send_bundle_now()
+    state_after = wallet_contract_erigon.functions.state().call()
+    assert state_after == 2
+    assert nonce + 1 == w3.eth.get_transaction_count(
+        tx_7560.sender
+    ), "nonce not incremented"
+    ev = wallet_contract_erigon.events.AccountExecutionEvent().get_logs()[0]
+    evhash = ev.transactionHash.to_0x_hex()
+    assert rethash == evhash
+    assert wallet_contract_erigon.address == ev.address
+    w3.eth.get_transaction(rethash)
+
+
+
 # pylint: disable=unused-argument
 def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     # state_before = wallet_contract.functions.state().call()

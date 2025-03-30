@@ -21,6 +21,15 @@ def wallet_contract(w3):
     )
     return contract
 
+@pytest.fixture
+def wallet_contract_erigon(w3):
+    contract = deploy_contract(
+        w3,
+        "rip7560/TestAccountErigon",
+        value=10**18,
+    )
+    return contract
+
 
 @pytest.fixture
 def paymaster_contract_7560(w3):
