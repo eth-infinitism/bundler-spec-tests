@@ -21,6 +21,7 @@ def wallet_contract(w3):
     )
     return contract
 
+
 @pytest.fixture
 def wallet_contract_erigon(w3):
     contract = deploy_contract(

@@ -66,7 +66,6 @@ def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_756
     w3.eth.get_transaction(rethash)
 
 
-
 # pylint: disable=unused-argument
 def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
     # state_before = wallet_contract.functions.state().call()
