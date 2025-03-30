@@ -13,7 +13,7 @@ def hex_to_int(h: str) -> int:
 
 
 def hex_to_bytes(h: str) -> bytes:
-    return b'' if h == "0x" else bytes.fromhex(h[2:])
+    return b"" if h == "0x" else bytes.fromhex(h[2:])
 
 
 @dataclass
@@ -28,11 +28,11 @@ class TransactionRIP7560:
     factoryData: HexStr = "0x"
     deployerData: HexStr = None  # alias for factoryData
     executionData: HexStr = "0x"
-    callGasLimit: HexStr = hex(3 * 10 ** 5)
+    callGasLimit: HexStr = hex(3 * 10**5)
     gas: HexStr = None  # alias for callGasLimit
-    verificationGasLimit: HexStr = hex(10 ** 6)
-    maxFeePerGas: HexStr = hex(4 * 10 ** 9)
-    maxPriorityFeePerGas: HexStr = hex(3 * 10 ** 9)
+    verificationGasLimit: HexStr = hex(10**6)
+    maxFeePerGas: HexStr = hex(4 * 10**9)
+    maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
     authorizationData: HexStr = "0x"
     paymaster: HexStr = "0x0000000000000000000000000000000000000000"
     paymasterData: HexStr = "0x"
@@ -57,15 +57,15 @@ class TransactionRIP7560:
             self.gas = None
         if self.paymaster is not None:
             if (
-                    self.paymasterVerificationGasLimit is None
-                    or self.paymasterVerificationGasLimit == "0x0"
+                self.paymasterVerificationGasLimit is None
+                or self.paymasterVerificationGasLimit == "0x0"
             ):
-                self.paymasterVerificationGasLimit = hex(10 ** 6)
+                self.paymasterVerificationGasLimit = hex(10**6)
             if (
-                    self.paymasterPostOpGasLimit is None
-                    or self.paymasterPostOpGasLimit == "0x0"
+                self.paymasterPostOpGasLimit is None
+                or self.paymasterPostOpGasLimit == "0x0"
             ):
-                self.paymasterPostOpGasLimit = hex(10 ** 6)
+                self.paymasterPostOpGasLimit = hex(10**6)
             if self.paymasterData is None:
                 self.paymasterData = "0x"
 
@@ -85,25 +85,25 @@ class TransactionRIP7560:
         # Convert and set defaults
         encoded_tx = encode(
             [
-                hex_to_bytes(self.sender),
+                hex_to_int(self.chainId),
                 hex_to_int(self.nonceKey),
                 hex_to_int(self.nonce),
+                hex_to_bytes(self.sender),
                 hex_to_bytes(self.factory),
                 hex_to_bytes(self.factoryData),
-                hex_to_bytes(self.executionData),
-                hex_to_int(self.callGasLimit),
-                hex_to_int(self.verificationGasLimit),
-                hex_to_int(self.maxFeePerGas),
-                hex_to_int(self.maxPriorityFeePerGas),
-                hex_to_bytes(self.authorizationData),
                 hex_to_bytes(self.paymaster),
                 hex_to_bytes(self.paymasterData),
+                hex_to_bytes(self.executionData),
+                hex_to_int(self.builderFee),
+                hex_to_int(self.maxPriorityFeePerGas),
+                hex_to_int(self.maxFeePerGas),
+                hex_to_int(self.verificationGasLimit),
                 hex_to_int(self.paymasterVerificationGasLimit),
                 hex_to_int(self.paymasterPostOpGasLimit),
-                hex_to_int(self.chainId),
-                hex_to_int(self.value),
+                hex_to_int(self.callGasLimit),
                 [],
-                hex_to_int(self.builderFee)
+                hex_to_bytes(self.authorizationData),
+                hex_to_int(self.value),
             ]
         )
         return "0x05" + encoded_tx.hex()
@@ -111,13 +111,14 @@ class TransactionRIP7560:
     def send_raw(self, url=None):
         encoded_tx = self.rlp_encode()
         print("RLP ENCODED", encoded_tx)
-        return RPCRequest(
-            method="eth_sendRawTransaction", params=[encoded_tx]
-        ).send(url)
+        return RPCRequest(method="eth_sendRawTransaction", params=[encoded_tx]).send(
+            url
+        )
 
     def send(self, url=None):
         bal = RPCRequest(
-            method="eth_getBalance", params=["0x67b1d87101671b127f5f8714789C7192f7ad340e", "latest"]
+            method="eth_getBalance",
+            params=["0x67b1d87101671b127f5f8714789C7192f7ad340e", "latest"],
         ).send(url)
         print("large balance here should be", bal)
         return RPCRequest(
