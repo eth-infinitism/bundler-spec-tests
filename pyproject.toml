@@ -34,9 +34,9 @@ rip7560-build = {shell = "cd @rip7560 && yarn && yarn compile-hardhat" }
 dep-build = {composite = ["spec-build", "rip7560-build"]}
 update-deps = {composite = ["submodule-update", "dep-build"]}
 update-deps-remote = {shell = "git submodule update --init --recursive --remote && cd @account-abstraction && yarn && yarn compile &&  cd ../spec && yarn && yarn build && cd ../@rip7560 && yarn && yarn compile-hardhat"}
-test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --query-ep --ethereum-node http://127.0.0.1:8545/ tests/single"
-test-rip7560 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --nonce-manager 0x59c405Dc6D032d9Ff675350FefC66F3b6c1bEbaB  --stake-manager 0xd4847208304e73DA62df33e87151E0d49Dba84A5 --ethereum-node http://127.0.0.1:8545/ tests/rip7560"
-p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x0000000071727De22E5E9d8BAf0edAc6f37da032 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
+test = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108 --ethereum-node http://127.0.0.1:8545/ tests/single"
+test-rip7560 = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --nonce-manager 0x59c405Dc6D032d9Ff675350FefC66F3b6c1bEbaB  --stake-manager 0xc142Db6f76A8B4Edb7D3F24638e4d6f8BC6199FE --ethereum-node http://127.0.0.1:8545/ tests/rip7560"
+p2ptest = "pytest --tb=short -rA -W ignore::DeprecationWarning --url http://localhost:3000/rpc --entry-point 0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108 --ethereum-node http://127.0.0.1:8545/ tests/p2p"
 lint = "pylint tests"
 format = "black tests"
 

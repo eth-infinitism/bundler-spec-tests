@@ -11,6 +11,7 @@ from .user_operation_erc4337 import UserOperation
 
 from .utils import (
     assert_ok,
+    clear_state,
     compile_contract,
     deploy_and_deposit,
     deploy_contract,
@@ -31,7 +32,7 @@ def pytest_configure(config):
         launcher_script=config.getoption("--launcher-script"),
         log_rpc=config.getoption("--log-rpc"),
     )
-    install_solc(version="0.8.25")
+    install_solc(version="0.8.28")
 
 
 def pytest_sessionstart():
@@ -148,7 +149,7 @@ def execute_user_operation(userop):
 # applied to all tests: clear mempool, reputation before each test
 @pytest.fixture(autouse=True)
 def clear_state_before_each_test():
-    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
+    clear_state()
 
 
 @pytest.fixture

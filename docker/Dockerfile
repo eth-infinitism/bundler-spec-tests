@@ -1,4 +1,4 @@
-FROM cimg/python:3.10.12-node
+FROM cimg/python:3.13.2-node
 
 USER root
 
