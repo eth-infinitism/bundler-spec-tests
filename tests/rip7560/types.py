@@ -23,7 +23,8 @@ class TransactionRIP7560:
     sender: HexStr
     nonceKey: HexStr = hex(0)
     nonce: HexStr = hex(0)
-    factory: HexStr = "0x0000000000000000000000000000000000000000"
+    # factory: HexStr = "0x0000000000000000000000000000000000000000"
+    factory: HexStr = "0x"
     deployer: HexStr = None  # alias for factory
     factoryData: HexStr = "0x"
     deployerData: HexStr = None  # alias for factoryData
@@ -34,7 +35,8 @@ class TransactionRIP7560:
     maxFeePerGas: HexStr = hex(4 * 10**9)
     maxPriorityFeePerGas: HexStr = hex(3 * 10**9)
     authorizationData: HexStr = "0x"
-    paymaster: HexStr = "0x0000000000000000000000000000000000000000"
+    # paymaster: HexStr = "0x0000000000000000000000000000000000000000"
+    paymaster: HexStr = "0x"
     paymasterData: HexStr = "0x"
     paymasterVerificationGasLimit: HexStr = hex(0)
     paymasterPostOpGasLimit: HexStr = hex(0)
@@ -61,7 +63,7 @@ class TransactionRIP7560:
                 self.paymasterVerificationGasLimit is None
                 or self.paymasterVerificationGasLimit == "0x0"
             ):
-                self.paymasterVerificationGasLimit = hex(10**6)
+                self.paymasterVerificationGasLimit = hex(0)
             if (
                 self.paymasterPostOpGasLimit is None
                 or self.paymasterPostOpGasLimit == "0x0"
