@@ -46,6 +46,8 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 
 
 def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_7560):
+    acc_bal = w3.eth.get_balance(w3.to_checksum_address("0x67b1d87101671b127f5f8714789C7192f7ad340e"))
+    print("acc_bal>>>", acc_bal)
     fund(w3, wallet_contract_erigon.address)
     state_before = wallet_contract_erigon.functions.state().call()
     assert state_before == 0
