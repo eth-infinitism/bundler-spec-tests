@@ -92,6 +92,7 @@ class TransactionRIP7560:
                 hex_to_int(self.nonceKey),
                 hex_to_int(self.nonce),
                 hex_to_bytes(self.sender),
+                hex_to_bytes(self.authorizationData),
                 hex_to_bytes(self.factory),
                 hex_to_bytes(self.factoryData),
                 hex_to_bytes(self.paymaster),
