@@ -110,7 +110,7 @@ class TransactionRIP7560:
                 # hex_to_int(self.value),
             ]
         )
-        return "0x0500" + encoded_tx.hex()
+        return "0x05" + encoded_tx.hex()
 
     def send_raw(self, url=None):
         encoded_tx = self.rlp_encode()
