@@ -60,17 +60,12 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def w3():
     w3 = Web3(Web3.HTTPProvider(CommandLineArgs.ethereum_node))
-    if len(w3.eth.accounts) == 0:
-        private_key = (
-            "0x26e86e45f6fc45ec6e2ecd128cec80fa1d1505e5507dcd2ae58c3130a7a97b48"
-        )
-        # pylint doesn't deal with @combomethod well
-        # pylint: disable = no-value-for-parameter
-        account = Account.from_key(private_key)
-        w3.eth.default_account = account.address
-        w3.middleware_onion.add(SignAndSendRawMiddlewareBuilder.build(private_key))
-    else:
-        w3.eth.default_account = w3.eth.accounts[0]
+    private_key = "0x26e86e45f6fc45ec6e2ecd128cec80fa1d1505e5507dcd2ae58c3130a7a97b48"
+    # pylint doesn't deal with @combomethod well
+    # pylint: disable = no-value-for-parameter
+    account = Account.from_key(private_key)
+    w3.eth.default_account = account.address
+    w3.middleware_onion.add(SignAndSendRawMiddlewareBuilder.build(private_key))
     w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
     return w3
 
