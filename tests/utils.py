@@ -7,6 +7,7 @@ from eth_utils import to_checksum_address
 from solcx import compile_source
 
 from .rip7560.types import TransactionRIP7560
+from .single.opbanning.alt_mempool_cases import AltMempoolConfig
 from .types import RPCRequest, CommandLineArgs
 from .user_operation_erc4337 import UserOperation
 
@@ -242,20 +243,32 @@ def get_rip7560_debug_info(tx_hash, url=None):
     ).send(url)
 
 
+def debug_set_alt_mempool_config(config: AltMempoolConfig, url=None):
+    return RPCRequest(method="debug_bundler_setAltMempoolConfig", params=[config]).send(
+        url
+    )
+
+
 def dump_mempool(url=None):
-    mempool = (
+    alt_mempools = dump_alt_mempools(url)
+    return alt_mempools["0"]
+
+
+def dump_alt_mempools(url=None):
+    mempool_dump = (
         RPCRequest(
             method="debug_bundler_dumpMempool", params=[CommandLineArgs.entrypoint]
         )
         .send(url)
         .result
     )
-    for i, entry in enumerate(mempool):
-        if "executionData" in entry:
-            mempool[i] = TransactionRIP7560(**entry)
-        else:
-            mempool[i] = UserOperation(**entry)
-    return mempool
+    for mempool in mempool_dump.values():
+        for i, entry in enumerate(mempool):
+            if "executionData" in entry:
+                mempool[i] = TransactionRIP7560(**entry)
+            else:
+                mempool[i] = UserOperation(**entry)
+    return mempool_dump
 
 
 # wait for mempool propagation.
@@ -309,7 +322,7 @@ def set_reputation(address, ops_seen=1, ops_included=2, url=None):
         params=[
             [
                 {
-                    "address": address,
+                    "entryId": address,
                     "opsSeen": hex(ops_seen),
                     "opsIncluded": hex(ops_included),
                 }
