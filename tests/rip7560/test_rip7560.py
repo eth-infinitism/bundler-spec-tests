@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 
 import hexbytes
 import pytest
@@ -62,7 +62,7 @@ def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_756
     res = tx_7560.send_raw()
     print("res>>>", res)
     rethash = res.result
-    send_bundle_now()
+    sleep(10)
     state_after = wallet_contract_erigon.functions.state().call()
     assert state_after == 2
     assert nonce + 1 == w3.eth.get_transaction_count(
