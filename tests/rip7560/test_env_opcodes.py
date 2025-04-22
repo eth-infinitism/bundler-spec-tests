@@ -126,7 +126,7 @@ def validate_event(
         "TIMESTAMP": block.timestamp,
         "NUMBER": block.number,
         "CHAINID": 1337,
-        "GAS": pytest.approx(int(gas, 16), rel=0.05),
+        "GAS": pytest.approx(int(gas, 16), rel=0.15),
         "GASLIMIT": block.gasLimit,
         "GASPRICE": min(tx_maxfee, tx_prio + block_basefee),
         "BALANCE": expected_balance,

@@ -42,11 +42,11 @@ def compile_contract(contract):
             allow_paths=allow_paths,
             import_remappings=[aa_remap, rip7560_remap],
             output_values=["abi", "bin", "bin-runtime"],
-            solc_version="0.8.25",
+            solc_version="0.8.28",
             evm_version="cancun",
             optimize=True,
             optimize_runs=1,
-            via_ir=True,
+            via_ir=False,
         )
         return compiled_sol["<stdin>:" + contract_name]
 
@@ -275,6 +275,10 @@ def p2p_mempool(ref_dump, url=None, timeout=5):
 
 def clear_mempool(url=None):
     return RPCRequest(method="debug_bundler_clearMempool").send(url)
+
+
+def clear_state():
+    assert_ok(RPCRequest(method="debug_bundler_clearState").send())
 
 
 def get_stake_status(address, entry_point):

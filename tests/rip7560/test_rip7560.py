@@ -85,7 +85,7 @@ def test_eth_send_3_valid_ops(w3, tx_7560, manual_bundling_mode):
         assert rcpt.status == 1
         assert rcpt.blockHash == block.hash
         if rcpt.type == TransactionRIP7560.Type:
-            assert rcpt.gasUsed == 92950
+            assert rcpt.gasUsed == 93569
         else:
             assert rcpt.gasUsed == 21000
 
