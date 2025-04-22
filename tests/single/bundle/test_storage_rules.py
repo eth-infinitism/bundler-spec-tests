@@ -212,12 +212,12 @@ cases = [
         assert_error,
     ),
     ValidationRuleTestCase(
-        "EREP-050-regression",
+        "EREP-050",
         "context",
         UNSTAKED,
         PAYMASTER,
         build_userop_for_paymaster,
-        assert_ok,
+        assert_error,
     ),
     ValidationRuleTestCase(
         "STO-032",
@@ -325,7 +325,7 @@ cases = [
         assert_ok,
     ),
     ValidationRuleTestCase(
-        "EREP-050-regression",
+        "EREP-050",
         "context",
         STAKED,
         PAYMASTER,

@@ -1,6 +1,6 @@
 from tests.conftest import assert_ok, deploy_and_deposit, paymaster_contract
 from tests.single.bundle.test_bundle import bump_fee_by
-from tests.utils import clear_reputation, dump_mempool, dump_reputation, to_number
+from tests.utils import dump_mempool, dump_reputation, to_number
 
 
 def bump_gas_fees(userop):
@@ -19,7 +19,6 @@ def pm_opsSeen(pmAddr):
 
 # when userop is replaced, old userop opsSeen increments should be reverted
 def test_replace_paymaster(w3, manual_bundling_mode, entrypoint_contract, userop):
-    clear_reputation()
     pm1 = deploy_and_deposit(w3, entrypoint_contract, "TestRulesPaymaster", False)
 
     userop.paymaster = pm1.address

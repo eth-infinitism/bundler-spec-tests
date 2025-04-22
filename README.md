@@ -1,12 +1,14 @@
 # EIP4337 bundler compatibility tests.
 
-## Version 0.7
+## Version 0.8
 
 For more information on the motivation and importance of having a compatibility test suite, see https://notes.ethereum.org/@yoav/unified-erc-4337-mempool
 
 For the formal schema EIP-4337 bundler RPC API spec, see https://github.com/eth-infinitism/bundler-spec
 
-The spec test for previous release is at [releases/v0.6](https://github.com/eth-infinitism/bundler-spec-tests/tree/releases/v0.6)
+The spec test for previous releases
+- [releases/v0.7](https://github.com/eth-infinitism/bundler-spec-tests/tree/releases/v0.7)
+- [releases/v0.6](https://github.com/eth-infinitism/bundler-spec-tests/tree/releases/v0.6)
 
 #### Prerequisites 
 
@@ -26,7 +28,7 @@ pdm test
 With the following parameters:
 
   * **--url** the bundler to test (defaults to http://localhost:3000)
-  * **--entry-point** (defaults to `0x0000000071727De22E5E9d8BAf0edAc6f37da032`)
+  * **--entry-point** (defaults to `0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108`)
   * **--ethereum-node** (defaults to http://localhost:8545)
   * **--launcher-script** (See below)
   * **-k** &lt;regex>, (or any other pytest param)
