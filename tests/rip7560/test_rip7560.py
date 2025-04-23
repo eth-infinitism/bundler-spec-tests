@@ -46,7 +46,9 @@ def test_eth_sendTransaction7560_valid1(w3, wallet_contract, tx_7560):
 
 
 def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_7560):
-    acc_bal = w3.eth.get_balance(w3.to_checksum_address("0x67b1d87101671b127f5f8714789C7192f7ad340e"))
+    acc_bal = w3.eth.get_balance(
+        w3.to_checksum_address("0x67b1d87101671b127f5f8714789C7192f7ad340e")
+    )
     print("acc_bal>>>", acc_bal)
     fund(w3, wallet_contract_erigon.address)
     wal_code_size = len(w3.eth.get_code(wallet_contract_erigon.address))
@@ -62,7 +64,7 @@ def test_eth_sendTransaction7560_erigon_valid(w3, wallet_contract_erigon, tx_756
     res = tx_7560.send_raw()
     print("res>>>", res)
     rethash = res.result
-    sleep(10)
+    w3.eth.wait_for_transaction_receipt(rethash)
     state_after = wallet_contract_erigon.functions.state().call()
     assert state_after == 2
     assert nonce + 1 == w3.eth.get_transaction_count(
