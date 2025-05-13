@@ -167,7 +167,7 @@ def pack_user_op(userop):
 
     payload = (
         userop.sender,
-        int(userop.nonce, 16),
+        to_number(userop.nonce),
         pack_factory(userop.factory, userop.factoryData),
         userop.callData,
         pack_uints(userop.verificationGasLimit, userop.callGasLimit),

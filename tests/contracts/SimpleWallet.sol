@@ -31,6 +31,14 @@ contract SimpleWallet is ITestAccount {
         state=_state;
     }
 
+    function wasteGas() external {
+        uint i = 0;
+        while (gasleft() > 10000) {
+            i++;
+        }
+    }
+
+
     function fail() external {
         revert("test fail");
     }
