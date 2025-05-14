@@ -15,11 +15,11 @@ def resolve_revert(e):
     # "FailedOpWithRevert(uint256,string,bytes)"
     if "0x65c8fd4d" in s:
         ret = decode(["uint256", "string", "bytes"], bytes.fromhex(e.data[10:]))
-        return ValueError(ret[1] + " data= " + ret[2].hex())
+        return ValueError(ret[1] + " data= " + ret[2].hex()) # pylint: disable=unsubscriptable-object
     # "FailedOp(uint256,string)"
     if "0x220266b6" in s:
         ret = decode(["uint256", "string"], bytes.fromhex(e.data[10:]))
-        return ValueError(ret[1])
+        return ValueError(ret[1])  # pylint: disable=unsubscriptable-object
     return e
 
 
@@ -46,18 +46,16 @@ def call_userop_with_gas_field(op, op_field, val, prefix_user_op=None):
     """
     op1 = userop_with_field(op, op_field, to_prefixed_hex(val))
     b = global_entrypoint()
-    packedArray = []
+    packed_array = []
     if prefix_user_op:
-        packedArray.append(pack_user_op(prefix_user_op))
+        packed_array.append(pack_user_op(prefix_user_op))
 
-        # (address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes)
-        # op='0xCE94FEaFfE47a210De8BfB12409d3d617754e125', '0x1', '0x', '0x3b6a02f6', '0x00000000000000000000000000030d40000000000000000000000000000f4240', '0x61a80', '0x000000000000000000000000b2d05e00000000000000000000000000ee6b2800', '0x', '0x'
-
-    packedArray.append(pack_user_op(op1))
+    packed_array.append(pack_user_op(op1))
     try:
-        global_entrypoint().functions.handleOps(packedArray, b.address).call({"gas": 10 ** 7})
-    except Exception as e:
+        global_entrypoint().functions.handleOps(packed_array, b.address).call({"gas": 10 ** 7})
+    except Exception as e: # pylint: disable=broad-exception-caught
         return resolve_revert(e)
+    return None
 
 
 def find_min_func(func, low, high):
