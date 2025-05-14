@@ -178,7 +178,9 @@ def set_reputation(reputations):
 def impl7702(w3):
     return deploy_contract(w3, "SimpleWallet", ctrparams=[CommandLineArgs.entrypoint])
 
+
 _GLOBAL_EP = None
+
 
 @pytest.fixture(scope="session", autouse=True)
 def set_global_entrypoint(entrypoint_contract):
@@ -188,5 +190,7 @@ def set_global_entrypoint(entrypoint_contract):
 
 
 def global_entrypoint():
-    assert _GLOBAL_EP is not None, "global_entrypoint() called before set_global_entrypoint()"
+    assert (
+        _GLOBAL_EP is not None
+    ), "global_entrypoint() called before set_global_entrypoint()"
     return _GLOBAL_EP
