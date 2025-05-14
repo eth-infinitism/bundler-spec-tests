@@ -1,28 +1,14 @@
 from dataclasses import asdict
 
-import pytest
 from eth_abi import decode
 
+from tests.conftest import global_entrypoint
 from tests.user_operation_erc4337 import UserOperation
 from tests.utils import (
     pack_user_op,
     to_prefixed_hex,
     hex_concat
 )
-
-_global_ep = None
-
-
-@pytest.fixture(scope="session", autouse=True)
-def set_global_entrypoint(entrypoint_contract):
-    global _global_ep
-    _global_ep = entrypoint_contract
-
-
-def global_entrypoint():
-    global _global_ep
-    assert _global_ep is not None, "global_entrypoint() called before set_global_entrypoint()"
-    return _global_ep
 
 def resolve_revert(e):
     s = str(e)
