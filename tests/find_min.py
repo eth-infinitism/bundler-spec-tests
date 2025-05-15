@@ -13,8 +13,8 @@ def resolve_revert(e):
     if "0x65c8fd4d" in s:
         ret = decode(["uint256", "string", "bytes"], bytes.fromhex(e.data[10:]))
         return ValueError(
-            ret[1] + " data= " + ret[2].hex()
-        )  # pylint: disable=unsubscriptable-object
+            ret[1] + " data= " + ret[2].hex()  # pylint: disable=unsubscriptable-object
+        )
     # "FailedOp(uint256,string)"
     if "0x220266b6" in s:
         ret = decode(["uint256", "string"], bytes.fromhex(e.data[10:]))
