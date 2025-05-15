@@ -93,22 +93,6 @@ def find_min_userop_with_field(op, op_field, low, high, prefix_user_op=None):
     )
 
 
-# def waste_context_userop():
-#     """
-#     ceate a userOp that "wastes" memory, by using a paymaster that return a large context.
-#     :return:
-#     """
-#     return UserOperation(
-#         sender: dummy_account(),
-#         data="0x",
-#         value=0,
-#         paymaster: dummy_context_paymaster(),
-#         paymasterData="0x",
-#         paymasterVerificationGasLimit=100_000,
-#         verificationGasLimit=100_000,
-#     )
-
-
 def find_verification_limits(op, prefix_user_op=None):
     """
     find minimum verificationGasLimit, paymasterVerificationGasLimit for this userop.
